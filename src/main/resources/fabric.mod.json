@@ -1,27 +1,27 @@
 {
   "schemaVersion": 1,
-  "id": "addon-template",
+  "id": "stardust",
   "version": "${version}",
-  "name": "Addon Template",
-  "description": "An addon template for the Meteor addons.",
+  "name": "Stardust",
+  "description": "A collection of anarchy-enhancing modules for Meteor Client",
   "authors": [
-    "seasnail"
+    "Tas [@0xTas] <root@0xTas.dev>"
   ],
   "contact": {
-    "repo": "https://github.com/MeteorDevelopment/meteor-addon-template"
+    "repo": "https://github.com/0xTas/stardust"
   },
-  "icon": "assets/template/icon.png",
+  "icon": "assets/stardust/icon.png",
   "environment": "client",
   "entrypoints": {
     "meteor": [
-      "com.example.addon.Addon"
+      "dev.stardust.Stardust"
     ]
   },
   "mixins": [
-    "addon-template.mixins.json"
+    "stardust.mixins.json"
   ],
   "custom": {
-    "meteor-client:color": "225,25,25"
+    "meteor-client:color": "147,233,190"
   },
   "depends": {
     "java": ">=17",

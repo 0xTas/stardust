@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "package": "dev.stardust.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "AbstractSignEditScreenAccessor",
+    "AbstractSignEditScreenMixin",
+    "BookEditScreenAccessor",
+    "BookEditScreenMixin",
+    "BookScreenMixin",
+    "GameOptionsAccessor",
+    "WrittenBookContentsAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "DoorBlockMixin"
+  ]
+}
