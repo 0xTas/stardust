@@ -46,11 +46,6 @@ public class UpdateNotifier extends Module {
     }
 
 
-    @Override
-    public void onDeactivate() {
-        this.notify.set(false);
-    }
-
     @Nullable
     public String fetchNewestVersionNumber() {
         HttpURLConnection req;
