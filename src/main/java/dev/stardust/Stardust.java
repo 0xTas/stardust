@@ -27,9 +27,10 @@ public class Stardust extends MeteorAddon {
 
         Modules.get().add(new AutoDoors());
         Modules.get().add(new BookTools());
-        Modules.get().add(new BannerData());
         Modules.get().add(new ChatSigns());
+        Modules.get().add(new BannerData());
         Modules.get().add(new SignatureSign());
+        Modules.get().add(new UpdateNotifier());
         Modules.get().add(new AutoDrawDistance());
 
         LOG.info("<✨> Stardust initialized.");
