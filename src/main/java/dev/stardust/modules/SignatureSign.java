@@ -1,7 +1,9 @@
 package dev.stardust.modules;
 
+import java.awt.*;
 import java.util.*;
 import java.io.File;
+import java.util.List;
 import java.nio.file.Path;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -9,7 +11,10 @@ import java.nio.file.Files;
 import dev.stardust.Stardust;
 import java.util.stream.Stream;
 import net.minecraft.text.Text;
+import net.minecraft.text.Style;
 import net.minecraft.util.DyeColor;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.MutableText;
 import dev.stardust.util.StardustUtil;
 import java.time.format.DateTimeFormatter;
 import net.minecraft.block.entity.SignText;
@@ -264,6 +269,19 @@ public class SignatureSign extends Module {
             .build()
     );
 
+    private final Setting<Boolean> openFolder = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Open Meteor Client Folder")
+            .description("Opens the meteor-client folder where autosign.txt & storysign.txt are kept.")
+            .defaultValue(false)
+            .onChanged(it -> {
+                if (it) {
+                    openMeteorFolder();
+                }
+            })
+            .build()
+    );
+
     public static final String[] lineModes = {"Custom", "Empty", "File", "Username",
         "Username was here", "Timestamp", "Stardust", "Oasis", "Base64", "Hex", "0xHex", "ROT13"};
 
@@ -443,9 +461,25 @@ public class SignatureSign extends Module {
                 Stardust.LOG.error("[Stardust] "+err);
             }
         } else {
+            try {
+                if (file.createNewFile()) {
+                    if (mc.player != null) {
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created autosign.txt in meteor-client folder."));
+
+                        Text msg = Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Click §2§lhere §r§7to open the folder.");
+                        Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, meteorFolder.toFile().getAbsolutePath()));
+
+                        MutableText txt = msg.copyContentOnly().setStyle(style);
+                        mc.player.sendMessage(txt);
+                    }
+                }
+            } catch (IOException | SecurityException err) {
+                err.printStackTrace();
+            }
+
             switch (line) {
-                case 1: return "File not found";
-                case 2: return "Please create a";
+                case 1: return "File was empty";
+                case 2: return "Please use the";
                 case 3: return "autosign.txt";
                 case 4: return "in /meteor-client";
             }
@@ -465,36 +499,31 @@ public class SignatureSign extends Module {
                 Stardust.LOG.error("[Stardust] "+err);
             }
         }else {
-            File backupFile = meteorFolder.resolve("autosign.txt").toFile();
+            try {
+                if (file.createNewFile()) {
+                    if (mc.player != null) {
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created storysign.txt in meteor-client folder."));
 
-            if (backupFile.exists()) {
-                if (mc.player != null) {
-                    mc.player.sendMessage(
-                        Text.of("§8<"+StardustUtil.rCC()+"✨§8> §7A storysign.txt file was not found in your meteor-client folder.")
-                    );
-                    mc.player.sendMessage(
-                        Text.of("§8<"+StardustUtil.rCC()+"✨§8> §7Falling back to autosign.txt instead.")
-                    );
+                        Text msg = Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Click §2§lhere §r§7to open the folder.");
+                        Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, meteorFolder.toFile().getAbsolutePath()));
+
+                        MutableText txt = msg.copyContentOnly().setStyle(style);
+                        mc.player.sendMessage(txt);
+                    }
                 }
-                try(Stream<String> lineStream = Files.lines(backupFile.toPath())) {
-                    storyText.addAll(Arrays.stream(String.join(" ", lineStream.toList()).split(" ")).toList());
-                } catch (IOException err) {
-                    Stardust.LOG.error("[Stardust] "+err);
-                }
-            } else {
-                if (mc.player != null) {
-                    mc.player.sendMessage(
-                        Text.of("§8<"+StardustUtil.rCC()+"✨§8> §7A storysign.txt file was not found in your meteor-client folder.")
-                    );
-                    mc.player.sendMessage(
-                        Text.of("§8<"+StardustUtil.rCC()+"✨§8> §7Please create either it, or an autosign.txt file.")
-                    );
-                }
+            } catch (IOException | SecurityException err) {
+                err.printStackTrace();
                 storyText.add("File not found.");
                 storyText.add("Please create a");
                 storyText.add("storysign.txt in");
                 storyText.add("/meteor-client");
+                return;
             }
+
+            storyText.add("File was empty.");
+            storyText.add("Please use the");
+            storyText.add("storysign.txt in");
+            storyText.add("/meteor-client");
         }
     }
 
@@ -643,6 +672,21 @@ public class SignatureSign extends Module {
             }
         }
 
+    }
+
+    private void openMeteorFolder() {
+        Path meteorFolder = FabricLoader.getInstance().getGameDir().resolve("meteor-client");
+        File folder = meteorFolder.toFile();
+
+        EventQueue.invokeLater(() -> {
+            try {
+                Desktop.getDesktop().open(folder);
+            }catch (IOException err) {
+                Stardust.LOG.error("[Stardust] Failed to open meteor-client folder - "+err);
+            }
+        });
+
+        this.openFolder.set(false);
     }
 
     private String dayOfMonthSuffix(int dom) {
