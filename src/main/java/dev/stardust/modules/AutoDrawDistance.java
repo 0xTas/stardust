@@ -20,6 +20,13 @@ import meteordevelopment.meteorclient.systems.modules.Module;
  * @author Tas [@0xTas] <root@0xTas.dev>
  */
 public class AutoDrawDistance extends Module {
+    public AutoDrawDistance() {
+        super(
+            Stardust.CATEGORY,
+            "AutoDrawDistance",
+            "Automatically adjusts your render distance to maintain an FPS target."
+        );
+    }
 
     private final Setting<Integer> fpsTarget = settings.getDefaultGroup().add(
         new IntSetting.Builder()
@@ -84,13 +91,6 @@ public class AutoDrawDistance extends Module {
     private boolean sweetSpot = false;
     private final IntArrayList fpsData = new IntArrayList();
 
-    public AutoDrawDistance() {
-        super(
-            Stardust.CATEGORY,
-            "AutoDrawDistance",
-            "Automatically adjusts your render distance to maintain an FPS target."
-        );
-    }
 
     private void updateDrawDistance(int distance) {
         boolean bl = mc.is64Bit();
@@ -124,7 +124,7 @@ public class AutoDrawDistance extends Module {
     }
 
 
-    @EventHandler
+    @Override
     public void onDeactivate() {
         this.sweetSpotCounter = 0;
         this.totalTicksEnabled = 0;
@@ -132,7 +132,6 @@ public class AutoDrawDistance extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
-        if (!this.isActive()) return;
         if (fpsData.size() > 500) fpsData.clear();
         if (this.totalTicksEnabled >= 65535) this.totalTicksEnabled = 0;
 

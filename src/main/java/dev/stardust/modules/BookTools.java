@@ -11,6 +11,8 @@ import meteordevelopment.meteorclient.systems.modules.Module;
  * @author Tas [@0xTas] <root@0xTas.dev>
  **/
 public class BookTools extends Module {
+    public BookTools() { super(Stardust.CATEGORY, "BookTools", "Enhancements for working with books."); }
+
     private final SettingGroup sgFormat = settings.createGroup("Color & Formatting");
     private final SettingGroup sgDeobfuscate = settings.createGroup("Deobfuscation");
 
@@ -38,9 +40,6 @@ public class BookTools extends Module {
             .defaultValue(true)
             .build()
     );
-
-
-    public BookTools() { super(Stardust.CATEGORY, "BookTools", "Enhancements for working with books."); }
 
 
     // See BookEditScreenMixin.java

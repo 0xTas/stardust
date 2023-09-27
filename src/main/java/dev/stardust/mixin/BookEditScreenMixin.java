@@ -26,7 +26,7 @@ public abstract class BookEditScreenMixin extends Screen {
     @Shadow
     private boolean signing;
 
-
+    // See BookTools.java
     protected BookEditScreenMixin(Text title) { super(title); }
 
 
@@ -59,7 +59,6 @@ public abstract class BookEditScreenMixin extends Screen {
         }
     }
 
-    // See BookTools.java
     @Inject(method = "init", at = @At("TAIL"))
     private void mixinInit(CallbackInfo ci) {
         BookTools bookTools = Modules.get().get(BookTools.class);

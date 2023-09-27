@@ -28,6 +28,12 @@ import meteordevelopment.meteorclient.events.entity.player.InteractBlockEvent;
 * @author Tas [0xTas] <root@0xTas.dev>
 */
 public class BannerData extends Module {
+    public BannerData() {
+        super(
+            Stardust.CATEGORY, "BannerData", "View fancy-formatted NBT data for banners."
+        );
+    }
+
     private final Setting<StardustUtil.TextFormat> textFormatSetting = settings.getDefaultGroup().add(
         new EnumSetting.Builder<TextFormat>()
             .name("Text Formatting")
@@ -53,11 +59,6 @@ public class BannerData extends Module {
     private int totalTicksEnabled = 0;
     private BlockPos lastEventPos = new BlockPos(0,0,0);
 
-    public BannerData() {
-        super(
-            Stardust.CATEGORY, "BannerData", "View fancy-formatted NBT data for banners."
-        );
-    }
 
     @Override
     public void onDeactivate() {
@@ -66,7 +67,7 @@ public class BannerData extends Module {
 
     @EventHandler
     private void onRightClickBlock(InteractBlockEvent event) {
-        if (mc == null || mc.world == null || mc.player == null) return;
+        if (mc.world == null || mc.player == null) return;
 
         BlockHitResult result = event.result;
         if (this.isActive() && result.getType() == HitResult.Type.BLOCK) {
@@ -161,7 +162,6 @@ public class BannerData extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        if (!this.isActive()) return;
         if (this.totalTicksEnabled >= 65535) this.totalTicksEnabled = 0;
 
         // InteractBlockEvents fire twice sometimes, so we must cull the extra ones manually.

@@ -26,6 +26,14 @@ import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
 public class UpdateNotifier extends Module {
+    public UpdateNotifier() {
+        super(Stardust.CATEGORY, "UpdateNotifier", "Notifies you in chat when a new version of Stardust is available.");
+
+        if (!this.isActive()) { // only way of making the module "enabled by default".
+            MeteorClient.EVENT_BUS.subscribe(this);
+        }
+    }
+
     private final Setting<Boolean> notify = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
             .name("Enable Notifications")
@@ -36,14 +44,6 @@ public class UpdateNotifier extends Module {
 
     private boolean notified = false;
     private final String releaseUrl = "https://github.com/0xTas/stardust/releases/latest";
-
-    public UpdateNotifier() {
-        super(Stardust.CATEGORY, "UpdateNotifier", "Notifies you in chat when a new version of Stardust is available.");
-
-        if (!this.isActive()) {
-            MeteorClient.EVENT_BUS.subscribe(this);
-        }
-    }
 
 
     @Nullable

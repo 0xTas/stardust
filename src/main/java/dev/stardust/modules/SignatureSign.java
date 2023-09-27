@@ -29,6 +29,15 @@ import meteordevelopment.meteorclient.systems.modules.Module;
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
 public class SignatureSign extends Module {
+    public SignatureSign() { super(Stardust.CATEGORY, "SignatureSign", "Autofill signs with custom text."); }
+
+    public static final String[] lineModes = {"Custom", "Empty", "File", "Username",
+        "Username was here", "Timestamp", "Stardust", "Oasis", "Base64", "Hex", "0xHex", "ROT13"};
+
+    public static final String[] timestampTypes = {"MM/DD/YY", "MM/DD/YYYY", "DD/MM/YY", "DD/MM/YYYY",
+        "YYYY/MM/DD", "YYYY/DD/MM", "Day Month Year", "Month Day Year", "Month Year", "Year", "Day Month", "Month Day",
+        "Unix Epoch"};
+
     private final SettingGroup sgMode = settings.createGroup("Module Mode");
     private final SettingGroup sgLine1 = settings.createGroup("Line 1");
     private final SettingGroup sgLine2 = settings.createGroup("Line 2");
@@ -282,16 +291,6 @@ public class SignatureSign extends Module {
             .build()
     );
 
-    public static final String[] lineModes = {"Custom", "Empty", "File", "Username",
-        "Username was here", "Timestamp", "Stardust", "Oasis", "Base64", "Hex", "0xHex", "ROT13"};
-
-    public static final String[] timestampTypes = {"MM/DD/YY", "MM/DD/YYYY", "DD/MM/YY", "DD/MM/YYYY",
-        "YYYY/MM/DD", "YYYY/DD/MM", "Day Month Year", "Month Day Year", "Month Year", "Year", "Day Month", "Month Day",
-        "Unix Epoch"};
-
-
-    public SignatureSign() { super(Stardust.CATEGORY, "SignatureSign", "Autofill signs with custom text."); }
-
     private int storyIndex = 0;
     private int lastIndexAmount = 0;
     private String lastLine1Text = line1Text.get();
@@ -300,6 +299,7 @@ public class SignatureSign extends Module {
     private String lastLine4Text = line4Text.get();
     private final ArrayList<String> lastLines = new ArrayList<>();
     private final ArrayList<String> storyText = new ArrayList<>();
+
 
     @Override
     public void onActivate() {

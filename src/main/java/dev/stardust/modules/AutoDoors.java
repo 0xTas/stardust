@@ -21,6 +21,13 @@ import meteordevelopment.meteorclient.events.entity.player.PlayerMoveEvent;
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
 public class AutoDoors extends Module {
+    public AutoDoors()  {
+        super(Stardust.CATEGORY, "AutoDoors", "Automatically interact with doors.");
+    }
+
+    public static final String[] doorMode = {"Classic", "Spammer"};
+    public static final String[] muteModes = {"Never", "Always", "Spammer"};
+
     private final Setting<String> modeSetting = settings.getDefaultGroup().add(
         new ProvidedStringSetting.Builder()
             .name("Mode")
@@ -89,23 +96,6 @@ public class AutoDoors extends Module {
     private int tickCounter = 0;
     private Vec3d lastBlock = new Vec3d(0.0, 0.0, 0.0);
 
-    public AutoDoors()  {
-        super(Stardust.CATEGORY, "AutoDoors", "Automatically interact with doors.");
-    }
-
-    public static final String[] doorMode = {"Classic", "Spammer"};
-
-    public static final String[] muteModes = {"Never", "Always", "Spammer"};
-
-    @Override
-    public void onActivate() {
-        tickCounter = 0;
-    }
-
-    @Override
-    public void onDeactivate() {
-        tickCounter = 0;
-    }
 
     // See DoorBlockMixin.java
     public boolean shouldMute() {
@@ -183,9 +173,19 @@ public class AutoDoors extends Module {
     }
 
 
+    @Override
+    public void onActivate() {
+        tickCounter = 0;
+    }
+
+    @Override
+    public void onDeactivate() {
+        tickCounter = 0;
+    }
+
     @EventHandler
     private void onPlayerMove(PlayerMoveEvent event) {
-        if (!this.isActive() || modeSetting.get().equals("Spammer") || mc.player == null || mc.world == null) return;
+        if (modeSetting.get().equals("Spammer") || mc.player == null || mc.world == null) return;
         if (mc.world.getBlockState(mc.player.getBlockPos()).getBlock() instanceof PressurePlateBlock) return;
 
         Vec3d pPos = mc.player.getPos();
@@ -312,7 +312,7 @@ public class AutoDoors extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        if (!this.isActive() || modeSetting.get().equals("Classic")) return;
+        if (modeSetting.get().equals("Classic")) return;
         if (tickCounter >= 65535) tickCounter = 0;
 
         ++tickCounter;
