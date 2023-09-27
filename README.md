@@ -12,6 +12,7 @@ It provides a handful of modules for enhancing your experience on old server.<br
 - **AutoDrawDistance** - *Automatically adjusts your render distance to maintain an FPS target.* Some biomes/areas can drop my fps by half, so I found this somewhat useful at times.
 - **BannerData** - *Right-click banners to display their pattern and color data.* Looks cool, gives you the base color without any fuss. Can also copy the raw nbt to your clipboard.
 - **BookTools** - *Enhancements for working with books.* Adds buttons for inserting color & formatting codes into writable books, and adds a deobfuscation button to written books containing obfuscated/magic text.
+- **RocketMan** - *Makes flying with fireworks much easier (bring lots of rockets!)* This doesn't feature any fancy grim control bypasses or anything like that. This is just a good clean quasi-control firework efly that won't be patched as long as you have access to rockets (which are currently afkable.)
 - **ChatSigns** - *Read nearby signs in your chat.* Can also point-out possible old signs*.
 
  **\*1.19+ OldSigns**<br>

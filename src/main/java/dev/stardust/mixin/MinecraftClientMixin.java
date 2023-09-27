@@ -1,0 +1,92 @@
+package dev.stardust.mixin;
+
+import dev.stardust.modules.RocketMan;
+import org.spongepowered.asm.mixin.Mixin;
+import net.minecraft.client.MinecraftClient;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import meteordevelopment.meteorclient.systems.modules.Modules;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+
+/**
+ * @author Tas [0xTas] <root@0xTas.dev>
+ **/
+@Mixin(MinecraftClient.class)
+public class MinecraftClientMixin {
+
+    // See RocketMan.java
+    @Inject(method = "render", at = @At("HEAD"))
+    private void mixinRender(CallbackInfo ci) {
+        RocketMan rocketMan = Modules.get().get(RocketMan.class);
+        if (!rocketMan.isActive() || !rocketMan.shouldTickRotation()) return;
+
+        MinecraftClient mc = rocketMan.getClientInstance();
+
+        if (mc.player == null) return;
+        String mode = rocketMan.getUsageMode();
+
+        switch (mode) {
+            case "W Key" -> {
+                if (mc.player.input.sneaking) {
+                    mc.player.changeLookDirection(0.0f, rocketMan.getPitchSpeed());
+                } else if (mc.player.input.jumping) {
+                    mc.player.changeLookDirection(0.0f, -rocketMan.getPitchSpeed());
+                }
+
+                if (mc.player.input.pressingRight) {
+                    mc.player.changeLookDirection(rocketMan.getYawSpeed(), 0.0f);
+                } else if (mc.player.input.pressingLeft) {
+                    mc.player.changeLookDirection(-rocketMan.getYawSpeed(), 0.0f);
+                }
+            }
+            case "Spacebar" -> {
+                boolean inverted = rocketMan.shouldInvertPitch();
+
+                if (inverted) {
+                    if (mc.player.input.pressingForward || mc.player.input.sneaking) {
+                        mc.player.changeLookDirection(0.0f, rocketMan.getPitchSpeed());
+                    } else if (mc.player.input.pressingBack) {
+                        mc.player.changeLookDirection(0.0f, -rocketMan.getPitchSpeed());
+                    }
+                } else {
+                    if (mc.player.input.pressingBack || mc.player.input.sneaking) {
+                        mc.player.changeLookDirection(0.0f, rocketMan.getPitchSpeed());
+                    } else if (mc.player.input.pressingForward) {
+                        mc.player.changeLookDirection(0.0f, -rocketMan.getPitchSpeed());
+                    }
+                }
+
+                if (mc.player.input.pressingRight) {
+                    mc.player.changeLookDirection(rocketMan.getYawSpeed(), 0.0f);
+                } else if (mc.player.input.pressingLeft) {
+                    mc.player.changeLookDirection(-rocketMan.getYawSpeed(), 0.0f);
+                }
+            }
+            case "Auto Use" -> {
+                boolean inverted = rocketMan.shouldInvertPitch();
+
+                if (inverted) {
+                    if (mc.player.input.pressingForward || mc.player.input.sneaking) {
+                        mc.player.changeLookDirection(0.0f, rocketMan.getPitchSpeed());
+                    } else if (mc.player.input.pressingBack || mc.player.input.jumping) {
+                        mc.player.changeLookDirection(0.0f, -rocketMan.getPitchSpeed());
+                    }
+                } else {
+                    if (mc.player.input.pressingBack || mc.player.input.sneaking) {
+                        mc.player.changeLookDirection(0.0f, rocketMan.getPitchSpeed());
+                    } else if (mc.player.input.pressingForward || mc.player.input.jumping) {
+                        mc.player.changeLookDirection(0.0f, -rocketMan.getPitchSpeed());
+                    }
+                }
+
+                if (mc.player.input.pressingRight) {
+                    mc.player.changeLookDirection(rocketMan.getYawSpeed(), 0.0f);
+                } else if (mc.player.input.pressingLeft) {
+                    mc.player.changeLookDirection(-rocketMan.getYawSpeed(), 0.0f);
+                }
+            }
+        }
+
+    }
+}

@@ -8,7 +8,10 @@
     "BookEditScreenAccessor",
     "BookEditScreenMixin",
     "BookScreenMixin",
+    "ClientPlayerEntityMixin",
+    "ElytraSoundInstanceMixin",
     "GameOptionsAccessor",
+    "MinecraftClientMixin",
     "WrittenBookContentsAccessor"
   ],
   "injectors": {
