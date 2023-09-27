@@ -41,7 +41,7 @@ public class ApiHandler {
             req = HttpRequest.newBuilder().uri(new URI(requestString))
                 .header("Accept", "*/*")
                 .method("GET", HttpRequest.BodyPublishers.noBody())
-                .timeout(Duration.ofSeconds(20))
+                .timeout(Duration.ofSeconds(30))
                 .build();
         } catch (URISyntaxException err) {
             sendErrorResponse();
