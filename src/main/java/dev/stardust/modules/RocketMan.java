@@ -74,7 +74,7 @@ public class RocketMan extends Module {
         new IntSetting.Builder()
             .name("Yaw Speed")
             .visible(keyboardControl::get)
-            .sliderRange(1, 42)
+            .sliderRange(0, 42)
             .range(0, 1000)
             .defaultValue(15)
             .build()
@@ -84,7 +84,7 @@ public class RocketMan extends Module {
         new IntSetting.Builder()
             .name("Pitch Speed")
             .visible(keyboardControl::get)
-            .sliderRange(1, 42)
+            .sliderRange(0, 42)
             .range(0, 1000)
             .defaultValue(15)
             .build()
@@ -230,6 +230,7 @@ public class RocketMan extends Module {
             .build()
     );
 
+    private int ticksBusy = 0;
     private int fireworkTicks = 0;
     private int ticksSinceUsed = 0;
     private int ticksSinceWarned = 0;
@@ -443,10 +444,14 @@ public class RocketMan extends Module {
         if (ticksSinceWarned >= 65535) ticksSinceWarned = 0;
         if (ticksSinceNotified >= 65535) ticksSinceNotified = 0;
 
-        ++ticksSinceWarned;
-        ++ticksSinceNotified;
         Item activeItem = mc.player.getActiveItem().getItem();
-        if (activeItem.isFood() || activeItem == Items.BOW || activeItem == Items.TRIDENT && mc.mouse.wasRightButtonClicked()) return;
+        if (activeItem.isFood() || activeItem == Items.BOW || activeItem == Items.TRIDENT && mc.mouse.wasRightButtonClicked()) {
+            ++ticksBusy;
+            return;
+        }else if (ticksBusy >= 20 && mc.player.isFallFlying()) {
+            useFireworkRocket();
+            ticksBusy = 0;
+        }
 
         if (mc.player.isOnGround()) {
             takingOff = false;
@@ -459,6 +464,8 @@ public class RocketMan extends Module {
         }
 
         ++fireworkTicks;
+        ++ticksSinceWarned;
+        ++ticksSinceNotified;
         if (usageMode.get().equals("Auto Use") && mc.player.isFallFlying()) {
             if (fireworkTicks % usageTickRate.get() == 0) {
                 useFireworkRocket();
