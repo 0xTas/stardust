@@ -128,6 +128,15 @@ public class RocketMan extends Module {
             .build()
     );
 
+    private final Setting<Boolean> combatAssist = sgRockets.add(
+        new BoolSetting.Builder()
+            .name("Combat Assist")
+            .description("Automatically launch a rocket after firing arrows, throwing tridents, or eating food.")
+            .defaultValue(true)
+            .onChanged(it -> ticksBusy = 0)
+            .build()
+    );
+
     private final Setting<Boolean> muteRockets = sgSound.add(
         new BoolSetting.Builder()
             .name("Mute Rockets")
@@ -445,10 +454,10 @@ public class RocketMan extends Module {
         if (ticksSinceNotified >= 65535) ticksSinceNotified = 0;
 
         Item activeItem = mc.player.getActiveItem().getItem();
-        if (activeItem.isFood() || activeItem == Items.BOW || activeItem == Items.TRIDENT && mc.mouse.wasRightButtonClicked()) {
+        if (combatAssist.get() && activeItem.isFood() || activeItem == Items.BOW || activeItem == Items.TRIDENT && mc.mouse.wasRightButtonClicked()) {
             ++ticksBusy;
             return;
-        }else if (ticksBusy >= 20 && mc.player.isFallFlying()) {
+        }else if (combatAssist.get() && ticksBusy >= 20 && mc.player.isFallFlying()) {
             useFireworkRocket();
             ticksBusy = 0;
         }
