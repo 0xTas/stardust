@@ -1,18 +1,32 @@
 package dev.stardust.modules;
 
+import java.awt.*;
 import java.util.*;
+import java.io.File;
+import java.util.List;
 import java.time.Instant;
 import java.time.Duration;
+import java.nio.file.Path;
+import java.io.IOException;
+import java.nio.file.Files;
 import dev.stardust.Stardust;
 import net.minecraft.block.*;
 import net.minecraft.text.Text;
+import java.util.stream.Stream;
+import net.minecraft.text.Style;
+import net.minecraft.world.World;
 import javax.annotation.Nullable;
+import java.util.stream.Collectors;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.ClickEvent;
 import dev.stardust.util.StardustUtil;
+import net.minecraft.text.MutableText;
 import dev.stardust.util.StardustUtil.*;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.registry.RegistryKey;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.world.chunk.WorldChunk;
@@ -44,6 +58,7 @@ public class ChatSigns extends Module {
 
     private final SettingGroup modesGroup = settings.createGroup("Modes", true);
     private final SettingGroup formatGroup = settings.createGroup("Formatting", true);
+    private final SettingGroup blacklistGroup = settings.createGroup("SignText Blacklist", true);
 
     private final Setting<ChatMode> chatMode = modesGroup.add(
         new EnumSetting.Builder<ChatMode>()
@@ -87,6 +102,14 @@ public class ChatSigns extends Module {
             .description("Only display text from signs that are either really old, or brand new.")
             .defaultValue(false)
             .visible(showOldSigns::get)
+            .build()
+    );
+
+    private final Setting<Boolean> ignoreNether = modesGroup.add(
+        new BoolSetting.Builder()
+            .name("Ignore Nether")
+            .description("Ignore potentially-old signs in the nether since near highways they're almost all certainly new.")
+            .defaultValue(true)
             .build()
     );
 
@@ -138,26 +161,53 @@ public class ChatSigns extends Module {
         .build()
     );
 
-    private final Setting<Boolean> signBlacklist = modesGroup.add(
+    private final Setting<Boolean> signBlacklist = blacklistGroup.add(
         new BoolSetting.Builder()
             .name("SignText Blacklist")
-            .description("Ignore signs that contain specific text.")
+            .description("Ignore signs that contain specific text (line-separated list in chatsigns-blacklist.txt)")
             .defaultValue(false)
+            .onChanged(it -> {
+                if (it && this.isActive() && checkOrCreateBlacklistFile()) {
+                    this.blacklisted.clear();
+                    initBlacklistText();
+                    if (mc.player != null) {
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."));
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."));
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Toggle the module after updating the blacklist's contents."));
+                    }
+                }
+            })
             .build()
     );
 
-    private final Setting<String> blacklistText = modesGroup.add(
-        new StringSetting.Builder()
-            .name("Blacklist Text")
-            .description("Text to ignore")
-            .defaultValue("")
-            .visible(signBlacklist::get)
+    private final Setting<Boolean> caseSensitive = blacklistGroup.add(
+        new BoolSetting.Builder()
+            .name("Case-sensitive Blacklist")
+            .description("Force matches in the blacklist file to be case-sensitive.")
+            .defaultValue(false)
+            .visible(this.signBlacklist::get)
+            .build()
+    );
+
+    private final Setting<Boolean> openBlacklistFile = blacklistGroup.add(
+        new BoolSetting.Builder()
+            .name("Open Blacklist File")
+            .description("Open the chatsigns-blacklist.txt file.")
+            .defaultValue(false)
+            .visible(this.signBlacklist::get)
+            .onChanged(it -> {
+                if (it) {
+                    if (checkOrCreateBlacklistFile()) openBlacklistFile();
+                    else resetBlacklistFileSetting();
+                }
+            })
             .build()
     );
 
     private int totalTicksEnabled = 0;
     @Nullable private BlockPos lastFocusedSign = null;
     private final HashSet<BlockPos> posSet = new HashSet<>();
+    private final ArrayList<String> blacklisted = new ArrayList<>();
     private final HashMap<BlockPos, Instant> cooldowns = new HashMap<>();
 
     @Nullable
@@ -221,18 +271,22 @@ public class ChatSigns extends Module {
 
         // On 2b2t, this will single-out oak-material signs placed BOTH before January 2015, and AFTER August 2023 (in old chunks).
         // While this will still be useful for identifying old bases for a while,
-        // most old signs are at spawn, and the noise-to-signal ratio there will worsen every single day.
+        // most old signs are at spawn, and the signal-to-noise ratio there will worsen every single day.
         boolean couldBeOld = false;
-        WoodType woodType = WoodType.BAMBOO;
-        Block block = sign.getCachedState().getBlock();
-        if (block instanceof SignBlock signBlock) woodType = signBlock.getWoodType();
-        else if (block instanceof WallSignBlock wallSignBlock) woodType = wallSignBlock.getWoodType();
 
-        if (woodType == WoodType.OAK) {
-            NbtCompound metadata = sign.toInitialChunkDataNbt();
-            if (!metadata.toString().contains("{\"extra\":[{\"") && !lines.isEmpty()) {
-                if (lines.stream().noneMatch(line -> line.contains("2023") || line.endsWith("/23") || line.endsWith("-23"))) {
-                    couldBeOld = !likelyNewChunk(chunk, mc);
+        RegistryKey<World> dimension = mc.world.getRegistryKey();
+        if (dimension != World.NETHER || !ignoreNether.get()) {
+            WoodType woodType = WoodType.BAMBOO;
+            Block block = sign.getCachedState().getBlock();
+            if (block instanceof SignBlock signBlock) woodType = signBlock.getWoodType();
+            else if (block instanceof WallSignBlock wallSignBlock) woodType = wallSignBlock.getWoodType();
+
+            if (woodType == WoodType.OAK) {
+                NbtCompound metadata = sign.toInitialChunkDataNbt();
+                if (!metadata.toString().contains("{\"extra\":[{\"") && !lines.isEmpty()) {
+                    if (lines.stream().noneMatch(line -> line.contains("2023") || line.endsWith("/23") || line.endsWith("-23"))) {
+                        couldBeOld = !likelyNewChunk(chunk, mc, dimension);
+                    }
                 }
             }
         }
@@ -272,18 +326,32 @@ public class ChatSigns extends Module {
         return txt.toString();
     }
 
-    private boolean likelyNewChunk(WorldChunk chunk, MinecraftClient mc) {
-        ChunkPos chunkPos = chunk.getPos();
-
-        BlockPos startPosCopper = chunkPos.getBlockPos(0, 0, 0);
-        BlockPos endPosCopper = chunkPos.getBlockPos(15, 63, 15);
-
-        int copperInChunk = 0;
+    private boolean likelyNewChunk(WorldChunk chunk, MinecraftClient mc, RegistryKey<World> dimension) {
         if (mc.world == null) return false;
-        for (BlockPos block : BlockPos.iterate(startPosCopper, endPosCopper)) {
-            if (copperInChunk >=  13) return true;
-            if (mc.world.getBlockState(block).getBlock() == Blocks.COPPER_ORE) ++copperInChunk;
-        }
+        ChunkPos chunkPos = chunk.getPos();
+        if (dimension == World.NETHER) {
+            BlockPos startPosDebris = chunkPos.getBlockPos(0, 0, 0);
+            BlockPos endPosDebris = chunkPos.getBlockPos(15, 118, 15);
+
+            int newBlocks = 0;
+            for (BlockPos pos : BlockPos.iterate(startPosDebris, endPosDebris)) {
+                if (newBlocks >= 13) return true;
+                Block block = mc.world.getBlockState(pos).getBlock();
+                if (block == Blocks.ANCIENT_DEBRIS || block == Blocks.BLACKSTONE || block == Blocks.BASALT
+                    || block == Blocks.WARPED_NYLIUM || block == Blocks.CRIMSON_NYLIUM || block == Blocks.SOUL_SOIL) ++newBlocks;
+            }
+        } else if (dimension == World.OVERWORLD){
+            BlockPos startPosCopper = chunkPos.getBlockPos(0, 0, 0);
+            BlockPos endPosCopper = chunkPos.getBlockPos(15, 63, 15);
+
+            int newBlocks = 0;
+            for (BlockPos pos : BlockPos.iterate(startPosCopper, endPosCopper)) {
+                if (newBlocks >=  13) return true;
+                Block block = mc.world.getBlockState(pos).getBlock();
+                if (block == Blocks.COPPER_ORE) ++newBlocks; // Copper generates in all overworld biomes except dripstone caves.
+                else if (block == Blocks.DRIPSTONE_BLOCK || block == Blocks.POINTED_DRIPSTONE) ++newBlocks;
+            }
+        }// idk what to do about the end, so we'll detect signs by default. if you don't want it, turn it off in there.
 
         return false;
     }
@@ -292,12 +360,12 @@ public class ChatSigns extends Module {
         if (mc.world == null || signs.isEmpty()) return;
 
         signs.forEach(sign -> {
-            if (signBlacklist.get() && !blacklistText.get().trim().equals("")) {
-                if (Arrays.stream(
-                        sign.getFrontText().getMessages(false))
-                    .anyMatch(msg -> msg.toString().toLowerCase().contains(blacklistText.get().toLowerCase())
-                    )
-                ) return;
+            if (signBlacklist.get() && !this.blacklisted.isEmpty()) {
+                String textOnSign = Arrays.stream(sign.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" ")).trim();
+
+                if (this.caseSensitive.get()) {
+                    if (this.blacklisted.stream().anyMatch(line -> textOnSign.contains(line.trim()))) return;
+                } else if (this.blacklisted.stream().anyMatch(line -> textOnSign.toLowerCase().contains(line.trim().toLowerCase()))) return;
             }
 
             if (chatMode.get() == ChatMode.ESP && posSet.contains(sign.getPos())) return;
@@ -317,10 +385,68 @@ public class ChatSigns extends Module {
         });
     }
 
+    private boolean checkOrCreateBlacklistFile() {
+        Path meteorFolder = FabricLoader.getInstance().getGameDir().resolve("meteor-client");
+        File blackListFile = meteorFolder.resolve("chatsigns-blacklist.txt").toFile();
+
+        if (!blackListFile.exists()) {
+            try {
+                if (blackListFile.createNewFile()) {
+                    if (mc.player != null) {
+                        mc.player.sendMessage(
+                            Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created chatsigns-blacklist.txt in meteor-client folder.")
+                        );
+                        Text msg = Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Click §2§lhere §r§7to open the file.");
+                        Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, blackListFile.getAbsolutePath()));
+
+                        MutableText txt = msg.copyContentOnly().setStyle(style);
+                        mc.player.sendMessage(txt);
+                    }
+                    return true;
+                }
+            } catch (IOException | SecurityException err) {
+                Stardust.LOG.error("[Stardust] Error creating chatsigns-blacklist.txt! - "+err);
+            }
+        } else return true;
+
+        return false;
+    }
+
+    private void initBlacklistText() {
+        Path meteorFolder = FabricLoader.getInstance().getGameDir().resolve("meteor-client");
+        File blackListFile = meteorFolder.resolve("chatsigns-blacklist.txt").toFile();
+
+        try(Stream<String> lineStream = Files.lines(blackListFile.toPath())) {
+            this.blacklisted.addAll(lineStream.toList());
+        }catch (IOException err) {
+            Stardust.LOG.error("[Stardust] "+err);
+        }
+    }
+
+    private void openBlacklistFile() {
+        Path meteorFolder = FabricLoader.getInstance().getGameDir().resolve("meteor-client");
+        File blackListFile = meteorFolder.resolve("chatsigns-blacklist.txt").toFile();
+
+        EventQueue.invokeLater(() -> {
+            try {
+                Desktop.getDesktop().open(blackListFile);
+            }catch (IOException err) {
+                Stardust.LOG.error("[Stardust] Failed to open chatsigns-blacklist.txt - "+err);
+            }
+        });
+
+        this.openBlacklistFile.set(false);
+    }
+
+    private void resetBlacklistFileSetting() {
+        this.openBlacklistFile.set(false);
+    }
+
 
     @Override
     public void onActivate() {
         if (mc.player == null || mc.world == null) return;
+        if (this.signBlacklist.get() && checkOrCreateBlacklistFile()) initBlacklistText();
 
         BlockPos pos = mc.player.getBlockPos();
         if (chatMode.get() == ChatMode.ESP || chatMode.get() == ChatMode.Both) {
@@ -348,6 +474,7 @@ public class ChatSigns extends Module {
     public void onDeactivate() {
         this.posSet.clear();
         this.cooldowns.clear();
+        this.blacklisted.clear();
         this.totalTicksEnabled = 0;
     }
 
