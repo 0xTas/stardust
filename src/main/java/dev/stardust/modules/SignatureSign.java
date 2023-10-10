@@ -13,9 +13,11 @@ import java.util.stream.Stream;
 import net.minecraft.text.Text;
 import net.minecraft.text.Style;
 import net.minecraft.util.DyeColor;
+import java.util.stream.Collectors;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.MutableText;
 import dev.stardust.util.StardustUtil;
+import net.minecraft.sound.SoundEvents;
 import java.time.format.DateTimeFormatter;
 import net.minecraft.block.entity.SignText;
 import org.apache.commons.codec.binary.Hex;
@@ -272,7 +274,7 @@ public class SignatureSign extends Module {
     private final Setting<Boolean> redo = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
             .name("Redo Last Sign")
-            .description("Click this if your last story sign failed to update with the server. (Not when sign is ghost block)")
+            .description("Click this to redo your last-placed story sign. Useful if you misplaced it.")
             .defaultValue(false)
             .visible(storyMode::get)
             .build()
@@ -489,12 +491,11 @@ public class SignatureSign extends Module {
 
     private void initStoryTextFromFile() {
         Path meteorFolder = FabricLoader.getInstance().getGameDir().resolve("meteor-client");
-
         File file = meteorFolder.resolve("storysign.txt").toFile();
 
         if (file.exists()) {
             try(Stream<String> lineStream = Files.lines(file.toPath())) {
-                storyText.addAll(Arrays.stream(String.join(" ", lineStream.toList().stream().map(String::trim).toList()).split(" ")).toList());
+                storyText.addAll(Arrays.stream(lineStream.collect(Collectors.joining(" ")).split(" ")).toList());
             } catch (IOException err) {
                 Stardust.LOG.error("[Stardust] "+err);
             }
@@ -541,18 +542,23 @@ public class SignatureSign extends Module {
             StringBuilder line = new StringBuilder();
 
             for (int i = storyIndex; i < storyText.size(); i++) {
-                if (textRenderer.getWidth(line.toString()) >= 85) break;
+                if (storyText.get(i).trim().isEmpty()) {
+                    ++storyIndex;
+                    ++lastIndexAmount;
+                    continue;
+                }
+                if (textRenderer.getWidth(line.toString()) >= 87) break;
 
-                if (textRenderer.getWidth(storyText.get(i).trim()) > 85) {
+                if (textRenderer.getWidth(storyText.get(i).trim()) > 87) {
                     if (!line.isEmpty()) break;
-                    line.append(textRenderer.trimToWidth(storyText.get(i).trim(), 83));
+                    line.append(textRenderer.trimToWidth(storyText.get(i).trim(), 85));
 
                     ++storyIndex;
                     ++lastIndexAmount;
                     break;
                 }
 
-                if (textRenderer.getWidth(line + storyText.get(i).trim()) > 85) break;
+                if (textRenderer.getWidth(line + storyText.get(i).trim()) > 87) break;
 
                 if (line.isEmpty()) line.append(storyText.get(i).trim());
                 else line.append(" ").append(storyText.get(i).trim());
@@ -570,8 +576,9 @@ public class SignatureSign extends Module {
             lastLines.addAll(storyLines);
             if (mc.player != null) {
                 mc.player.sendMessage(
-                    Text.of("§8<"+StardustUtil.rCC()+"✨§8> §7Sign story complete.")
+                    Text.of("§8<"+StardustUtil.rCC()+"✨§8> §7§oSign story complete.")
                 );
+                mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 0.77f, 0.77f);
             }
         }
 
