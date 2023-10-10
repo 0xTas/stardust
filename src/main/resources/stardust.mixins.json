@@ -18,6 +18,7 @@
     "defaultRequire": 1
   },
   "mixins": [
-    "DoorBlockMixin"
+    "DoorBlockMixin",
+    "GoatHornItemMixin"
   ]
 }
