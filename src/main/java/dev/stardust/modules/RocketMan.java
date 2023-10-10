@@ -74,7 +74,7 @@ public class RocketMan extends Module {
         new IntSetting.Builder()
             .name("Yaw Speed")
             .visible(keyboardControl::get)
-            .sliderRange(0, 42)
+            .sliderRange(0, 50)
             .range(0, 1000)
             .defaultValue(15)
             .build()
@@ -84,7 +84,7 @@ public class RocketMan extends Module {
         new IntSetting.Builder()
             .name("Pitch Speed")
             .visible(keyboardControl::get)
-            .sliderRange(0, 42)
+            .sliderRange(0, 50)
             .range(0, 1000)
             .defaultValue(15)
             .build()
@@ -121,8 +121,8 @@ public class RocketMan extends Module {
         new IntSetting.Builder()
             .name("Rocket Usage-Rate")
             .description("How often (in ticks) to use firework rockets.")
-            .range(2, 200)
-            .sliderRange(2, 100)
+            .range(2, 1200)
+            .sliderRange(2, 200)
             .defaultValue(50)
             .visible(() -> usageMode.get().equals("Auto Use"))
             .build()
@@ -244,6 +244,7 @@ public class RocketMan extends Module {
     private int ticksSinceUsed = 0;
     private int ticksSinceWarned = 0;
     private int ticksSinceNotified = 0;
+    private int tridentThrowGracePeriod = 0;
     private boolean justUsed = false;
     private boolean takingOff = false;
 
@@ -457,7 +458,14 @@ public class RocketMan extends Module {
         if (combatAssist.get() && activeItem.isFood() || activeItem == Items.BOW || activeItem == Items.TRIDENT && mc.mouse.wasRightButtonClicked()) {
             ++ticksBusy;
             return;
-        }else if (combatAssist.get() && ticksBusy >= 20 && mc.player.isFallFlying()) {
+        }else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isFallFlying() && activeItem == Items.TRIDENT) {
+            ++tridentThrowGracePeriod;
+            if (tridentThrowGracePeriod >= 20) {
+                ticksBusy = 0;
+                useFireworkRocket();
+                tridentThrowGracePeriod = 0;
+            }
+        } else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isFallFlying() && activeItem != Items.TRIDENT) {
             useFireworkRocket();
             ticksBusy = 0;
         }
