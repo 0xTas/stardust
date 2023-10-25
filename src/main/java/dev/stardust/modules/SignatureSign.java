@@ -54,6 +54,23 @@ public class SignatureSign extends Module {
             .build()
     );
 
+    private final Setting<Boolean> secretSign = sgMode.add(
+        new BoolSetting.Builder()
+            .name("Secret Signs")
+            .description("Pad each line with spaces to hide your message from being rendered. Will then only be viewable via metadata (ChatSigns etc.)")
+            .defaultValue(false)
+            .build()
+    );
+
+    private final Setting<Boolean> truncateLines = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Truncate Lines")
+            .description("Truncate text lines to fit on the renderable portion of the sign.")
+            .defaultValue(true)
+            .visible(() -> !secretSign.get())
+            .build()
+    );
+
     private final Setting<String> line1Mode = sgLine1.add(
         new ProvidedStringSetting.Builder()
             .name("Line 1 Mode")
@@ -70,7 +87,7 @@ public class SignatureSign extends Module {
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(1))
             .onChanged(txt -> {
-                if (this.inputTooLong(txt)) {
+                if (truncateLines.isVisible() && truncateLines.get() && this.inputTooLong(txt)) {
                     this.restoreValidInput(1);
                     if (this.mc.player != null) {
                         this.mc.player.sendMessage(
@@ -120,7 +137,7 @@ public class SignatureSign extends Module {
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(2))
             .onChanged(txt -> {
-                if (this.inputTooLong(txt)) {
+                if (truncateLines.isVisible() && truncateLines.get() && this.inputTooLong(txt)) {
                     this.restoreValidInput(2);
                     if (this.mc.player != null) {
                         this.mc.player.sendMessage(
@@ -170,7 +187,7 @@ public class SignatureSign extends Module {
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(3))
             .onChanged(txt -> {
-                if (this.inputTooLong(txt)) {
+                if (truncateLines.isVisible() && truncateLines.get() && this.inputTooLong(txt)) {
                     this.restoreValidInput(3);
                     if (this.mc.player != null) {
                         this.mc.player.sendMessage(
@@ -220,7 +237,7 @@ public class SignatureSign extends Module {
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(4))
             .onChanged(txt -> {
-                if (this.inputTooLong(txt)) {
+                if (truncateLines.isVisible() && truncateLines.get() && this.inputTooLong(txt)) {
                     this.restoreValidInput(4);
                     if (this.mc.player != null) {
                         this.mc.player.sendMessage(
@@ -437,6 +454,20 @@ public class SignatureSign extends Module {
             }
         }
 
+        if (secretSign.get()) {
+            signText = signText.stream().map(line -> {
+                StringBuilder secretSpaces = new StringBuilder();
+                secretSpaces.append("              ");
+                while (!inputTooLong(secretSpaces.toString())) {
+                    secretSpaces.append(" ");
+                }
+                secretSpaces.append(line);
+                return secretSpaces.toString();
+            }).collect(Collectors.toList());
+            return signText;
+        }
+
+        if (!truncateLines.get()) return signText;
         for (int i = 0; i < signText.size(); i++) {
             if (this.inputTooLong(signText.get(i))) {
                 if (mc.player != null) {
