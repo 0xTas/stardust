@@ -38,6 +38,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.block.entity.HangingSignBlockEntity;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
+import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import meteordevelopment.meteorclient.events.world.ChunkDataEvent;
 
 
@@ -109,7 +110,16 @@ public class ChatSigns extends Module {
         new BoolSetting.Builder()
             .name("Ignore Nether")
             .description("Ignore potentially-old signs in the nether since near highways they're almost all certainly new.")
+            .visible(showOldSigns::get)
             .defaultValue(true)
+            .build()
+    );
+
+    private final Setting<Boolean> ignoreDuplicates = modesGroup.add(
+        new BoolSetting.Builder()
+            .name("Ignore Duplicates")
+            .description("Ignore duplicate signs instead of displaying them with a counter.")
+            .defaultValue(false)
             .build()
     );
 
@@ -209,6 +219,7 @@ public class ChatSigns extends Module {
     private final HashSet<BlockPos> posSet = new HashSet<>();
     private final ArrayList<String> blacklisted = new ArrayList<>();
     private final HashMap<BlockPos, Instant> cooldowns = new HashMap<>();
+    private final HashMap<String, Integer> signMessages = new HashMap<>();
 
     @Nullable
     private BlockPos getTargetedSign() {
@@ -217,7 +228,7 @@ public class ChatSigns extends Module {
         int viewDistance = mc.options.getViewDistance().getValue();
 
         double maxRangeBlocks = viewDistance * 16;
-        HitResult trace = player.raycast(maxRangeBlocks, 0.0f, true);
+        HitResult trace = player.raycast(maxRangeBlocks, mc.getTickDelta(), true);
         if (trace != null) {
             BlockPos pos = ((BlockHitResult) trace).getBlockPos();
             if (mc.world.getBlockEntity(pos) instanceof SignBlockEntity) return pos;
@@ -284,7 +295,7 @@ public class ChatSigns extends Module {
             if (woodType == WoodType.OAK) {
                 NbtCompound metadata = sign.toInitialChunkDataNbt();
                 if (!metadata.toString().contains("{\"extra\":[{\"") && !lines.isEmpty()) {
-                    if (lines.stream().noneMatch(line -> line.contains("2023") || line.endsWith("/23") || line.endsWith("-23"))) {
+                    if (lines.stream().noneMatch(line -> line.contains("2023") || line.contains("/23") || line.contains("-23"))) {
                         couldBeOld = !likelyNewChunk(chunk, mc, dimension);
                     }
                 }
@@ -360,9 +371,10 @@ public class ChatSigns extends Module {
         if (mc.world == null || signs.isEmpty()) return;
 
         signs.forEach(sign -> {
-            if (signBlacklist.get() && !this.blacklisted.isEmpty()) {
-                String textOnSign = Arrays.stream(sign.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" ")).trim();
+            String textOnSign = Arrays.stream(sign.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" ")).trim();
+            if (this.signMessages.containsKey(textOnSign) && ignoreDuplicates.get()) return;
 
+            if (signBlacklist.get() && !this.blacklisted.isEmpty()) {
                 if (this.caseSensitive.get()) {
                     if (this.blacklisted.stream().anyMatch(line -> textOnSign.contains(line.trim()))) return;
                 } else if (this.blacklisted.stream().anyMatch(line -> textOnSign.toLowerCase().contains(line.trim().toLowerCase()))) return;
@@ -381,7 +393,15 @@ public class ChatSigns extends Module {
 
             posSet.add(sign.getPos());
             if (msg.isBlank()) return;
-            if (mc.player != null) mc.player.sendMessage(Text.of(msg));
+            if (this.signMessages.containsKey(textOnSign)) {
+                int timesSeen = this.signMessages.get(textOnSign) + 1;
+                this.signMessages.put(textOnSign, timesSeen);
+                msg = msg + " " + "§8[§7§ox§4§o"+ timesSeen + "§r§8]";
+                ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(Text.of(msg), textOnSign.hashCode());
+            } else {
+                this.signMessages.put(textOnSign, 1);
+                ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(Text.of(msg), textOnSign.hashCode());
+            }
         });
     }
 
@@ -475,6 +495,7 @@ public class ChatSigns extends Module {
         this.posSet.clear();
         this.cooldowns.clear();
         this.blacklisted.clear();
+        this.signMessages.clear();
         this.totalTicksEnabled = 0;
     }
 
@@ -494,9 +515,10 @@ public class ChatSigns extends Module {
         if (chatMode.get() == ChatMode.ESP) return;
         if (mc.world == null || mc.player == null) return;
         if (this.totalTicksEnabled >= 65535) this.totalTicksEnabled = 0;
+        else if (this.totalTicksEnabled % 6000 == 0) this.signMessages.clear();
 
-        ++totalTicksEnabled;
-        if (totalTicksEnabled % 5 == 0) {
+        ++this.totalTicksEnabled;
+        if (this.totalTicksEnabled % 5 == 0) {
             BlockPos targetedSign = getTargetedSign();
             if (targetedSign == null) {
                 this.lastFocusedSign = null;
