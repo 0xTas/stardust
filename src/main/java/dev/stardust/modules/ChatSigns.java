@@ -447,13 +447,28 @@ public class ChatSigns extends Module {
         Path meteorFolder = FabricLoader.getInstance().getGameDir().resolve("meteor-client");
         File blackListFile = meteorFolder.resolve("chatsigns-blacklist.txt").toFile();
 
-        EventQueue.invokeLater(() -> {
+        if (Desktop.isDesktopSupported()) {
+            EventQueue.invokeLater(() -> {
+                try {
+                    Desktop.getDesktop().open(blackListFile);
+                }catch (IOException err) {
+                    Stardust.LOG.error("[Stardust] Failed to open chatsigns-blacklist.txt - "+err);
+                }
+            });
+        } else {
             try {
-                Desktop.getDesktop().open(blackListFile);
-            }catch (IOException err) {
+                Runtime runtime = Runtime.getRuntime();
+                if (System.getenv("OS") == null) return;
+                if (System.getenv("OS").contains("Windows")) {
+                    runtime.exec("rundll32 url.dll, FileProtocolHandler " + blackListFile.getAbsolutePath());
+                }else {
+                    runtime.exec("xdg-open " + blackListFile.getAbsolutePath());
+                }
+            } catch (IOException err) {
                 Stardust.LOG.error("[Stardust] Failed to open chatsigns-blacklist.txt - "+err);
+                if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open chatsigns-blacklist.txt§7."));
             }
-        });
+        }
 
         this.openBlacklistFile.set(false);
     }
