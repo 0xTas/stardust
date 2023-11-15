@@ -279,6 +279,14 @@ public class SignatureSign extends Module {
             .build()
     );
 
+    private final Setting<Boolean> shortenedMonth = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Shortened Month")
+            .description("Shorten the month to its abbreviation")
+            .defaultValue(false)
+            .build()
+    );
+
     private final Setting<Boolean> autoDisable = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
             .name("Auto Disable")
@@ -625,8 +633,13 @@ public class SignatureSign extends Module {
         DateTimeFormatter yyyymmdd = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         DateTimeFormatter yyyyddmm = DateTimeFormatter.ofPattern("yyyy/dd/MM");
 
-        String currentMonth = (currentDate.getMonth().name().charAt(0)
-            + currentDate.getMonth().name().substring(1).toLowerCase());
+        String currentMonth = "" + currentDate.getMonth().name().charAt(0);
+        if (shortenedMonth.get()) {
+            currentMonth += currentDate.getMonth().name().toLowerCase().substring(1,3); // :3
+        }
+        else{
+            currentMonth += currentDate.getMonth().name().substring(1).toLowerCase();
+        }
 
         switch (line) {
             case 1 -> {
