@@ -1,5 +1,8 @@
 package dev.stardust.util;
 
+import net.minecraft.item.Items;
+import net.minecraft.item.ItemStack;
+import net.minecraft.enchantment.Enchantments;
 import io.netty.util.internal.ThreadLocalRandom;
 
 
@@ -36,7 +39,7 @@ public class StardustUtil {
     /** Random Color-Code */
     public static String rCC() {
         TextColor[] colors = TextColor.values();
-        int luckyIndex = ThreadLocalRandom.current().nextInt(0, colors.length);
+        int luckyIndex = ThreadLocalRandom.current().nextInt(colors.length);
 
         String color = colors[luckyIndex].label;
 
@@ -46,50 +49,111 @@ public class StardustUtil {
         return color;
     }
 
-    public static String patternNameFromID(String id) {
-        return switch (id) {
-            case "b" -> "Base";
-            case "bs" -> "Base Fess (Bottom Stripe)";
-            case "ts" -> "Chief (Top Stripe)";
-            case "ls" -> "Pale Dexter (Left Stripe)";
-            case "rs" -> "Pale Sinister (Right Stripe)";
-            case "cs" -> "Pale (Center Vertical Stripe)";
-            case "ms" -> "Fess (Middle Horizontal Stripe)";
-            case "drs" -> "Bend (Down Right Stripe)";
-            case "dls" -> "Bend Sinister (Down Left Stripe)";
-            case "ss" -> "Paly (Small Vertical Stripes)";
-            case "cr" -> "Saltire (Diagonal Cross [X])";
-            case "sc" -> "Cross (Square Cross [+])";
-            case "ld" -> "Per Bend Sinister (Left of Diagonal)";
-            case "rud" -> "Per Bend (Right of Upside-down Diagonal)";
-            case "lud" -> "Per Bend Inverted (Left of Upside-Down Diagonal)";
-            case "rd" -> "Per Bend Sinister Inverted (Right of Diagonal)";
-            case "vh" -> "Per Pale (Vertical Half Left)";
-            case "vhr" -> "Per Pale Inverted (Vertical Half Right)";
-            case "hh" -> "Per Fess (Horizontal Half Top)";
-            case "hhb" -> "Per Fess Inverted (Horizontal Half Bottom)";
-            case "bl" -> "Base Dexter Canton (Bottom Left Corner)";
-            case "br" -> "Base Sinister Canton (Bottom Right Corner)";
-            case "tl" -> "Chief Dexter Canton (Top Left Corner)";
-            case "tr" -> "Chief Sinister Canton (Top Right Corner)";
-            case "bt" -> "Chevron (Bottom Triangle)";
-            case "tt" -> "Inverted Chevron (Top Triangle)";
-            case "bts" -> "Base Indented (Bottom Sawtooth)";
-            case "tts" -> "Chief Indented (Top Sawtooth)";
-            case "mc" -> "Roundel (Middle Circle)";
-            case "mr" -> "Lozenge (Middle Rhombus)";
-            case "bo" -> "Bordure (Border)";
-            case "cbo" -> "Bordure Indented (Curly Border)";
-            case "bri" -> "Field Masoned (Brick)";
-            case "gra" -> "Gradient";
-            case "gru" -> "Base Gradient";
-            case "cre" -> "Creeper Charge";
-            case "sku" -> "Skull Charge";
-            case "flo" -> "Flower Charge";
-            case "moj" -> "Thing (Mojang)";
-            case "glb" -> "Globe";
-            case "pig" -> "Sount (Piglin)";
-            default -> "Oasis Sigil";
+    public static ItemStack chooseMenuIcon() {
+        int luckyIndex = ThreadLocalRandom.current().nextInt(menuIcons.length);
+
+        return menuIcons[luckyIndex];
+    }
+
+    private static final ItemStack[] discIcons = {
+        Items.MUSIC_DISC_5.getDefaultStack(),
+        Items.MUSIC_DISC_11.getDefaultStack(),
+        Items.MUSIC_DISC_13.getDefaultStack(),
+        Items.MUSIC_DISC_CAT.getDefaultStack(),
+        Items.MUSIC_DISC_FAR.getDefaultStack(),
+        Items.MUSIC_DISC_MALL.getDefaultStack(),
+        Items.MUSIC_DISC_STAL.getDefaultStack(),
+        Items.MUSIC_DISC_WARD.getDefaultStack(),
+        Items.MUSIC_DISC_WAIT.getDefaultStack(),
+        Items.MUSIC_DISC_CHIRP.getDefaultStack(),
+        Items.MUSIC_DISC_STRAD.getDefaultStack(),
+        Items.MUSIC_DISC_RELIC.getDefaultStack(),
+        Items.MUSIC_DISC_BLOCKS.getDefaultStack(),
+        Items.MUSIC_DISC_MELLOHI.getDefaultStack(),
+        Items.MUSIC_DISC_PIGSTEP.getDefaultStack(),
+        Items.MUSIC_DISC_OTHERSIDE.getDefaultStack(),
+    };
+    private static final ItemStack[] doorIcons = {
+        Items.OAK_DOOR.getDefaultStack(),
+        Items.BIRCH_DOOR.getDefaultStack(),
+        Items.BAMBOO_DOOR.getDefaultStack(),
+        Items.CHERRY_DOOR.getDefaultStack(),
+        Items.JUNGLE_DOOR.getDefaultStack(),
+        Items.ACACIA_DOOR.getDefaultStack(),
+        Items.SPRUCE_DOOR.getDefaultStack(),
+        Items.WARPED_DOOR.getDefaultStack(),
+        Items.CRIMSON_DOOR.getDefaultStack(),
+        Items.MANGROVE_DOOR.getDefaultStack(),
+        Items.DARK_OAK_DOOR.getDefaultStack(),
+    };
+    private static final ItemStack[] menuIcons = {
+        Items.CAKE.getDefaultStack(),
+        Items.BEDROCK.getDefaultStack(),
+        Items.BARRIER.getDefaultStack(),
+        Items.GOAT_HORN.getDefaultStack(),
+        Items.DRAGON_EGG.getDefaultStack(),
+        Items.FILLED_MAP.getDefaultStack(),
+        Items.PINK_TULIP.getDefaultStack(),
+        Items.TURTLE_EGG.getDefaultStack(),
+        Items.NETHER_STAR.getDefaultStack(),
+        Items.WITHER_ROSE.getDefaultStack(),
+        Items.PINK_PETALS.getDefaultStack(),
+        Items.WARPED_SIGN.getDefaultStack(),
+        Items.CHERRY_SIGN.getDefaultStack(),
+        Items.WRITTEN_BOOK.getDefaultStack(),
+        Items.DAMAGED_ANVIL.getDefaultStack(),
+        Items.CHERRY_SAPLING.getDefaultStack(),
+        Items.JACK_O_LANTERN.getDefaultStack(),
+        Items.FIREWORK_ROCKET.getDefaultStack(),
+        Items.TOTEM_OF_UNDYING.getDefaultStack(),
+        Items.LIME_SHULKER_BOX.getDefaultStack(),
+        Items.AMETHYST_CLUSTER.getDefaultStack(),
+        Items.FLOWERING_AZALEA.getDefaultStack(),
+        Items.PINK_SHULKER_BOX.getDefaultStack(),
+        Items.GILDED_BLACKSTONE.getDefaultStack(),
+        Items.HEART_POTTERY_SHERD.getDefaultStack(),
+        Items.LIGHT_BLUE_SHULKER_BOX.getDefaultStack(),
+        Items.ENCHANTED_GOLDEN_APPLE.getDefaultStack(),
+        Items.HEARTBREAK_POTTERY_SHERD.getDefaultStack(),
+        discIcons[ThreadLocalRandom.current().nextInt(discIcons.length)],
+        doorIcons[ThreadLocalRandom.current().nextInt(doorIcons.length)],
+        getCustomIcons()[ThreadLocalRandom.current().nextInt(getCustomIcons().length)]
+    };
+
+    private static ItemStack[] getCustomIcons() {
+        ItemStack enchantedPick = new ItemStack(
+            ThreadLocalRandom.current().nextInt(2) == 0 ? Items.DIAMOND_PICKAXE : Items.NETHERITE_PICKAXE);
+        enchantedPick.addEnchantment(Enchantments.MENDING, 1);
+
+        ItemStack sword32k = new ItemStack(
+            ThreadLocalRandom.current().nextInt(2) == 0 ? Items.DIAMOND_SWORD : Items.WOODEN_SWORD);
+        sword32k.addEnchantment(Enchantments.SHARPNESS, 32767);
+
+        ItemStack illegalBow = new ItemStack(Items.BOW);
+        illegalBow.addEnchantment(Enchantments.MENDING, 1);
+        illegalBow.addEnchantment(Enchantments.INFINITY, 1);
+
+        ItemStack bindingPumpkin = new ItemStack(Items.CARVED_PUMPKIN);
+        bindingPumpkin.addEnchantment(Enchantments.BINDING_CURSE, 1);
+
+        ItemStack[] enchantedGlass = new ItemStack[] {
+            Items.GLASS.getDefaultStack(),
+            Items.RED_STAINED_GLASS.getDefaultStack(),
+            Items.CYAN_STAINED_GLASS.getDefaultStack(),
+            Items.LIME_STAINED_GLASS.getDefaultStack(),
+            Items.PINK_STAINED_GLASS.getDefaultStack(),
+            Items.WHITE_STAINED_GLASS.getDefaultStack(),
+            Items.BLACK_STAINED_GLASS.getDefaultStack(),
+            Items.LIGHT_BLUE_STAINED_GLASS.getDefaultStack(),
+        };
+
+        for (ItemStack g : enchantedGlass) {
+            g.addEnchantment(Enchantments.MENDING, 1);
+        }
+
+        return new ItemStack[] {
+            enchantedPick, sword32k, illegalBow, bindingPumpkin,
+            enchantedGlass[ThreadLocalRandom.current().nextInt(enchantedGlass.length)]
         };
     }
 }

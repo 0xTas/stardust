@@ -3,8 +3,8 @@ package dev.stardust;
 import org.slf4j.Logger;
 import dev.stardust.modules.*;
 import dev.stardust.commands.*;
-import net.minecraft.item.Items;
 import com.mojang.logging.LogUtils;
+import dev.stardust.util.StardustUtil;
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.commands.Commands;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
@@ -17,7 +17,7 @@ import meteordevelopment.meteorclient.systems.modules.Category;
  **/
 public class Stardust extends MeteorAddon {
     public static final Logger LOG = LogUtils.getLogger();
-    public static final Category CATEGORY = new Category("Stardust", Items.NETHER_STAR.getDefaultStack());
+    public static final Category CATEGORY = new Category("Stardust", StardustUtil.chooseMenuIcon());
 
     @Override
     public void onInitialize() {
