@@ -1,6 +1,5 @@
 package dev.stardust.mixin;
 
-import java.util.Objects;
 import java.util.ArrayList;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.*;
@@ -28,7 +27,6 @@ public abstract class BookEditScreenMixin extends Screen {
 
     // See BookTools.java
     protected BookEditScreenMixin(Text title) { super(title); }
-
 
     @Unique
     private boolean didFormatPage = false;
@@ -67,7 +65,7 @@ public abstract class BookEditScreenMixin extends Screen {
         int offset = 0;
         boolean odd = false;
         for (StardustUtil.TextColor color : StardustUtil.TextColor.values()) {
-            if (Objects.equals(color.label, "")) continue;
+            if (color.label.isEmpty()) continue;
 
             this.buttons.add(
                 this.addDrawableChild(
@@ -85,7 +83,7 @@ public abstract class BookEditScreenMixin extends Screen {
         }
 
         for (StardustUtil.TextFormat format : StardustUtil.TextFormat.values()) {
-            if (Objects.equals(format.label, "")) continue;
+            if (format.label.isEmpty()) continue;
 
             this.buttons.add(
                 this.addDrawableChild(

@@ -1,7 +1,6 @@
 package dev.stardust.modules;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import dev.stardust.Stardust;
 import net.minecraft.text.Text;
@@ -59,6 +58,53 @@ public class BannerData extends Module {
     private int totalTicksEnabled = 0;
     private BlockPos lastEventPos = new BlockPos(0,0,0);
 
+    private String patternNameFromID(String id) {
+        return switch (id) {
+            case "b" -> "Base";
+            case "bs" -> "Base Fess (Bottom Stripe)";
+            case "ts" -> "Chief (Top Stripe)";
+            case "ls" -> "Pale Dexter (Left Stripe)";
+            case "rs" -> "Pale Sinister (Right Stripe)";
+            case "cs" -> "Pale (Center Vertical Stripe)";
+            case "ms" -> "Fess (Middle Horizontal Stripe)";
+            case "drs" -> "Bend (Down Right Stripe)";
+            case "dls" -> "Bend Sinister (Down Left Stripe)";
+            case "ss" -> "Paly (Small Vertical Stripes)";
+            case "cr" -> "Saltire (Diagonal Cross [X])";
+            case "sc" -> "Cross (Square Cross [+])";
+            case "ld" -> "Per Bend Sinister (Left of Diagonal)";
+            case "rud" -> "Per Bend (Right of Upside-down Diagonal)";
+            case "lud" -> "Per Bend Inverted (Left of Upside-Down Diagonal)";
+            case "rd" -> "Per Bend Sinister Inverted (Right of Diagonal)";
+            case "vh" -> "Per Pale (Vertical Half Left)";
+            case "vhr" -> "Per Pale Inverted (Vertical Half Right)";
+            case "hh" -> "Per Fess (Horizontal Half Top)";
+            case "hhb" -> "Per Fess Inverted (Horizontal Half Bottom)";
+            case "bl" -> "Base Dexter Canton (Bottom Left Corner)";
+            case "br" -> "Base Sinister Canton (Bottom Right Corner)";
+            case "tl" -> "Chief Dexter Canton (Top Left Corner)";
+            case "tr" -> "Chief Sinister Canton (Top Right Corner)";
+            case "bt" -> "Chevron (Bottom Triangle)";
+            case "tt" -> "Inverted Chevron (Top Triangle)";
+            case "bts" -> "Base Indented (Bottom Sawtooth)";
+            case "tts" -> "Chief Indented (Top Sawtooth)";
+            case "mc" -> "Roundel (Middle Circle)";
+            case "mr" -> "Lozenge (Middle Rhombus)";
+            case "bo" -> "Bordure (Border)";
+            case "cbo" -> "Bordure Indented (Curly Border)";
+            case "bri" -> "Field Masoned (Brick)";
+            case "gra" -> "Gradient";
+            case "gru" -> "Base Gradient";
+            case "cre" -> "Creeper Charge";
+            case "sku" -> "Skull Charge";
+            case "flo" -> "Flower Charge";
+            case "moj" -> "Thing (Mojang)";
+            case "glb" -> "Globe";
+            case "pig" -> "Snout (Piglin)";
+            default -> "Oasis Sigil";
+        };
+    }
+
 
     @Override
     public void onDeactivate() {
@@ -96,7 +142,7 @@ public class BannerData extends Module {
                 StringBuilder patternsList = new StringBuilder();
 
                 String cc = flairColor.get().label;
-                if (Objects.equals(cc, TextColor.Random.label)) {
+                if (cc.equals(TextColor.Random.label)) {
                     cc = StardustUtil.rCC();
                 }
                 if (!bannerName.trim().isEmpty()) {
@@ -119,7 +165,7 @@ public class BannerData extends Module {
 
                     patternsList.append(cc).append("   ◦ ").append("§7")
                         .append(txtFormat).append(patternColor).append(" ")
-                        .append(StardustUtil.patternNameFromID(patternEntry.getFirst().value().getId())).append("\n");
+                        .append(patternNameFromID(patternEntry.getFirst().value().getId())).append("\n");
                 }
 
                 String bannerData = patternsList.toString().trim();

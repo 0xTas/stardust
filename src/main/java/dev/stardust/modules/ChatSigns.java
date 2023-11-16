@@ -7,7 +7,6 @@ import java.util.List;
 import java.time.Instant;
 import java.time.Duration;
 import java.nio.file.Path;
-import java.io.IOException;
 import java.nio.file.Files;
 import dev.stardust.Stardust;
 import net.minecraft.block.*;
@@ -316,7 +315,6 @@ public class ChatSigns extends Module {
             txt.append("§8<§o").append(StardustUtil.rCC()).append("✨§r§8> ");
 
             txt.append("§8[§4Old§7..§a?§8] ");
-
             if (chatFormat.get()) txt.append("\n     ");
 
             txt.append(oldSignColor.get().label).append(oldSignFormat.get().label)
@@ -381,11 +379,9 @@ public class ChatSigns extends Module {
             }
 
             if (chatMode.get() == ChatMode.ESP && posSet.contains(sign.getPos())) return;
-            if (chatMode.get() == ChatMode.Targeted || chatMode.get() == ChatMode.Both) {
+            if (chatMode.get() == ChatMode.Both) {
                 if (posSet.contains(sign.getPos())) {
-                    if (chatMode.get() == ChatMode.Both) {
-                        if (!sign.getPos().equals(this.lastFocusedSign)) return;
-                    }
+                    if (!sign.getPos().equals(this.lastFocusedSign)) return;
                 }
             }
 
@@ -393,7 +389,7 @@ public class ChatSigns extends Module {
 
             posSet.add(sign.getPos());
             if (msg.isBlank()) return;
-            if (this.signMessages.containsKey(textOnSign)) {
+            if (this.signMessages.containsKey(textOnSign) && !sign.getPos().equals(this.lastFocusedSign)) {
                 int timesSeen = this.signMessages.get(textOnSign) + 1;
                 this.signMessages.put(textOnSign, timesSeen);
                 msg = msg + " " + "§8[§7§ox§4§o"+ timesSeen + "§r§8]";
@@ -424,8 +420,8 @@ public class ChatSigns extends Module {
                     }
                     return true;
                 }
-            } catch (IOException | SecurityException err) {
-                Stardust.LOG.error("[Stardust] Error creating chatsigns-blacklist.txt! - "+err);
+            } catch (Exception err) {
+                Stardust.LOG.error("[Stardust] Error creating "+ blackListFile.getAbsolutePath() + "! - Why:\n"+err);
             }
         } else return true;
 
@@ -438,8 +434,8 @@ public class ChatSigns extends Module {
 
         try(Stream<String> lineStream = Files.lines(blackListFile.toPath())) {
             this.blacklisted.addAll(lineStream.toList());
-        }catch (IOException err) {
-            Stardust.LOG.error("[Stardust] "+err);
+        }catch (Exception err) {
+            Stardust.LOG.error("[Stardust] Failed to read from "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err);
         }
     }
 
@@ -451,8 +447,8 @@ public class ChatSigns extends Module {
             EventQueue.invokeLater(() -> {
                 try {
                     Desktop.getDesktop().open(blackListFile);
-                }catch (IOException err) {
-                    Stardust.LOG.error("[Stardust] Failed to open chatsigns-blacklist.txt - "+err);
+                }catch (Exception err) {
+                    Stardust.LOG.error("[Stardust] Failed to open "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err);
                 }
             });
         } else {
@@ -464,8 +460,8 @@ public class ChatSigns extends Module {
                 }else {
                     runtime.exec("xdg-open " + blackListFile.getAbsolutePath());
                 }
-            } catch (IOException err) {
-                Stardust.LOG.error("[Stardust] Failed to open chatsigns-blacklist.txt - "+err);
+            } catch (Exception err) {
+                Stardust.LOG.error("[Stardust] Failed to open "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err);
                 if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open chatsigns-blacklist.txt§7."));
             }
         }

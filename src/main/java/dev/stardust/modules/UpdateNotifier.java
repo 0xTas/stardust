@@ -4,7 +4,6 @@ import java.net.URL;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
-import java.io.IOException;
 import net.minecraft.text.*;
 import dev.stardust.Stardust;
 import javax.annotation.Nullable;
@@ -52,19 +51,18 @@ public class UpdateNotifier extends Module {
         try {
             req = (HttpURLConnection) new URL(this.releaseUrl).openConnection();
         } catch (MalformedURLException err) {
-            err.printStackTrace();
+            Stardust.LOG.error("[Stardust] Failed to open http connection. Why:\n" + err);
             return null;
-        } catch (IOException err) {
-            Stardust.LOG.warn("[Stardust] Update Notifier failed to make a connection - "+err);
-            err.printStackTrace();
+        } catch (Exception err) {
+            Stardust.LOG.error("[Stardust] Update Notifier failed to make a connection - "+err);
             return null;
         }
 
         req.setInstanceFollowRedirects(false);
         try {
             req.connect();
-        }catch (IOException err) {
-            Stardust.LOG.warn("[Stardust] Update Notifier failed to make a connection - "+err);
+        }catch (Exception err) {
+            Stardust.LOG.error("[Stardust] Update Notifier failed to make a connection - "+err);
             return null;
         }
 
@@ -72,7 +70,7 @@ public class UpdateNotifier extends Module {
         if (headerFields.containsKey("Location")) {
             List<String> field = headerFields.get("Location");
             if (field.isEmpty()) {
-                Stardust.LOG.warn("[Stardust] Update Notifier failed to parse response from Github.");
+                Stardust.LOG.warn("[Stardust] Update Notifier failed to parse a response from Github.");
                 return null;
             } else {
                 return field.get(0).substring(field.get(0).lastIndexOf("v")+1);
@@ -102,8 +100,8 @@ public class UpdateNotifier extends Module {
                     mc.player.sendMessage(notifyMessage);
 
                 }
-            } catch (InterruptedException err) {
-                err.printStackTrace();
+            } catch (Exception err) {
+                Stardust.LOG.warn("[Stardust] Update Notifier MeteorExecutor task was interrupted! Why:\n" + err);
             }
         });
     }

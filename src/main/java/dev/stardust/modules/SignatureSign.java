@@ -5,7 +5,6 @@ import java.util.*;
 import java.io.File;
 import java.util.List;
 import java.nio.file.Path;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.nio.file.Files;
 import dev.stardust.Stardust;
@@ -108,7 +107,7 @@ public class SignatureSign extends Module {
             .range(1, 1000)
             .sliderRange(1, 420)
             .defaultValue(1)
-            .visible(() -> !storyMode.get() && Objects.equals(line1Mode.get(), "File"))
+            .visible(() -> !storyMode.get() && line1Mode.get().equals("File"))
             .build()
     );
 
@@ -117,7 +116,7 @@ public class SignatureSign extends Module {
             .name("Line 1 Timestamp Type")
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
-            .visible(() -> !storyMode.get() && Objects.equals(line1Mode.get(), "Timestamp"))
+            .visible(() -> !storyMode.get() && line1Mode.get().equals("Timestamp"))
             .build()
     );
 
@@ -158,7 +157,7 @@ public class SignatureSign extends Module {
             .range(1, 1000)
             .sliderRange(1, 420)
             .defaultValue(2)
-            .visible(() -> !storyMode.get() && Objects.equals(line2Mode.get(), "File"))
+            .visible(() -> !storyMode.get() && line2Mode.get().equals("File"))
             .build()
     );
 
@@ -167,7 +166,7 @@ public class SignatureSign extends Module {
             .name("Line 2 Timestamp Type")
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
-            .visible(() -> !storyMode.get() && Objects.equals(line2Mode.get(), "Timestamp"))
+            .visible(() -> !storyMode.get() && line2Mode.get().equals("Timestamp"))
             .build()
     );
 
@@ -208,7 +207,7 @@ public class SignatureSign extends Module {
             .range(1, 1000)
             .sliderRange(1, 420)
             .defaultValue(3)
-            .visible(() -> !storyMode.get() && Objects.equals(line3Mode.get(), "File"))
+            .visible(() -> !storyMode.get() && line3Mode.get().equals("File"))
             .build()
     );
 
@@ -217,7 +216,7 @@ public class SignatureSign extends Module {
             .name("Line 3 Timestamp Type")
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
-            .visible(() -> !storyMode.get() && Objects.equals(line3Mode.get(), "Timestamp"))
+            .visible(() -> !storyMode.get() && line3Mode.get().equals("Timestamp"))
             .build()
     );
 
@@ -258,7 +257,7 @@ public class SignatureSign extends Module {
             .range(1, 1000)
             .sliderRange(1, 420)
             .defaultValue(4)
-            .visible(() -> !storyMode.get() && Objects.equals(line4Mode.get(), "File"))
+            .visible(() -> !storyMode.get() && line4Mode.get().equals("File"))
             .build()
     );
 
@@ -267,7 +266,7 @@ public class SignatureSign extends Module {
             .name("Line 4 Timestamp Type")
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
-            .visible(() -> !storyMode.get() && Objects.equals(line4Mode.get(), "Timestamp"))
+            .visible(() -> !storyMode.get() && line4Mode.get().equals("Timestamp"))
             .build()
     );
 
@@ -372,8 +371,8 @@ public class SignatureSign extends Module {
             default -> line4Mode.get();
         };
 
-        return Objects.equals(md, "Custom") || Objects.equals(md, "Base64") || Objects.equals(md, "Hex")
-            || Objects.equals(md, "0xHex") || Objects.equals(md, "ROT13");
+        return md.equals("Custom") || md.equals("Base64") || md.equals("Hex")
+            || md.equals("0xHex") || md.equals("ROT13");
     }
 
     private boolean inputTooLong(String input) {
@@ -498,8 +497,8 @@ public class SignatureSign extends Module {
                 List<String> lines = lineStream.toList();
 
                 return line <= lines.size() ? lines.get(line) : lines.get(lines.size()-1);
-            } catch (IOException err) {
-                Stardust.LOG.error("[Stardust] "+err);
+            } catch (Exception err) {
+                Stardust.LOG.error("[Stardust] Failed too read from "+ file.getAbsolutePath() +"! - Why:\n"+err);
             }
         } else {
             try {
@@ -514,8 +513,8 @@ public class SignatureSign extends Module {
                         mc.player.sendMessage(txt);
                     }
                 }
-            } catch (IOException | SecurityException err) {
-                err.printStackTrace();
+            } catch (Exception err) {
+                Stardust.LOG.error("[Stardust] Failed to create " + file.getAbsolutePath() + "! Why:\n" + err);
             }
 
             switch (line) {
@@ -535,8 +534,8 @@ public class SignatureSign extends Module {
         if (file.exists()) {
             try(Stream<String> lineStream = Files.lines(file.toPath())) {
                 storyText.addAll(Arrays.stream(lineStream.collect(Collectors.joining(" ")).split(" ")).toList());
-            } catch (IOException err) {
-                Stardust.LOG.error("[Stardust] "+err);
+            } catch (Exception err) {
+                Stardust.LOG.error("[Stardust] Failed to read from "+ file.getAbsolutePath() +"! - Why:\n"+err);
             }
         }else {
             try {
@@ -551,8 +550,8 @@ public class SignatureSign extends Module {
                         mc.player.sendMessage(txt);
                     }
                 }
-            } catch (IOException | SecurityException err) {
-                err.printStackTrace();
+            } catch (Exception err) {
+                Stardust.LOG.error("[Stardust] Failed to create " + file.getAbsolutePath() + "! Why:\n" + err);
                 storyText.add("File not found.");
                 storyText.add("Please create a");
                 storyText.add("storysign.txt in");
@@ -733,8 +732,8 @@ public class SignatureSign extends Module {
             EventQueue.invokeLater(() -> {
                 try {
                     Desktop.getDesktop().open(folder);
-                }catch (IOException err) {
-                    Stardust.LOG.error("[Stardust] Failed to open meteor-client folder - "+err);
+                }catch (Exception err) {
+                    Stardust.LOG.error("[Stardust] Failed to open "+ folder.getAbsolutePath() +"! - Why:\n"+err);
                 }
             });
         } else {
@@ -746,8 +745,8 @@ public class SignatureSign extends Module {
                 } else {
                     runtime.exec("xdg-open " + folder.getAbsolutePath());
                 }
-            } catch (IOException err) {
-                Stardust.LOG.error("[Stardust] Failed to open meteor-client folder - "+err);
+            } catch (Exception err) {
+                Stardust.LOG.error("[Stardust] Failed to open "+ folder.getAbsolutePath() +"! - Why:\n"+err);
                 if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open meteor-client folder§7."));
             }
 
