@@ -45,7 +45,7 @@ public class LastSeen2b2t extends Command {
                     String response = new ApiHandler().fetchResponse(requestString);
                     if (response == null) return;
 
-                    if (response.equals("204 Undocumented")) {
+                    if (response.equals("204 Undocumented") || response.contains("\"lastSeen\":null")) {
                         if (player == null) return;
                         player.sendMessage(
                             Text.of(
@@ -55,8 +55,8 @@ public class LastSeen2b2t extends Command {
                     }else {
                         JsonElement seenJson = JsonParser.parseString(response);
 
-                        if (seenJson.getAsJsonObject().has("time")) {
-                            String lastSeen = seenJson.getAsJsonObject().get("time").getAsString();
+                        if (seenJson.getAsJsonObject().has("lastSeen")) {
+                            String lastSeen = seenJson.getAsJsonObject().get("lastSeen").getAsString();
 
                             Instant instant = Instant.parse(lastSeen);
                             ZonedDateTime zonedTime = instant.atZone(ZoneId.systemDefault());

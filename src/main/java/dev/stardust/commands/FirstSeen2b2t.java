@@ -27,7 +27,7 @@ import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
  * credit to <a href="https://github.com/rfresh2">rfresh for the 2b api</a>
  **/
 public class FirstSeen2b2t extends Command {
-    private final String API_ENDPOINT = "/firstseen?playerName=";
+    private final String API_ENDPOINT = "/seen?playerName=";
 
     public FirstSeen2b2t() { super("firstseen2b2t", "Check the first-seen status of a 2b2t player.", "fs"); }
 
@@ -44,7 +44,7 @@ public class FirstSeen2b2t extends Command {
                     String response = new ApiHandler().fetchResponse(requestString);
                     if (response == null) return;
 
-                    if (response.equals("204 Undocumented")) {
+                    if (response.equals("204 Undocumented") || response.contains("\"firstSeen\":null,")) {
                         if (player == null) return;
                         player.sendMessage(
                             Text.of(
@@ -54,10 +54,10 @@ public class FirstSeen2b2t extends Command {
                     }else {
                         JsonElement seenJson = JsonParser.parseString(response);
 
-                        if (seenJson.getAsJsonObject().has("time")) {
-                            String lastSeen = seenJson.getAsJsonObject().get("time").getAsString();
+                        if (seenJson.getAsJsonObject().has("firstSeen")) {
+                            String firstSeen = seenJson.getAsJsonObject().get("firstSeen").getAsString();
 
-                            Instant instant = Instant.parse(lastSeen);
+                            Instant instant = Instant.parse(firstSeen);
                             ZonedDateTime zonedTime = instant.atZone(ZoneId.systemDefault());
                             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMMM dd yyyy, HH:mm", Locale.US);
 
