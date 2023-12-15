@@ -30,18 +30,13 @@ It isn't completely useless, but you will have to use your best judgement to det
 
 1. Ensure that [Fabric](https://fabricmc.net) for Minecraft 1.20.1 is installed.
 2. Download the latest release, or build the addon from source with `./gradlew build`.
-3. Drop the .jar file in your `.minecraft/mods` folder, along with [Meteor Client *v0.5.4*](https://meteorclient.com) -- [*See Below](https://github.com/0xTas/stardust#known-issues).
+3. Drop the .jar file in your `.minecraft/mods` folder, along with [Meteor Client *v0.5.4*](https://github.com/meteordevelopment/meteor-client/releases/tag/v0.5.4).
 4. Run your Fabric installation.
 
 ---
 ### Contributing
 Issues and pull requests are welcome if you would like to submit them.<br>
 You can also get in touch with me if needed in the [Meteor Client Discord](https://discord.com/invite/bBGQZvd).
-
----
-### Known Issues
-The newest release build of Meteor Client (**v0.5.4**) is currently incompatible with Future Client, and will crash on startup.<br>
-The last known-compatible commit is [here](https://github.com/MeteorDevelopment/meteor-client/commit/52595d08d43112fe122783e5d4d2acf0b9c492e5), so if you happen to possess an 0.5.4 dev build based on this commit, or an earlier one, you may want to use that instead.
 
 ---
 ### Credits
