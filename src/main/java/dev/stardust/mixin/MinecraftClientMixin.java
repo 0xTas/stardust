@@ -1,12 +1,15 @@
 package dev.stardust.mixin;
 
 import dev.stardust.modules.RocketMan;
+import net.minecraft.sound.MusicSound;
+import dev.stardust.modules.MusicTweaks;
 import org.spongepowered.asm.mixin.Mixin;
 import net.minecraft.client.MinecraftClient;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 
 /**
@@ -88,5 +91,18 @@ public class MinecraftClientMixin {
             }
         }
 
+    }
+
+    // See MusicTweaks.java
+    @Inject(method = "getMusicType", at = @At("HEAD"), cancellable = true)
+    public void mixinGetMusicType(CallbackInfoReturnable<MusicSound> cir) {
+        MusicTweaks tweaks = Modules.get().get(MusicTweaks.class);
+
+        if (tweaks == null || !tweaks.isActive()) return;
+        MusicSound type = tweaks.getTypes();
+
+        if (type != null) {
+            cir.setReturnValue(type);
+        }
     }
 }

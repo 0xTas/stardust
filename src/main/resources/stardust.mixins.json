@@ -12,6 +12,12 @@
     "ElytraSoundInstanceMixin",
     "GameOptionsAccessor",
     "MinecraftClientMixin",
+    "MusicTrackerAccessor",
+    "MusicTrackerMixin",
+    "NarratorManagerMixin",
+    "PositionedSoundInstanceMixin",
+    "SoundSystemMixin",
+    "SourceManagerAccessor",
     "WrittenBookContentsAccessor"
   ],
   "injectors": {
