@@ -43,15 +43,15 @@ public class SoundSystemMixin {
             if (sound == null) continue;
 
             String location = sound.getLocation().toString();
-            if (!location.startsWith("minecraft:sounds/music/")) continue;
+            if (!location.startsWith("minecraft:sounds/music/") && !sound.toString().contains("minecraft:records/")) continue;
             Channel.SourceManager sourceManager = this.sources.get(instance);
-            songID = location.substring(location.lastIndexOf('/')+1);
+            songID = location.substring(location.lastIndexOf('/') + 1);
 
-            playing = true;
             if (sourceManager == null) continue;
             Source source = ((SourceManagerAccessor) sourceManager).getSource();
-
             if (source == null) continue;
+
+            playing = true;
             if (tweaks.isActive() && !tweaks.randomPitch()) {
                 this.dirtyPitch = true;
                 source.setPitch(1.0f + tweaks.getPitchAdjustment());
@@ -76,12 +76,14 @@ public class SoundSystemMixin {
             this.totalTicksPlaying = 0;
         }
 
-        if (tweaks.isActive() && totalTicksPlaying % 30 == 0 && tweaks.shouldDisplayNowPlaying() && songID != null) {
-            String songName = tweaks.getSongName(songID);
-            switch (tweaks.getDisplayMode()) {
-                case Chat -> tweaks.sendNowPlayingMessage(songName);
-                // See NarratorManagerMixin.java lol
-                case Record -> tweaks.getClient().inGameHud.setRecordPlayingOverlay(Text.of(songName));
+        if (tweaks.isActive() && this.totalTicksPlaying % 30 == 0 && tweaks.shouldDisplayNowPlaying() && songID != null) {
+            if (this.totalTicksPlaying <= 90 || !tweaks.shouldFadeOut()) {
+                String songName = tweaks.getSongName(songID);
+                switch (tweaks.getDisplayMode()) {
+                    case Chat -> tweaks.sendNowPlayingMessage(songName);
+                    // See NarratorManagerMixin.java lol
+                    case Record -> tweaks.getClient().inGameHud.setRecordPlayingOverlay(Text.of(songName));
+                }
             }
         }
     }

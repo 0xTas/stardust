@@ -15,9 +15,9 @@
     "MusicTrackerAccessor",
     "MusicTrackerMixin",
     "NarratorManagerMixin",
-    "PositionedSoundInstanceMixin",
     "SoundSystemMixin",
     "SourceManagerAccessor",
+    "WeightedSoundSetMixin",
     "WrittenBookContentsAccessor"
   ],
   "injectors": {

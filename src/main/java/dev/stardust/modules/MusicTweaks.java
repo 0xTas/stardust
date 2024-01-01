@@ -27,6 +27,13 @@ public class MusicTweaks extends Module {
     public MusicTweaks() {
         super(Stardust.CATEGORY, "MusicTweaks", "Allows you to fuck with the background music.");
         this.runInMainMenu = true;
+        this.sgOverworldSoundtrack.sectionExpanded = false;
+        this.sgCreativeSoundtrack.sectionExpanded = false;
+        this.sgUnderwaterSoundtrack.sectionExpanded = false;
+        this.sgNetherSoundtrack.sectionExpanded = false;
+        this.sgEndSoundtrack.sectionExpanded = false;
+        this.sgRecordsSoundtrack.sectionExpanded = false;
+        this.sgMenuSoundtrack.sectionExpanded = false;
     }
 
     public enum DisplayType {
@@ -36,70 +43,21 @@ public class MusicTweaks extends Module {
     private final SettingGroup sgPitch = settings.createGroup("Pitch");
     private final SettingGroup sgVolume = settings.createGroup("Volume");
     private final SettingGroup sgCooldown = settings.createGroup("Cooldown");
-    private final SettingGroup sgTypes = settings.createGroup("Soundtracks");
     private final SettingGroup sgNowPlaying = settings.createGroup("Now Playing");
+    private final SettingGroup sgOverworldSoundtrack = settings.createGroup("Overworld Soundtrack");
+    private final SettingGroup sgCreativeSoundtrack = settings.createGroup("Creative Soundtrack");
+    private final SettingGroup sgUnderwaterSoundtrack = settings.createGroup("Underwater Soundtrack");
+    private final SettingGroup sgNetherSoundtrack = settings.createGroup("Nether Soundtrack");
+    private final SettingGroup sgEndSoundtrack = settings.createGroup("End Soundtrack");
+    private final SettingGroup sgRecordsSoundtrack = settings.createGroup("Music Discs");
+    private final SettingGroup sgMenuSoundtrack = settings.createGroup("Menu Soundtrack");
 
-    private final Setting<Boolean> gameMusic = sgTypes.add(
+
+    private final Setting<Boolean> startOnEnable = sgNowPlaying.add(
         new BoolSetting.Builder()
-            .name("Survival")
-            .description("Plays songs from the overworld survival gamemode soundtrack.")
+            .name("Start on Enable")
+            .description("Start playing music when enabling the module. Won't overwrite a currently-playing song.")
             .defaultValue(true)
-            .build()
-    );
-
-    private final Setting<Boolean> creativeMusic = sgTypes.add(
-        new BoolSetting.Builder()
-            .name("Creative")
-            .description("Plays songs from the creative gamemode soundtrack.")
-            .defaultValue(true)
-            .build()
-    );
-
-    private final Setting<Boolean> underwaterMusic = sgTypes.add(
-        new BoolSetting.Builder()
-            .name("Underwater")
-            .description("Plays songs from the underwater soundtrack.")
-            .defaultValue(true)
-            .build()
-    );
-
-    private final Setting<Boolean> netherMusic = sgTypes.add(
-        new BoolSetting.Builder()
-            .name("Nether")
-            .description("Plays songs from the Nether dimension soundtrack.")
-            .defaultValue(false)
-            .build()
-    );
-
-    private final Setting<Boolean> endMusic = sgTypes.add(
-        new BoolSetting.Builder()
-            .name("End")
-            .description("Plays the End Dimension soundtrack.")
-            .defaultValue(false)
-            .build()
-    );
-
-    private final Setting<Boolean> bossMusic = sgTypes.add(
-        new BoolSetting.Builder()
-            .name("Dragon")
-            .description("Plays the End Dragon boss soundtrack.")
-            .defaultValue(false)
-            .build()
-    );
-
-    private final Setting<Boolean> creditsMusic = sgTypes.add(
-        new BoolSetting.Builder()
-            .name("Credits")
-            .description("Plays the end credits soundtrack.")
-            .defaultValue(false)
-            .build()
-    );
-
-    private final Setting<Boolean> menuMusic = sgTypes.add(
-        new BoolSetting.Builder()
-            .name("Menu")
-            .description("Plays songs from the main menu soundtrack.")
-            .defaultValue(false)
             .build()
     );
 
@@ -116,6 +74,15 @@ public class MusicTweaks extends Module {
             .name("Display Now Playing")
             .description("Displays the name of the currently playing song.")
             .defaultValue(true)
+            .build()
+    );
+
+    private final Setting<Boolean> fadeOut = sgNowPlaying.add(
+        new BoolSetting.Builder()
+            .name("Fade Out Display")
+            .description("Fade out the display instead of keeping it active for the duration of the song.")
+            .visible(displayNowPlaying::get)
+            .defaultValue(false)
             .build()
     );
 
@@ -140,7 +107,7 @@ public class MusicTweaks extends Module {
             .name("Song Delay Seconds")
             .description("Desired cooldown between songs. Will apply after next song if not currently playing (or module toggle.)")
             .range(0, 10000)
-            .sliderRange(0, 600)
+            .sliderRange(0, 2400)
             .defaultValue(300)
             .visible(overrideDelayMode::get)
             .build()
@@ -152,7 +119,7 @@ public class MusicTweaks extends Module {
             .description("Minimum desired cooldown between songs (in seconds.)")
             .range(0, 10000)
             .sliderRange(0, 1200)
-            .defaultValue(420)
+            .defaultValue(600)
             .visible(() -> !overrideDelayMode.get())
             .build()
     );
@@ -187,8 +154,8 @@ public class MusicTweaks extends Module {
 
     private final Setting<Integer> pitchAdjustment = sgPitch.add(
         new IntSetting.Builder()
-            .name("Song Pitch % Adjustment")
-            .description("Desired pitch adjustment %.")
+            .name("Song Pitch Adjustment")
+            .description("Desired pitch adjustment.")
             .range(-500, 500)
             .sliderRange(-250, 250)
             .defaultValue(0)
@@ -236,7 +203,479 @@ public class MusicTweaks extends Module {
     );
 
 
-    // See MusicTrackerMixin.java && SoundSystemMixin.java && PositionedSoundInstanceMixin.java
+    // Soundtracks
+    private final Setting<Boolean> minecraft = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Minecraft")
+            .description("calm1.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> clark = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Clark")
+            .description("calm2.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> sweden = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Sweden")
+            .description("calm3.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> subwooferLullaby = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Subwoofer Lullaby")
+            .description("hal1.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> livingMice = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Living Mice")
+            .description("hal2.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> haggstrom = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Haggstrom")
+            .description("hal3.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> danny = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Danny")
+            .description("hal4.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> key = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Key")
+            .description("nuance1.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> oxygene = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Oxygene")
+            .description("nuance2.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> dryHands = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Dry Hands")
+            .description("piano1.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> wetHands = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Wet Hands")
+            .description("piano2.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> miceOnVenus = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Mice on Venus")
+            .description("piano3.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> aerie = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Aerie")
+            .description("aerie.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> ancestry = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Ancestry")
+            .description("ancestry.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> aFamiliarRoom = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Aaron Cherof / A Familiar Room")
+            .description("a_familiar_room.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> anOrdinaryDay = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Kumi Tanioka / An Ordinary Day")
+            .description("an_ordinary_day.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> bromeliad = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Aaron Cherof / Bromeliad")
+            .description("bromeliad.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> comfortingMemories = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Kumi Tanioka / Comforting Memories")
+            .description("comforting_memories.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> crescentDunes = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Aaron Cherof / Crescent Dunes")
+            .description("crescent_dunes.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> echoInTheWind = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Aaron Cherof / Echo in the Wind")
+            .description("echo_in_the_wind.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> firebugs = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Firebugs")
+            .description("firebugs.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> floatingDream = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Kumi Tanioka / Floating Dream")
+            .description("floating_dream.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> infiniteAmethyst = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Infinite Amethyst")
+            .description("infinite_amethyst.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> labyrinthine = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Labyrinthine")
+            .description("labyrinthine.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> leftToBloom = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Left to Bloom")
+            .description("left_to_bloom.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> oneMoreDay = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / One More Day")
+            .description("one_more_day.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> standTall = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Stand Tall")
+            .description("stand_tall.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> wending = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Wending")
+            .description("wending.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> biomeFest = sgCreativeSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Biome Fest")
+            .description("creative1.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> blindSpots = sgCreativeSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Blind Spots")
+            .description("creative2.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> hauntMuskie = sgCreativeSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Haunt Muskie")
+            .description("creative3.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> ariaMath = sgCreativeSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Aria Math")
+            .description("creative4.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> dreiton = sgCreativeSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Dreiton")
+            .description("creative5.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> tasWell = sgCreativeSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Taswell")
+            .description("creative6.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> axolotl = sgUnderwaterSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Axolotl")
+            .description("axolotl.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> dragonFish = sgUnderwaterSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Dragon Fish")
+            .description("dragon_fish.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> shuniji = sgUnderwaterSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Shuniji")
+            .description("shuniji.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> concreteHalls = sgNetherSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Concrete Halls")
+            .description("nether1.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> deadVoxel = sgNetherSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Dead Voxel")
+            .description("nether2.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> warmth = sgNetherSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Warmth")
+            .description("nether3.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> balladOfTheCats = sgNetherSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Ballad of the Cats")
+            .description("nether4.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> chrysopoeia = sgNetherSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Chrysopoeia")
+            .description("chrysopoeia.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> rubedo = sgNetherSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Rubedo")
+            .description("rubedo.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> soBelow = sgNetherSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / So Below")
+            .description("so_below.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> theEnd = sgEndSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / The End")
+            .description("end.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> boss = sgEndSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Boss")
+            .description("boss.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> alpha = sgEndSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Alpha")
+            .description("credits.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> record5 = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Samuel Aberg / 5")
+            .description("Music Disc: 5")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> record11 = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / 11")
+            .description("Music Disc: 11")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> record13 = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / 13")
+            .description("Music Disc: 13")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> recordCat = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Cat")
+            .description("Music Disc: Cat")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> recordBlocks = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Blocks")
+            .description("Music Disc: Blocks")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> recordChirp = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Chirp")
+            .description("Music Disc: Chirp")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> recordFar = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Far")
+            .description("Music Disc: Far")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> recordMall = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Mall")
+            .description("Music Disc: Mall")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> recordMellohi = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Mellohi")
+            .description("Music Disc: Mellohi")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> recordStal = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Stal")
+            .description("Music Disc: Stal")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> recordStrad = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Strad")
+            .description("Music Disc: Strad")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> recordWard = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Ward")
+            .description("Music Disc: Ward")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> recordWait = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Wait")
+            .description("Music Disc: Wait")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> recordOtherside = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Otherside")
+            .description("Music Disc: Otherside")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> recordPigstep = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Pigstep")
+            .description("Music Disc: Pigstep")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> recordRelic = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Aaron Cherof / Relic")
+            .description("Music Disc: Relic")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> mutation = sgMenuSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Mutation")
+            .description("menu1.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> moogCity2 = sgMenuSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Moog City 2")
+            .description("menu2.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> beginning2 = sgMenuSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Beginning 2")
+            .description("menu3.ogg")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> floatingTrees = sgMenuSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("C418 / Floating Trees")
+            .description("menu4.ogg")
+            .defaultValue(false)
+            .build()
+    );
+
+
+    // See MusicTrackerMixin.java && SoundSystemMixin.java && WeightedSoundSetMixin.java
     //     && MinecraftClientMixin.java
     @Nullable
     public MusicSound getTypes() {
@@ -257,28 +696,63 @@ public class MusicTweaks extends Module {
 
         if (max <= min) max = min + 1;
         List<MusicSound> types = new ArrayList<>();
-        if (gameMusic.get()) {
+        if (minecraft.get() || clark.get() || sweden.get() ||subwooferLullaby.get() || livingMice.get() || haggstrom.get()
+            || danny.get() || key.get() || oxygene.get() || dryHands.get() || wetHands.get() || miceOnVenus.get()) {
             types.add(new MusicSound(SoundEvents.MUSIC_GAME, min, ThreadLocalRandom.current().nextInt(min, max), false));
-            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_FOREST, min, ThreadLocalRandom.current().nextInt(min, max), false));
-            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_DRIPSTONE_CAVES, min, ThreadLocalRandom.current().nextInt(min, max), false));
-            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_DEEP_DARK, min, ThreadLocalRandom.current().nextInt(min, max), false));
-            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_CHERRY_GROVE, min, ThreadLocalRandom.current().nextInt(min, max), false));
-            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_OLD_GROWTH_TAIGA, min, ThreadLocalRandom.current().nextInt(min, max), false));
-            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_JAGGED_PEAKS, min, ThreadLocalRandom.current().nextInt(min, max), false));
         }
-        if (netherMusic.get()) {
+        if (aerie.get() || firebugs.get() || labyrinthine.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_SWAMP, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
+        if (aFamiliarRoom.get() || anOrdinaryDay.get() || echoInTheWind.get() || floatingDream.get() || leftToBloom.get()
+            || oneMoreDay.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_LUSH_CAVES, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
+        if (wending.get() || standTall.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_STONY_PEAKS, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
+        if (ancestry.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_DEEP_DARK, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
+        if (infiniteAmethyst.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_GROVE, min, ThreadLocalRandom.current().nextInt(min, max), false));
+            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_DRIPSTONE_CAVES, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
+        if (axolotl.get() || dragonFish.get() || shuniji.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_UNDER_WATER, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
+        if (concreteHalls.get() || deadVoxel.get() || warmth.get() || balladOfTheCats.get()) {
             types.add(new MusicSound(SoundEvents.MUSIC_NETHER_BASALT_DELTAS, min, ThreadLocalRandom.current().nextInt(min, max), false));
             types.add(new MusicSound(SoundEvents.MUSIC_NETHER_CRIMSON_FOREST, min, ThreadLocalRandom.current().nextInt(min, max), false));
             types.add(new MusicSound(SoundEvents.MUSIC_NETHER_NETHER_WASTES, min, ThreadLocalRandom.current().nextInt(min, max), false));
-            types.add(new MusicSound(SoundEvents.MUSIC_NETHER_WARPED_FOREST, min, ThreadLocalRandom.current().nextInt(min, max), false));
             types.add(new MusicSound(SoundEvents.MUSIC_NETHER_SOUL_SAND_VALLEY, min, ThreadLocalRandom.current().nextInt(min, max), false));
         }
-        if (creativeMusic.get()) types.add(new MusicSound(SoundEvents.MUSIC_CREATIVE, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        if (underwaterMusic.get()) types.add(new MusicSound(SoundEvents.MUSIC_UNDER_WATER, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        if (endMusic.get()) types.add(new MusicSound(SoundEvents.MUSIC_END, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        if (menuMusic.get()) types.add(new MusicSound(SoundEvents.MUSIC_MENU, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        if (creditsMusic.get()) types.add(new MusicSound(SoundEvents.MUSIC_CREDITS, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        if (bossMusic.get()) types.add(new MusicSound(SoundEvents.MUSIC_DRAGON, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        if (chrysopoeia.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_NETHER_CRIMSON_FOREST, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
+        if (rubedo.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_NETHER_NETHER_WASTES, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
+        if (soBelow.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_NETHER_BASALT_DELTAS, min, ThreadLocalRandom.current().nextInt(min, max), false));
+            types.add(new MusicSound(SoundEvents.MUSIC_NETHER_SOUL_SAND_VALLEY, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
+        if (bromeliad.get() || crescentDunes.get() || mutation.get() || moogCity2.get() || beginning2.get() || floatingTrees.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_MENU, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
+        if (alpha.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_CREDITS, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
+        if (theEnd.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_END, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
+        if (boss.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_DRAGON, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
+        if (record5.get() || record11.get() || record13.get() || recordCat.get() || recordChirp.get() || recordBlocks.get()
+            || recordFar.get() || recordMall.get() || recordMellohi.get() || recordStal.get() || recordStrad.get()
+            || recordWard.get() || recordWait.get() || recordOtherside.get() || recordPigstep.get() || recordRelic.get()) {
+            types.add(new MusicSound(SoundEvents.MUSIC_GAME, min, ThreadLocalRandom.current().nextInt(min, max), false));
+        }
 
         MusicSound type;
         if (!types.isEmpty()) {
@@ -349,10 +823,99 @@ public class MusicTweaks extends Module {
             case "menu3.ogg" -> songName = "C418 - Beginning 2";
             case "menu4.ogg" -> songName = "C418 - Floating Trees";
             case "credits.ogg" -> songName = "C418 - Alpha";
+            case "5.ogg" -> songName = "Samuel Aberg - 5";
+            case "11.ogg" -> songName = "C418 - 11";
+            case "13.ogg" -> songName = "C418 - 13";
+            case "cat.ogg" -> songName = "C418 - Cat";
+            case "blocks.ogg" -> songName = "C418 - Blocks";
+            case "chirp.ogg" -> songName = "C418 - Chirp";
+            case "far.ogg" -> songName = "C418 - Far";
+            case "mall.ogg" -> songName = "C418 - Mall";
+            case "mellohi.ogg" -> songName = "C418 - Mellohi";
+            case "stal.ogg" -> songName = "C418 - Stal";
+            case "strad.ogg" -> songName = "C418 - Strad";
+            case "ward.ogg" -> songName = "C418 - Ward";
+            case "wait.ogg" -> songName = "C418 - Wait";
+            case "otherside.ogg" -> songName = "Lena Raine - Otherside";
+            case "pigstep.ogg" -> songName = "Lena Raine - Pigstep";
+            case "relic.ogg" -> songName = "Aaron Cherof - Relic";
             default -> songName = "Unknown Track";
         }
 
         return songName;
+    }
+
+    public List<String> getSoundSet() {
+        List<String> ids = new ArrayList<>();
+        if (minecraft.get()) ids.add("minecraft:music/game/calm1");
+        if (clark.get()) ids.add("minecraft:music/game/calm2");
+        if (sweden.get()) ids.add("minecraft:music/game/calm3");
+        if (biomeFest.get()) ids.add("minecraft:music/game/creative/creative1");
+        if (blindSpots.get()) ids.add("minecraft:music/game/creative/creative2");
+        if (hauntMuskie.get()) ids.add("minecraft:music/game/creative/creative3");
+        if (ariaMath.get()) ids.add("minecraft:music/game/creative/creative4");
+        if (dreiton.get()) ids.add("minecraft:music/game/creative/creative5");
+        if (tasWell.get()) ids.add("minecraft:music/game/creative/creative6");
+        if (subwooferLullaby.get()) ids.add("minecraft:music/game/hal1");
+        if (livingMice.get()) ids.add("minecraft:music/game/hal2");
+        if (haggstrom.get()) ids.add("minecraft:music/game/hal3");
+        if (danny.get()) ids.add("minecraft:music/game/hal4");
+        if (key.get()) ids.add("minecraft:music/game/nuance1");
+        if (oxygene.get()) ids.add("minecraft:music/game/nuance2");
+        if (dryHands.get()) ids.add("minecraft:music/game/piano1");
+        if (wetHands.get()) ids.add("minecraft:music/game/piano2");
+        if (miceOnVenus.get()) ids.add("minecraft:music/game/piano3");
+        if (aerie.get()) ids.add("minecraft:music/game/swamp/aerie");
+        if (bromeliad.get()) ids.add("minecraft:music/game/bromeliad");
+        if (firebugs.get()) ids.add("minecraft:music/game/swamp/firebugs");
+        if (leftToBloom.get()) ids.add("minecraft:music/game/left_to_bloom");
+        if (axolotl.get()) ids.add("minecraft:music/game/water/axolotl");
+        if (dragonFish.get()) ids.add("minecraft:music/game/water/dragon_fish");
+        if (shuniji.get()) ids.add("minecraft:music/game/water/shuniji");
+        if (labyrinthine.get()) ids.add("minecraft:music/game/swamp/labyrinthine");
+        if (echoInTheWind.get()) ids.add("minecraft:music/game/echo_in_the_wind");
+        if (standTall.get()) ids.add("minecraft:music/game/stand_tall");
+        if (ancestry.get()) ids.add("minecraft:music/game/ancestry");
+        if (aFamiliarRoom.get()) ids.add("minecraft:music/game/a_familiar_room");
+        if (oneMoreDay.get()) ids.add("minecraft:music/game/one_more_day");
+        if (wending.get()) ids.add("minecraft:music/game/wending");
+        if (infiniteAmethyst.get()) ids.add("minecraft:music/game/infinite_amethyst");
+        if (anOrdinaryDay.get()) ids.add("minecraft:music/game/an_ordinary_day");
+        if (crescentDunes.get()) ids.add("minecraft:music/game/crescent_dunes");
+        if (floatingDream.get()) ids.add("minecraft:music/game/floating_dream");
+        if (comfortingMemories.get()) ids.add("minecraft:music/game/comforting_memories");
+        if (mutation.get()) ids.add("minecraft:music/menu/menu1");
+        if (moogCity2.get()) ids.add("minecraft:music/menu/menu2");
+        if (beginning2.get()) ids.add("minecraft:music/menu/menu3");
+        if (floatingTrees.get()) ids.add("minecraft:music/menu/menu4");
+        if (alpha.get()) ids.add("minecraft:music/game/end/credits");
+        if (theEnd.get()) ids.add("minecraft:music/game/end/end");
+        if (boss.get()) ids.add("minecraft:music/game/end/boss");
+        if (soBelow.get()) ids.add("minecraft:music/game/nether/soulsand_valley/so_below");
+        if (rubedo.get()) ids.add("minecraft:music/game/nether/nether_wastes/rubedo");
+        if (chrysopoeia.get()) ids.add("minecraft:music/game/nether/crimson_forest/chrysopoeia");
+        if (concreteHalls.get()) ids.add("minecraft:music/game/nether/nether1");
+        if (deadVoxel.get()) ids.add("minecraft:music/game/nether/nether2");
+        if (warmth.get()) ids.add("minecraft:music/game/nether/nether3");
+        if (balladOfTheCats.get()) ids.add("minecraft:music/game/nether/nether4");
+        if (record5.get()) ids.add("minecraft:records/5");
+        if (record11.get()) ids.add("minecraft:records/11");
+        if (record13.get()) ids.add("minecraft:records/13");
+        if (recordCat.get()) ids.add("minecraft:records/cat");
+        if (recordBlocks.get()) ids.add("minecraft:records/blocks");
+        if (recordChirp.get()) ids.add("minecraft:records/chirp");
+        if (recordFar.get()) ids.add("minecraft:records/far");
+        if (recordMall.get()) ids.add("minecraft:records/mall");
+        if (recordMellohi.get()) ids.add("minecraft:records/mellohi");
+        if (recordStal.get()) ids.add("minecraft:records/stal");
+        if (recordStrad.get()) ids.add("minecraft:records/strad");
+        if (recordWard.get()) ids.add("minecraft:records/ward");
+        if (recordWait.get()) ids.add("minecraft:records/wait");
+        if (recordOtherside.get()) ids.add("minecraft:records/otherside");
+        if (recordPigstep.get()) ids.add("minecraft:records/pigstep");
+        if (recordRelic.get()) ids.add("minecraft:records/relic");
+
+        return ids;
     }
 
     public float getNextPitchStep(float currentPitch) {
@@ -393,12 +956,20 @@ public class MusicTweaks extends Module {
 
     public void sendNowPlayingMessage(String songName) {
         if (mc.player == null) return;
-        ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §2§oNow Playing§r§7: §5§o"+songName+"§r§7."), songName.hashCode());
+        String[] pieces = songName.split(" - ");
+        ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+            Text.of("§8<"+this.rcc+"§o✨§r§8> §2§oNow Playing§r§8: §7§o"+pieces[0]+" §8- "+this.rcc+"§o"+pieces[1]+"§r§8."),
+            songName.hashCode()
+        );
     }
 
+    public void nullifyCurrentType() {
+        this.currentType = null;
+        this.rcc = StardustUtil.rCC();
+    }
     public MinecraftClient getClient() { return this.mc; }
+    public boolean shouldFadeOut() { return fadeOut.get(); }
     public boolean randomPitch() { return randomPitch.get(); }
-    public void nullifyCurrentType() { this.currentType = null; }
     public boolean trippyPitch() { return trippyPitchSetting.get(); }
     public float getVolumeAdjustment() { return volume.get() / 100f; }
     public boolean overrideDelay() { return overrideDelayMode.get(); }
@@ -417,18 +988,20 @@ public class MusicTweaks extends Module {
     @Nullable
     private PitchDirection lastDirection = null;
 
+    private String rcc = StardustUtil.rCC();
+
     @Override
     public void onActivate() {
         MusicSound type = this.getTypes();
 
-        if (type == null) return;
+        if (type == null || !startOnEnable.get()) return;
         if (((MusicTrackerAccessor) mc.getMusicTracker()).getCurrent() == null) mc.getMusicTracker().play(type);
     }
 
     @Override
     public void onDeactivate() {
         if (stopOnDisable.get()) mc.getMusicTracker().stop();
-        this.currentType = null;
+        this.nullifyCurrentType();
     }
 
     @EventHandler
