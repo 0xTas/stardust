@@ -3,6 +3,7 @@ package dev.stardust.modules;
 import java.util.List;
 import java.util.Optional;
 import dev.stardust.Stardust;
+import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.block.entity.*;
@@ -174,11 +175,12 @@ public class BannerData extends Module {
                 if (copyToClipboard.get()) {
                     NbtCompound metadata = banner.toInitialChunkDataNbt();
                     mc.keyboard.setClipboard(metadata.toString());
-                    mc.player.sendMessage(
+                    ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
                         Text.of(
                             "§8<"+StardustUtil.rCC()+"§o✨§r§8> §7"
-                                 + txtFormat + "Copied NBT data to clipboard§7."
-                        )
+                                + txtFormat + "Copied NBT data to clipboard§7."
+                        ),
+                        "Clipboard update".hashCode()
                     );
                 }
 
@@ -187,11 +189,12 @@ public class BannerData extends Module {
                 NbtCompound metadata = sign.toInitialChunkDataNbt();
                 if (copyToClipboard.get()) {
                     mc.keyboard.setClipboard(metadata.toString());
-                    mc.player.sendMessage(
+                    ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
                         Text.of(
                             "§8<"+StardustUtil.rCC()+"§o✨§r§8> §7§o"
                                 + "Copied NBT data to clipboard."
-                        )
+                        ),
+                        "Clipboard update".hashCode()
                     );
                 } else {
                     mc.player.sendMessage(

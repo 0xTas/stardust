@@ -16,6 +16,7 @@ import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Modules;
+import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.systems.modules.render.FreeLook;
@@ -327,8 +328,9 @@ public class RocketMan extends Module {
                             float vol = warnVolume.get() / 100f;
                             mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK, vol, 1f);
                         }
-                        mc.player.sendMessage(
-                            Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Elytra durability: §4"+percentDurability+"§7%")
+                        ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                            Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Elytra durability: §4"+percentDurability+"§7%"),
+                            "Elytra durability warning".hashCode()
                         );
                         ticksSinceWarned = 0;
                     }
@@ -341,8 +343,9 @@ public class RocketMan extends Module {
                     float vol = warnVolume.get() / 100f;
                     mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK, vol, 1f);
                 }
-                mc.player.sendMessage(
-                    Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Elytra durability: §c"+percentDurability+"§7%")
+                ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                    Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Elytra durability: §4"+percentDurability+"§7%"),
+                    "Elytra durability warning".hashCode()
                 );
                 ticksSinceWarned = 0;
             }
@@ -366,8 +369,9 @@ public class RocketMan extends Module {
                 float vol = notifyVolume.get() / 100f;
                 mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, vol, 1f);
             }
-            mc.player.sendMessage(
-                Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Rockets remaining: §c"+totalRockets+"§7.")
+            ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Rockets remaining: §c"+totalRockets+"§7."),
+                "Rockets remaining warning".hashCode()
             );
             ticksSinceNotified = 0;
         }
@@ -435,12 +439,16 @@ public class RocketMan extends Module {
                     }
                 }
                 if (!foundElytra) {
-                    this.toggle();
-                    mc.player.sendMessage(Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§4No elytra in inventory!"));
+                    ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                        Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§4No elytra in inventory!"),
+                        "No elytra warning".hashCode()
+                    );
                 }
             } else {
-                this.toggle();
-                mc.player.sendMessage(Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§4No elytra equipped!"));
+                ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                    Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§4No elytra equipped!"),
+                    "No elytra warning".hashCode()
+                );
             }
         } else if (takeoff.get() && mc.player.isFallFlying()) {
             useFireworkRocket();

@@ -14,6 +14,7 @@ import meteordevelopment.meteorclient.settings.IntSetting;
 import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.mixininterface.IChatHud;
 
 
 /**
@@ -105,10 +106,9 @@ public class AutoDrawDistance extends Module {
 
         mc.options.sendClientSettings();
         if (verbose.get() && !(mc.player == null)) {
-            mc.player.sendMessage(
-                Text.of(
-                    "§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Updated view distance to§8: §2"+distance+"§7."
-                )
+            ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Updated view distance to§8: §2"+distance+"§7."),
+                "View distance debug update".hashCode()
             );
         }
     }
@@ -162,16 +162,16 @@ public class AutoDrawDistance extends Module {
                     sweetSpotCounter = 0;
                     if (verbose.get() && mc.player != null) {
                         if (reportFPS.get()) {
-                            mc.player.sendMessage(
-                                Text.of(
-                                    "§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Average FPS§8: §2"+averageFps
-                                ));
+                            ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                                Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Average FPS§8: §2"+averageFps),
+                                "Average FPS update".hashCode()
+                            );
                         }
 
-                        mc.player.sendMessage(
-                            Text.of(
-                                "§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Entered a §2sweet spot§8!"
-                            ));
+                        ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                            Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Entered a §2sweet spot§8!"),
+                            "Sweet spot update".hashCode()
+                        );
                     }
                 } else {
                     justIncreased++;
@@ -187,10 +187,10 @@ public class AutoDrawDistance extends Module {
                 justIncreased++;
                 fpsData.clear();
                 if (verbose.get() && reportFPS.get() && mc.player != null) {
-                    mc.player.sendMessage(
-                        Text.of(
-                            "§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Average FPS§8: §2"+averageFps
-                        ));
+                    ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                        Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Average FPS§8: §2"+averageFps),
+                        "Average FPS update".hashCode()
+                    );
                 }
 
                 updateDrawDistance(drawDistance + 1);
@@ -200,10 +200,10 @@ public class AutoDrawDistance extends Module {
                 if (drawDistance <= minDistance.get()) return;
 
                 if (verbose.get() && reportFPS.get() && mc.player != null) {
-                    mc.player.sendMessage(
-                        Text.of(
-                            "§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Average FPS§8: §2"+averageFps
-                        ));
+                    ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                        Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Average FPS§8: §2"+averageFps),
+                        "Average FPS update".hashCode()
+                    );
                 }
 
                 fpsData.clear();
