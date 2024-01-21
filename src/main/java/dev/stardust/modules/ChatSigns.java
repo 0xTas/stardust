@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import dev.stardust.Stardust;
 import net.minecraft.block.*;
 import net.minecraft.text.Text;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import net.minecraft.text.Style;
 import net.minecraft.world.World;
@@ -219,6 +221,9 @@ public class ChatSigns extends Module {
     private final ArrayList<String> blacklisted = new ArrayList<>();
     private final HashMap<BlockPos, Instant> cooldowns = new HashMap<>();
     private final HashMap<String, Integer> signMessages = new HashMap<>();
+    private final HashMap<ChunkPos, Boolean> chunkCache = new HashMap<>();
+    private final Pattern fullYearsPattern = Pattern.compile("202[0-9]");
+    private final Pattern truncatedYearsPattern = Pattern.compile("[0-9]*[-/.]2[0-9]");
 
     @Nullable
     private BlockPos getTargetedSign() {
@@ -294,8 +299,15 @@ public class ChatSigns extends Module {
             if (woodType == WoodType.OAK) {
                 NbtCompound metadata = sign.toInitialChunkDataNbt();
                 if (!metadata.toString().contains("{\"extra\":[{\"") && !lines.isEmpty()) {
-                    if (lines.stream().noneMatch(line -> line.contains("2023") || line.contains("/23") || line.contains("-23"))) {
-                        couldBeOld = !likelyNewChunk(chunk, mc, dimension);
+                    String testString = String.join(" ", lines);
+                    Matcher fullYearsMatcher = this.fullYearsPattern.matcher(testString);
+
+                    if (!fullYearsMatcher.find()) {
+                        Matcher truncatedYearsMatcher = this.truncatedYearsPattern.matcher(testString);
+
+                        if (!truncatedYearsMatcher.find()) {
+                            couldBeOld = !likelyNewChunk(chunk, mc, dimension);
+                        }
                     }
                 }
             }
@@ -338,30 +350,45 @@ public class ChatSigns extends Module {
     private boolean likelyNewChunk(WorldChunk chunk, MinecraftClient mc, RegistryKey<World> dimension) {
         if (mc.world == null) return false;
         ChunkPos chunkPos = chunk.getPos();
+        if (this.chunkCache.containsKey(chunkPos)) {
+            return this.chunkCache.get(chunkPos);
+        }
+
         if (dimension == World.NETHER) {
             BlockPos startPosDebris = chunkPos.getBlockPos(0, 0, 0);
             BlockPos endPosDebris = chunkPos.getBlockPos(15, 118, 15);
 
             int newBlocks = 0;
             for (BlockPos pos : BlockPos.iterate(startPosDebris, endPosDebris)) {
-                if (newBlocks >= 13) return true;
+                if (newBlocks >= 13) {
+                    this.chunkCache.put(chunkPos, true);
+                    return true;
+                }
                 Block block = mc.world.getBlockState(pos).getBlock();
                 if (block == Blocks.ANCIENT_DEBRIS || block == Blocks.BLACKSTONE || block == Blocks.BASALT
                     || block == Blocks.WARPED_NYLIUM || block == Blocks.CRIMSON_NYLIUM || block == Blocks.SOUL_SOIL) ++newBlocks;
             }
+            this.chunkCache.put(chunkPos, (newBlocks >= 13));
+            return newBlocks >= 13;
         } else if (dimension == World.OVERWORLD){
             BlockPos startPosCopper = chunkPos.getBlockPos(0, 0, 0);
-            BlockPos endPosCopper = chunkPos.getBlockPos(15, 63, 15);
+            BlockPos endPosCopper = chunkPos.getBlockPos(15, 112, 15);
 
             int newBlocks = 0;
             for (BlockPos pos : BlockPos.iterate(startPosCopper, endPosCopper)) {
-                if (newBlocks >=  13) return true;
+                if (newBlocks >=  13) {
+                    this.chunkCache.put(chunkPos, true);
+                    return true;
+                }
                 Block block = mc.world.getBlockState(pos).getBlock();
                 if (block == Blocks.COPPER_ORE) ++newBlocks; // Copper generates in all overworld biomes except dripstone caves.
                 else if (block == Blocks.DRIPSTONE_BLOCK || block == Blocks.POINTED_DRIPSTONE) ++newBlocks;
             }
+            this.chunkCache.put(chunkPos, (newBlocks >= 13));
+            return newBlocks >= 13;
         }// idk what to do about the end, so we'll detect signs by default. if you don't want it, turn it off in there.
 
+        this.chunkCache.put(chunkPos, false);
         return false;
     }
 
@@ -505,6 +532,7 @@ public class ChatSigns extends Module {
     public void onDeactivate() {
         this.posSet.clear();
         this.cooldowns.clear();
+        this.chunkCache.clear();
         this.blacklisted.clear();
         this.signMessages.clear();
         this.totalTicksEnabled = 0;
@@ -539,7 +567,7 @@ public class ChatSigns extends Module {
             if (targetedSign.equals(this.lastFocusedSign) && repeatMode.get() == RepeatMode.On_Focus) return;
             else if (!targetedSign.equals(this.lastFocusedSign)) this.lastFocusedSign = targetedSign;
 
-            WorldChunk chunk = mc.world.getChunk(targetedSign.getX(), targetedSign.getZ());
+            WorldChunk chunk = mc.world.getChunk(targetedSign.getX() >> 4, targetedSign.getZ() >> 4);
             if (repeatMode.get() == RepeatMode.Cooldown) {
                 if (cooldowns.containsKey(targetedSign)) {
                     Instant now = Instant.now();
