@@ -99,7 +99,7 @@ public class MinecraftClientMixin {
         MusicTweaks tweaks = Modules.get().get(MusicTweaks.class);
 
         if (tweaks == null || !tweaks.isActive()) return;
-        MusicSound type = tweaks.getTypes();
+        MusicSound type = tweaks.getType();
 
         if (type != null) {
             cir.setReturnValue(type);

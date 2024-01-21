@@ -52,6 +52,7 @@ public class SoundSystemMixin {
             if (source == null) continue;
 
             playing = true;
+            tweaks.setCurrentSong(sound.toString());
             if (tweaks.isActive() && !tweaks.randomPitch()) {
                 this.dirtyPitch = true;
                 source.setPitch(1.0f + tweaks.getPitchAdjustment());
@@ -79,9 +80,10 @@ public class SoundSystemMixin {
         if (tweaks.isActive() && this.totalTicksPlaying % 30 == 0 && tweaks.shouldDisplayNowPlaying() && songID != null) {
             if (this.totalTicksPlaying <= 90 || !tweaks.shouldFadeOut()) {
                 String songName = tweaks.getSongName(songID);
+
+                // See NarratorManagerMixin.java lol
                 switch (tweaks.getDisplayMode()) {
                     case Chat -> tweaks.sendNowPlayingMessage(songName);
-                    // See NarratorManagerMixin.java lol
                     case Record -> tweaks.getClient().inGameHud.setRecordPlayingOverlay(Text.of(songName));
                 }
             }

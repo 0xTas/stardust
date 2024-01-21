@@ -17,7 +17,9 @@ import net.minecraft.client.sound.SoundInstance;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.mixininterface.IChatHud;
+import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.events.game.GameJoinedEvent;
+import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 
 
 /**
@@ -675,10 +677,8 @@ public class MusicTweaks extends Module {
     );
 
 
-    // See MusicTrackerMixin.java && SoundSystemMixin.java && WeightedSoundSetMixin.java
-    //     && MinecraftClientMixin.java
-    @Nullable
-    public MusicSound getTypes() {
+    // See MinecraftClientMixin.java
+    public MusicSound getType() {
         if (this.currentType != null) return this.currentType;
 
         int min;
@@ -693,82 +693,17 @@ public class MusicTweaks extends Module {
             min = minTimeUntilNextSong.get() * 20;
             max = maxTimeUntilNextSong.get() * 20;
         }
-
         if (max <= min) max = min + 1;
-        List<MusicSound> types = new ArrayList<>();
-        if (minecraft.get() || clark.get() || sweden.get() ||subwooferLullaby.get() || livingMice.get() || haggstrom.get()
-            || danny.get() || key.get() || oxygene.get() || dryHands.get() || wetHands.get() || miceOnVenus.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_GAME, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (aerie.get() || firebugs.get() || labyrinthine.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_SWAMP, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (aFamiliarRoom.get() || anOrdinaryDay.get() || echoInTheWind.get() || floatingDream.get() || leftToBloom.get()
-            || oneMoreDay.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_LUSH_CAVES, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (wending.get() || standTall.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_STONY_PEAKS, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (ancestry.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_DEEP_DARK, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (infiniteAmethyst.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_GROVE, min, ThreadLocalRandom.current().nextInt(min, max), false));
-            types.add(new MusicSound(SoundEvents.MUSIC_OVERWORLD_DRIPSTONE_CAVES, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (axolotl.get() || dragonFish.get() || shuniji.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_UNDER_WATER, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (concreteHalls.get() || deadVoxel.get() || warmth.get() || balladOfTheCats.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_NETHER_BASALT_DELTAS, min, ThreadLocalRandom.current().nextInt(min, max), false));
-            types.add(new MusicSound(SoundEvents.MUSIC_NETHER_CRIMSON_FOREST, min, ThreadLocalRandom.current().nextInt(min, max), false));
-            types.add(new MusicSound(SoundEvents.MUSIC_NETHER_NETHER_WASTES, min, ThreadLocalRandom.current().nextInt(min, max), false));
-            types.add(new MusicSound(SoundEvents.MUSIC_NETHER_SOUL_SAND_VALLEY, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (chrysopoeia.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_NETHER_CRIMSON_FOREST, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (rubedo.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_NETHER_NETHER_WASTES, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (soBelow.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_NETHER_BASALT_DELTAS, min, ThreadLocalRandom.current().nextInt(min, max), false));
-            types.add(new MusicSound(SoundEvents.MUSIC_NETHER_SOUL_SAND_VALLEY, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (bromeliad.get() || crescentDunes.get() || mutation.get() || moogCity2.get() || beginning2.get() || floatingTrees.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_MENU, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (alpha.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_CREDITS, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (theEnd.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_END, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (boss.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_DRAGON, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
-        if (record5.get() || record11.get() || record13.get() || recordCat.get() || recordChirp.get() || recordBlocks.get()
-            || recordFar.get() || recordMall.get() || recordMellohi.get() || recordStal.get() || recordStrad.get()
-            || recordWard.get() || recordWait.get() || recordOtherside.get() || recordPigstep.get() || recordRelic.get()) {
-            types.add(new MusicSound(SoundEvents.MUSIC_GAME, min, ThreadLocalRandom.current().nextInt(min, max), false));
-        }
 
-        MusicSound type;
-        if (!types.isEmpty()) {
-            if (types.size() > 1) {
-                type = types.get(ThreadLocalRandom.current().nextInt(types.size()));
-            } else {
-                type = types.get(0);
-            }
-        } else {
-            return null;
-        }
+        // It doesn't matter which SoundEvents.MUSIC_??? we return since the WeightedSoundSet is overwritten directly now.
+        // actually I lied tho don't use the music disc events, or it won't work (see WeightedSoundSetMixin.java)
+        MusicSound type = new MusicSound(SoundEvents.MUSIC_GAME, min, ThreadLocalRandom.current().nextInt(min, max), false);
 
         this.currentType = type;
         return type;
     }
 
+    // See SoundSystemMixin.java
     public String getSongName(String songID) {
         String songName;
         switch (songID) {
@@ -845,6 +780,7 @@ public class MusicTweaks extends Module {
         return songName;
     }
 
+    // See WeightedSoundSetMixin.java
     public List<String> getSoundSet() {
         List<String> ids = new ArrayList<>();
         if (minecraft.get()) ids.add("minecraft:music/game/calm1");
@@ -915,9 +851,21 @@ public class MusicTweaks extends Module {
         if (recordPigstep.get()) ids.add("minecraft:records/pigstep");
         if (recordRelic.get()) ids.add("minecraft:records/relic");
 
+        // Prevent duplicates
+        if (this.currentSong != null && ids.size() > 1) {
+            for (int n = 0; n < ids.size(); n++) {
+                if (this.currentSong.equals("Sound["+ids.get(n)+"]")) {
+                    ids.remove(n);
+                    this.currentSong = null;
+                    break;
+                }
+            }
+        }
+
         return ids;
     }
 
+    // See SoundSystemMixin.java
     public float getNextPitchStep(float currentPitch) {
         if (this.lastDirection == null) {
             this.lastDirection = PitchDirection.Descending;
@@ -963,10 +911,13 @@ public class MusicTweaks extends Module {
         );
     }
 
+    // See MusicTrackerMixin.java
     public void nullifyCurrentType() {
         this.currentType = null;
         this.rcc = StardustUtil.rCC();
     }
+
+    // See SoundSystemMixin.java
     public MinecraftClient getClient() { return this.mc; }
     public boolean shouldFadeOut() { return fadeOut.get(); }
     public boolean randomPitch() { return randomPitch.get(); }
@@ -974,6 +925,7 @@ public class MusicTweaks extends Module {
     public float getVolumeAdjustment() { return volume.get() / 100f; }
     public boolean overrideDelay() { return overrideDelayMode.get(); }
     public DisplayType getDisplayMode() { return displayTypeSetting.get(); }
+    public void setCurrentSong(@Nullable String id) { this.currentSong = id; }
     public int getTimeUntilNextSong() { return timeUntilNextSong.get() * 20; }
     public float getPitchAdjustment() { return pitchAdjustment.get() / 1000f; }
     public boolean shouldDisplayNowPlaying() { return displayNowPlaying.get(); }
@@ -984,6 +936,10 @@ public class MusicTweaks extends Module {
     }
 
     @Nullable
+    private String lastDim = null;
+    @Nullable
+    private String currentSong = null;
+    @Nullable
     private MusicSound currentType = null;
     @Nullable
     private PitchDirection lastDirection = null;
@@ -992,9 +948,9 @@ public class MusicTweaks extends Module {
 
     @Override
     public void onActivate() {
-        MusicSound type = this.getTypes();
+        if (!startOnEnable.get()) return;
 
-        if (type == null || !startOnEnable.get()) return;
+        MusicSound type = this.getType();
         if (((MusicTrackerAccessor) mc.getMusicTracker()).getCurrent() == null) mc.getMusicTracker().play(type);
     }
 
@@ -1006,14 +962,31 @@ public class MusicTweaks extends Module {
 
     @EventHandler
     private void onGameJoin(GameJoinedEvent event) {
-        MusicSound type = this.getTypes();
-
-        if (type == null) return;
         SoundInstance instance = ((MusicTrackerAccessor) mc.getMusicTracker()).getCurrent();
         if (instance != null) {
+            MusicSound type = this.getType();
             if (type != mc.getMusicType()) {
                 mc.getMusicTracker().stop();
                 mc.getMusicTracker().play(type);
+            }
+        }
+
+        if (mc.world != null) {
+            this.lastDim = mc.world.getDimensionKey().toString();
+        }
+    }
+
+    @EventHandler
+    private void onDimensionChange(PacketEvent.Receive event) {
+        if (!(event.packet instanceof PlayerRespawnS2CPacket packet)) return;
+
+        if (this.lastDim != null) {
+            if (!packet.getDimensionType().toString().equals(this.lastDim)) {
+                MusicSound type = this.getType();
+
+                mc.getMusicTracker().stop();
+                mc.getMusicTracker().play(type);
+                this.lastDim = packet.getDimensionType().toString();
             }
         }
     }
