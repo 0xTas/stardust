@@ -371,21 +371,22 @@ public class ChatSigns extends Module {
             this.chunkCache.put(chunkPos, (newBlocks >= 13));
             return newBlocks >= 13;
         } else if (dimension == World.OVERWORLD){
-            BlockPos startPosCopper = chunkPos.getBlockPos(0, 0, 0);
-            BlockPos endPosCopper = chunkPos.getBlockPos(15, 112, 15);
+            BlockPos startPosAltStones = chunkPos.getBlockPos(0, 0, 0);
+            BlockPos endPosAltStones = chunkPos.getBlockPos(15, 128, 15);
 
             int newBlocks = 0;
-            for (BlockPos pos : BlockPos.iterate(startPosCopper, endPosCopper)) {
-                if (newBlocks >=  13) {
+            for (BlockPos pos : BlockPos.iterate(startPosAltStones, endPosAltStones)) {
+                if (newBlocks >=  33) {
                     this.chunkCache.put(chunkPos, true);
                     return true;
                 }
+                // Andesite, Diorite, and Granite were added in 1.8,
+                // making it impossible to have old signs in chunks containing these, if naturally-generated.
                 Block block = mc.world.getBlockState(pos).getBlock();
-                if (block == Blocks.COPPER_ORE) ++newBlocks; // Copper generates in all overworld biomes except dripstone caves.
-                else if (block == Blocks.DRIPSTONE_BLOCK || block == Blocks.POINTED_DRIPSTONE) ++newBlocks;
+                if (block == Blocks.ANDESITE || block == Blocks.GRANITE || block == Blocks.DIORITE) ++newBlocks;
             }
-            this.chunkCache.put(chunkPos, (newBlocks >= 13));
-            return newBlocks >= 13;
+            this.chunkCache.put(chunkPos, (newBlocks >= 33));
+            return newBlocks >= 33;
         }// idk what to do about the end, so we'll detect signs by default. if you don't want it, turn it off in there.
 
         this.chunkCache.put(chunkPos, false);
