@@ -1,5 +1,6 @@
 package dev.stardust.modules;
 
+import java.util.Collection;
 import dev.stardust.Stardust;
 import net.minecraft.util.Hand;
 import net.minecraft.item.Item;
@@ -14,6 +15,7 @@ import net.minecraft.sound.SoundEvents;
 import meteordevelopment.orbit.EventHandler;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.network.PlayerListEntry;
 import meteordevelopment.meteorclient.settings.Setting;
 import net.minecraft.client.network.ClientPlayerEntity;
 import meteordevelopment.meteorclient.settings.BoolSetting;
@@ -42,6 +44,14 @@ public class Honker extends Module {
             .description("Which horn to prefer using")
             .supplier(() -> horns)
             .defaultValue("Random")
+            .build()
+    );
+
+    private final Setting<Boolean> ignoreFakes = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Ignore Fakes")
+            .description("Ignore fake players created by modules like Blink.")
+            .defaultValue(true)
             .build()
     );
 
@@ -148,9 +158,14 @@ public class Honker extends Module {
 
     @EventHandler
     private void onEntityAdd(EntityAddedEvent event) {
-        if (this.hornSpam.get()) return;
-        if (!(event.entity instanceof PlayerEntity)) return;
-        if (event.entity instanceof ClientPlayerEntity) return;
+        if (this.hornSpam.get() || mc.player == null) return;
+        if (!(event.entity instanceof PlayerEntity player)) return;
+        if (player instanceof ClientPlayerEntity) return;
+
+        if (ignoreFakes.get()) {
+            Collection<PlayerListEntry> players = mc.player.networkHandler.getPlayerList();
+            if (players.stream().noneMatch(entry -> entry.getProfile().getId().equals(player.getUuid()))) return;
+        }
 
         if (!this.hornSpam.get()) {
             honkDesiredHorn();
