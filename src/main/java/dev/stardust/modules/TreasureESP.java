@@ -180,24 +180,22 @@ public class TreasureESP extends Module {
         ESPBlockData espSettings = espColorSettings.get();
         for (BlockPos pos : inRange) {
             if (this.looted.contains(pos)) continue;
-            if (pos.isWithinDistance(mc.player.getBlockPos(), 16 * 16)) {
-                event.renderer.box(
-                    pos.getX(), pos.getY(), pos.getZ(),
-                    pos.getX()+1, pos.getY()+1, pos.getZ()+1,
-                    espSettings.sideColor, espSettings.lineColor, espSettings.shapeMode, 0
-                );
+            event.renderer.box(
+                pos.getX(), pos.getY(), pos.getZ(),
+                pos.getX()+1, pos.getY()+1, pos.getZ()+1,
+                espSettings.sideColor, espSettings.lineColor, espSettings.shapeMode, 0
+            );
 
-                if (espSettings.tracer) {
-                    event.renderer.line(
-                        RenderUtils.center.x,
-                        RenderUtils.center.y,
-                        RenderUtils.center.z,
-                        pos.getX() + .5,
-                        pos.getY() + .5,
-                        pos.getZ() + .5,
-                        espSettings.tracerColor
-                    );
-                }
+            if (espSettings.tracer) {
+                event.renderer.line(
+                    RenderUtils.center.x,
+                    RenderUtils.center.y,
+                    RenderUtils.center.z,
+                    pos.getX() + .5,
+                    pos.getY() + .5,
+                    pos.getZ() + .5,
+                    espSettings.tracerColor
+                );
             }
         }
     }
