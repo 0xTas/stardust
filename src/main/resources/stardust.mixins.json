@@ -5,6 +5,7 @@
   "client": [
     "AbstractSignEditScreenAccessor",
     "AbstractSignEditScreenMixin",
+    "AnvilScreenAccessor",
     "BookEditScreenAccessor",
     "BookEditScreenMixin",
     "BookScreenMixin",
@@ -25,6 +26,7 @@
   },
   "mixins": [
     "DoorBlockMixin",
-    "GoatHornItemMixin"
+    "GoatHornItemMixin",
+    "AnvilScreenHandlerAccessor"
   ]
 }
