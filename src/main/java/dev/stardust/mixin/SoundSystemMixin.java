@@ -2,6 +2,7 @@ package dev.stardust.mixin;
 
 import java.util.Map;
 import net.minecraft.text.Text;
+import javax.annotation.Nullable;
 import net.minecraft.client.sound.*;
 import org.spongepowered.asm.mixin.*;
 import dev.stardust.modules.MusicTweaks;
@@ -36,8 +37,8 @@ public class SoundSystemMixin {
         MusicTweaks tweaks = Modules.get().get(MusicTweaks.class);
         if (tweaks == null) return;
 
-        String songID = null;
         boolean playing = false;
+        @Nullable String songID = null;
         for (SoundInstance instance : sources.keySet()) {
             Sound sound = instance.getSound();
             if (sound == null) continue;
