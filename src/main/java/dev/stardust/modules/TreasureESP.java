@@ -125,7 +125,8 @@ public class TreasureESP extends Module {
                             int localX = ChunkSectionPos.getLocalCoord(blockPos.getX());
                             int localZ = ChunkSectionPos.getLocalCoord(blockPos.getZ());
 
-                            if (localX == 9 & localZ == 9 && this.isBuriedNaturally(blockPos)) {
+                            // Buried treasure chests always generate at local chunk coordinates of x=9,z=9
+                            if (localX == 9 && localZ == 9 && this.isBuriedNaturally(blockPos)) {
                                 if (soundSetting.get()) {
                                     mc.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE, volumeSetting.get().floatValue(), 1f);
                                 }
@@ -155,6 +156,7 @@ public class TreasureESP extends Module {
                 int localX = ChunkSectionPos.getLocalCoord(pos.getX());
                 int localZ = ChunkSectionPos.getLocalCoord(pos.getZ());
 
+                // Buried treasure chests always generate at local chunk coordinates of x=9,z=9
                 if (localX == 9 && localZ == 9 && this.isBuriedNaturally(pos)) {
                     if (soundSetting.get()) {
                         mc.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE, volumeSetting.get().floatValue(), 1f);
