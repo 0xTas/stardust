@@ -26,7 +26,9 @@ import dev.stardust.util.StardustUtil.*;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.util.shape.VoxelShape;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import meteordevelopment.orbit.EventHandler;
@@ -37,10 +39,15 @@ import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.block.entity.HangingSignBlockEntity;
+import meteordevelopment.meteorclient.renderer.ShapeMode;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.mixininterface.IChatHud;
+import meteordevelopment.meteorclient.utils.render.RenderUtils;
 import meteordevelopment.meteorclient.events.world.ChunkDataEvent;
+import meteordevelopment.meteorclient.events.render.Render3DEvent;
+import meteordevelopment.meteorclient.utils.render.color.SettingColor;
+import meteordevelopment.meteorclient.systems.modules.render.blockesp.ESPBlockData;
 
 
 /**
@@ -60,6 +67,7 @@ public class ChatSigns extends Module {
 
     private final SettingGroup modesGroup = settings.createGroup("Modes", true);
     private final SettingGroup formatGroup = settings.createGroup("Formatting", true);
+    private final SettingGroup oldSignGroup = settings.createGroup("OldSigns Settings", true);
     private final SettingGroup blacklistGroup = settings.createGroup("SignText Blacklist", true);
 
     private final Setting<ChatMode> chatMode = modesGroup.add(
@@ -90,7 +98,7 @@ public class ChatSigns extends Module {
             .build()
     );
 
-    private final Setting<Boolean> showOldSigns  = modesGroup.add(
+    private final Setting<Boolean> showOldSigns  = oldSignGroup.add(
         new BoolSetting.Builder()
             .name("Show Possibly Old Signs*")
             .description("*will show signs placed before 1.8, AND after 1.12. Use your best judgment to determine what's legit.")
@@ -98,7 +106,7 @@ public class ChatSigns extends Module {
             .build()
     );
 
-    private final Setting<Boolean> onlyOldSigns = modesGroup.add(
+    private final Setting<Boolean> onlyOldSigns = oldSignGroup.add(
         new BoolSetting.Builder()
             .name("Only Show New/Old Signs")
             .description("Only display text from signs that are either really old, or brand new.")
@@ -107,10 +115,10 @@ public class ChatSigns extends Module {
             .build()
     );
 
-    private final Setting<Boolean> ignoreNether = modesGroup.add(
+    private final Setting<Boolean> ignoreNether = oldSignGroup.add(
         new BoolSetting.Builder()
             .name("Ignore Nether")
-            .description("Ignore potentially-old signs in the nether since near highways they're almost all certainly new.")
+            .description("Ignore potentially-old signs in the nether (near highways they're all certainly new.)")
             .visible(showOldSigns::get)
             .defaultValue(true)
             .build()
@@ -140,7 +148,7 @@ public class ChatSigns extends Module {
             .build()
     );
 
-    private final Setting<TextColor> oldSignColor = formatGroup.add(
+    private final Setting<TextColor> oldSignColor = oldSignGroup.add(
         new EnumSetting.Builder<TextColor>()
             .name("Old Sign Color")
             .description("Text color for signs that might be old.")
@@ -149,7 +157,7 @@ public class ChatSigns extends Module {
             .build()
     );
 
-    private final Setting<TextFormat> oldSignFormat = formatGroup.add(
+    private final Setting<TextFormat> oldSignFormat = oldSignGroup.add(
         new EnumSetting.Builder<TextFormat>()
             .name("Old Text Format")
             .description("Apply formatting to text displayed from (maybe) old signs.")
@@ -169,6 +177,27 @@ public class ChatSigns extends Module {
         .name("Show Coordinates")
         .description("Display sign coordinates in chat.")
         .defaultValue(false)
+        .build()
+    );
+
+    private final Setting<Boolean> renderOldSigns = oldSignGroup.add(new BoolSetting.Builder()
+        .name("OldSign ESP")
+        .description("Render signs which could be old through walls.")
+        .defaultValue(false)
+        .build()
+    );
+
+    private final Setting<ESPBlockData> espSettings = oldSignGroup.add(new GenericSetting.Builder<ESPBlockData>()
+        .name("ESP Settings")
+        .defaultValue(
+            new ESPBlockData(
+                ShapeMode.Both,
+                new SettingColor(147, 233, 190),
+                new SettingColor(147, 233, 190, 25),
+                true,
+                new SettingColor(147, 233, 190, 125)
+            )
+        )
         .build()
     );
 
@@ -218,6 +247,7 @@ public class ChatSigns extends Module {
     private int totalTicksEnabled = 0;
     @Nullable private BlockPos lastFocusedSign = null;
     private final HashSet<BlockPos> posSet = new HashSet<>();
+    private final HashSet<BlockPos> oldSet = new HashSet<>();
     private final ArrayList<String> blacklisted = new ArrayList<>();
     private final HashMap<BlockPos, Instant> cooldowns = new HashMap<>();
     private final HashMap<String, Integer> signMessages = new HashMap<>();
@@ -284,7 +314,7 @@ public class ChatSigns extends Module {
         // and we can make sure the sign material is oak for those signs in chunks devoid of copper,
         // but new oak signs placed in old chunks can still be indistinguishable from old signs by metadata alone.
 
-        // On 2b2t, this will single-out oak-material signs placed BOTH before January 2015, and AFTER August 2023 (in old chunks).
+        // On 2b2t, this will single-out oak-material signs placed BOTH before January 2015, and AFTER August 2023 (in old pre 1.8 chunks).
         // While this will still be useful for identifying old bases for a while,
         // most old signs are at spawn, and the signal-to-noise ratio there will worsen every single day.
         boolean couldBeOld = false;
@@ -316,6 +346,7 @@ public class ChatSigns extends Module {
         if (!couldBeOld && showOldSigns.get() && onlyOldSigns.get()) return "";
         if (couldBeOld && showOldSigns.get()) {
             color = oldSignColor.get().label;
+            this.oldSet.add(sign.getPos());
         }
         String signText = chatFormat.get() ?
             String.join("\n"+ color + format, lines) : String.join(" ", lines);
@@ -532,6 +563,7 @@ public class ChatSigns extends Module {
     @Override
     public void onDeactivate() {
         this.posSet.clear();
+        this.oldSet.clear();
         this.cooldowns.clear();
         this.chunkCache.clear();
         this.blacklisted.clear();
@@ -582,6 +614,92 @@ public class ChatSigns extends Module {
             }else if (mc.world.getBlockEntity(targetedSign) instanceof SignBlockEntity sign) chatSigns(List.of(sign), chunk, mc);
 
             cooldowns.put(targetedSign, Instant.now());
+        }
+    }
+
+    @EventHandler
+    private void onRender(Render3DEvent event) {
+        if (mc.player == null || mc.world == null || !renderOldSigns.get()) return;
+        List<BlockPos> inRange = this.oldSet
+            .stream()
+            .filter(pos -> pos.isWithinDistance(mc.player.getBlockPos(), mc.options.getViewDistance().getValue() * 16+32))
+            .toList();
+
+        ESPBlockData esp = espSettings.get();
+        for (BlockPos pos : inRange) {
+            BlockState state = mc.world.getBlockState(pos);
+            if (!(state.getBlock() instanceof SignBlock) && !(state.getBlock() instanceof WallSignBlock)) continue;
+            VoxelShape shape = state.getOutlineShape(mc.world, pos);
+
+            double x1 = pos.getX() + shape.getMin(Direction.Axis.X);
+            double y1 = pos.getY() + shape.getMin(Direction.Axis.Y);
+            double z1 = pos.getZ() + shape.getMin(Direction.Axis.Z);
+            double x2 = pos.getX() + shape.getMax(Direction.Axis.X);
+            double y2 = pos.getY() + shape.getMax(Direction.Axis.Y);
+            double z2 = pos.getZ() + shape.getMax(Direction.Axis.Z);
+
+            event.renderer.box(
+                x1, y1, z1, x2, y2, z2,
+                esp.sideColor, esp.lineColor, esp.shapeMode, 0
+            );
+
+            if (esp.tracer) {
+                try {
+                    double offsetX;
+                    double offsetY;
+                    double offsetZ;
+                    if (state.getBlock() instanceof SignBlock) {
+                        offsetX = pos.getX() + .5;
+                        offsetY = pos.getY() + .5;
+                        offsetZ = pos.getZ() + .5;
+                    } else if (state.getBlock() instanceof WallSignBlock) {
+                        Direction facing = state.get(WallSignBlock.FACING);
+                        switch (facing) {
+                            case NORTH -> {
+                                offsetX = pos.getX() + .5;
+                                offsetY = pos.getY() + .5;
+                                offsetZ = pos.getZ() + .937;
+                            }
+                            case EAST -> {
+                                offsetX = pos.getX() + .1337;
+                                offsetY = pos.getY() + .5;
+                                offsetZ = pos.getZ() + .5;
+                            }
+                            case SOUTH -> {
+                                offsetX = pos.getX() + .5;
+                                offsetY = pos.getY() + .5;
+                                offsetZ = pos.getZ() + .1337;
+                            }
+                            case WEST -> {
+                                offsetX = pos.getX() + .937;
+                                offsetY = pos.getY() + .5;
+                                offsetZ = pos.getZ() + .5;
+                            }
+                            default -> {
+                                offsetX = pos.getX() + .5;
+                                offsetY = pos.getY() + .5;
+                                offsetZ = pos.getZ() + .5;
+                            }
+                        }
+                    } else {
+                        offsetX = pos.getX() + .5;
+                        offsetY = pos.getY() + .5;
+                        offsetZ = pos.getZ() + .5;
+                    }
+
+                    event.renderer.line(
+                        RenderUtils.center.x,
+                        RenderUtils.center.y,
+                        RenderUtils.center.z,
+                        offsetX,
+                        offsetY,
+                        offsetZ,
+                        esp.tracerColor
+                    );
+                } catch (Exception err) {
+                    err.printStackTrace();
+                }
+            }
         }
     }
 }
