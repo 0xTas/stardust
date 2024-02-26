@@ -25,6 +25,7 @@
     "defaultRequire": 1
   },
   "mixins": [
+    "WorldMixin",
     "DoorBlockMixin",
     "GoatHornItemMixin",
     "AnvilScreenHandlerAccessor"

@@ -61,6 +61,13 @@ public class BulkBrander extends Module {
             .build()
     );
 
+    private final Setting<Boolean> muteAnvils = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Mute Anvils")
+            .defaultValue(true)
+            .build()
+    );
+
     private final Setting<Boolean> closeOnDone = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
             .name("Close Anvil")
@@ -80,6 +87,8 @@ public class BulkBrander extends Module {
     private boolean notified = false;
     private static final int ANVIL_OFFSET = 3;
 
+    // See WorldMixin.java
+    public boolean shouldMute() { return muteAnvils.get(); }
 
     @Override
     public void onDeactivate() {
