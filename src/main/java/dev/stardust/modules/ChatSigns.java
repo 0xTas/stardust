@@ -101,7 +101,7 @@ public class ChatSigns extends Module {
     private final Setting<Boolean> showOldSigns  = oldSignGroup.add(
         new BoolSetting.Builder()
             .name("Show Possibly Old Signs*")
-            .description("*will show signs placed before 1.8, AND after 1.12. Use your best judgment to determine what's legit.")
+            .description("*will show signs placed before 1.8, AND after 1.19. Use your best judgment to determine what's legit.")
             .defaultValue(false)
             .build()
     );
@@ -303,16 +303,16 @@ public class ChatSigns extends Module {
         }
 
         /* State of OldSigns on 2b2t in 1.19+ */
-        // Signs that were placed in versions 1.8 through 1.12 are still recognizable,
+        // Signs that were placed in versions 1.8 - 1.12 are still recognizable,
         // however, signs placed before 1.8 (old signs) are now indistinguishable from new oak signs placed
         // with standard text entries in 1.19 (unless I'm just dumb and missing something).
 
         // You must now consider context clues such as the sign's environment, material, and content,
         // to determine if it is truly likely be old.
 
-        // We can check for new (1.19+) chunks easily with copper to rule out signs in newer chunks,
-        // and we can make sure the sign material is oak for those signs in chunks devoid of copper,
-        // but new oak signs placed in old chunks can still be indistinguishable from old signs by metadata alone.
+        // We can check for old (pre 1.8) chunks easily with granite, andesite, & diorite to rule out signs in newer chunks,
+        // and we can make sure the sign material is oak for those signs in chunks devoid of alt-stones,
+        // but new oak signs placed in old chunks can still be mistaken for old signs by metadata alone.
 
         // On 2b2t, this will single-out oak-material signs placed BOTH before January 2015, and AFTER August 2023 (in old pre 1.8 chunks).
         // While this will still be useful for identifying old bases for a while,
