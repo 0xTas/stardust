@@ -6,6 +6,7 @@ import net.minecraft.item.Item;
 import net.minecraft.text.Text;
 import net.minecraft.item.ItemStack;
 import dev.stardust.util.StardustUtil;
+import net.minecraft.sound.SoundEvents;
 import meteordevelopment.orbit.EventHandler;
 import dev.stardust.mixin.AnvilScreenAccessor;
 import net.minecraft.screen.AnvilScreenHandler;
@@ -65,6 +66,23 @@ public class BulkBrander extends Module {
         new BoolSetting.Builder()
             .name("Mute Anvils")
             .defaultValue(true)
+            .build()
+    );
+
+    private final Setting<Boolean> pingOnDone = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Sound Ping")
+            .description("Play a sound cue when no more items can be renamed.")
+            .defaultValue(true)
+            .build()
+    );
+
+    private final Setting<Double> pingVolume = settings.getDefaultGroup().add(
+        new DoubleSetting.Builder()
+            .name("Ping Volume")
+            .sliderMin(0.0)
+            .sliderMax(5.0)
+            .defaultValue(1.0)
             .build()
     );
 
@@ -131,6 +149,7 @@ public class BulkBrander extends Module {
                                 Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §4§oNot enough experience§8§o...")
                             );
                             this.notified = true;
+                            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
                             if (closeOnDone.get()) mc.player.closeHandledScreen();
                             if (disableOnDone.get()) this.toggle();
                         }
@@ -139,6 +158,7 @@ public class BulkBrander extends Module {
                                 Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §4§oNo more items to rename§8§o.")
                             );
                             this.notified = true;
+                            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
                             if (closeOnDone.get()) mc.player.closeHandledScreen();
                             if (disableOnDone.get()) this.toggle();
                         }
@@ -150,6 +170,7 @@ public class BulkBrander extends Module {
                         Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §4§oNo more items to rename§8§o.")
                     );
                     this.notified = true;
+                    if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
                     if (closeOnDone.get()) mc.player.closeHandledScreen();
                     if (disableOnDone.get()) this.toggle();
                 }
@@ -163,16 +184,14 @@ public class BulkBrander extends Module {
                     Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §4§oNot enough experience§8§o...")
                 );
                 this.notified = true;
+                if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
                 if (closeOnDone.get()) mc.player.closeHandledScreen();
                 if (disableOnDone.get()) this.toggle();
             }
         } else if (!input2.isEmpty()) {
             InvUtils.shiftClick().slotId(AnvilScreenHandler.INPUT_2_ID);
         } else if (output.isEmpty()) {
-            ItemStack stack = anvil.getSlot(AnvilScreenHandler.INPUT_1_ID).getStack();
-            if (stack.getName().getString().equals(itemName.get())) {
-                InvUtils.shiftClick().slotId(AnvilScreenHandler.INPUT_1_ID);
-            }
+            InvUtils.shiftClick().slotId(AnvilScreenHandler.INPUT_1_ID);
         }
     }
 }
