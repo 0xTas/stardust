@@ -21,8 +21,8 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
-public class BulkBrander extends Module {
-    public BulkBrander() { super(Stardust.CATEGORY, "BulkBrander","Allows you to automatically rename items in bulk when using anvils."); }
+public class StashBrander extends Module {
+    public StashBrander() { super(Stardust.CATEGORY, "StashBrander","Allows you to automatically rename items in bulk when using anvils."); }
 
     private final Setting<List<Item>> itemList = settings.getDefaultGroup().add(
         new ItemListSetting.Builder()
