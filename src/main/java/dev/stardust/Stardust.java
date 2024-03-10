@@ -21,6 +21,7 @@ public class Stardust extends MeteorAddon {
 
     @Override
     public void onInitialize() {
+        Commands.add(new Panorama());
         Commands.add(new Playtime2b2t());
         Commands.add(new LastSeen2b2t());
         Commands.add(new FirstSeen2b2t());
