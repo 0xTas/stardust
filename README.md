@@ -7,12 +7,14 @@ It provides a handful of modules for enhancing your experience on old server.<br
 ### Feature List
 
 - **LastSeen2b2t, FirstSeen2b2t, Playtime2b2t** - *Self explanatory commands. Use your meteor prefix.* Credit to [rfresh](https://github.com/rfresh2) for the current best [2b2t stats api](https://api.2b2t.vc).
+- **Panorama** - *Takes a panorama screenshot and automatically assembles it into a resource pack for the main menu screen.* Usage: `.panorama [name]`
 - **SignatureSign** - *An AutoSign module that's actually good.* Fully customizable template mode, & story mode for long input files over multiple signs.
+- **AxolotlTools** - *Variant ESP, auto-collector & auto-breeder for axolotls.* Can also catch buckets of tropical fish, with or without a farm setup. I used this to get blue axolotls on 2b2t because interacting with them normally pisses me off.
 - **AutoDoors** - *Automatically interacts with doors.* Includes an insufferable door spammer mode as well (complete with client-side mute option).
 - **AutoDrawDistance** - *Automatically adjusts your render distance to maintain an FPS target.* Some biomes/areas can drop my fps by half, so I found this somewhat useful at times.
 - **BannerData** - *Right-click banners to display their pattern and color data.* Looks cool, gives you the base color without any fuss. Can also copy the raw nbt to your clipboard.
 - **BookTools** - *Enhancements for working with books.* Adds buttons for inserting color & formatting codes into writable books, and adds a deobfuscation button to written books containing obfuscated/magic text.
-- **BulkBrander** - *Automatically rename desired items in bulk when using anvils.*
+- **StashBrander** - *Automatically rename desired items in bulk when using anvils.*
 - **TreasureESP** - *An ESP module for buried treasure chests.* Finding buried treasure is the only way of obtaining Hearts of the Sea, and Conduits by extension.
 - **MusicTweaks** - *Lets you tweak various things relating to the background music.* Change the pitch, volume, or cooldown between songs, or even choose and view which soundtracks play during your session. 
 - **RocketMan** - *Makes flying with fireworks much easier (bring lots of rockets!)* This doesn't feature any fancy grim control bypasses or anything like that. This is just a good clean quasi-control firework efly that won't be patched as long as you have access to rockets (which are currently afkable.)
