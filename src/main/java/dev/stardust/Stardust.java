@@ -33,6 +33,7 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new BannerData());
         Modules.get().add(new MusicTweaks());
         Modules.get().add(new TreasureESP());
+        Modules.get().add(new AxolotlTools());
         Modules.get().add(new StashBrander());
         Modules.get().add(new SignatureSign());
         Modules.get().add(new UpdateNotifier());
