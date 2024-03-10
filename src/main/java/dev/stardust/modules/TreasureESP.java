@@ -133,7 +133,7 @@ public class TreasureESP extends Module {
                                 if (chatSetting.get()) mc.player.sendMessage(
                                     Text.of(
                                         "§8<"+ StardustUtil.rCC()+"✨§8> §3§oFound buried treasure at §8[§7§o"
-                                            +blockPos.getX()+"§8, §7§o"+blockPos.getY()+"§8, §7§o"+blockPos.getZ()
+                                            +blockPos.getX()+"§8, §7§o"+blockPos.getY()+"§8, §7§o"+blockPos.getZ()+"§8]"
                                     )
                                 );
                                 this.notified.add(blockPos);

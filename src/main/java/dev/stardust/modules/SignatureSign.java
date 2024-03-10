@@ -224,7 +224,7 @@ public class SignatureSign extends Module {
         new ProvidedStringSetting.Builder()
             .name("Line 4 Mode")
             .defaultValue("Stardust")
-            .description("Line 1 template mode")
+            .description("Line 4 template mode")
             .supplier(() -> lineModes)
             .visible(() -> !storyMode.get())
             .build()
