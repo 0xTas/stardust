@@ -576,9 +576,9 @@ public class ChatSigns extends Module {
         if (mc.world == null || mc.player == null) return;
 
         if (chatMode.get() != ChatMode.Targeted) {
-            List<SignBlockEntity> signs = getNearbySigns(event.chunk);
+            List<SignBlockEntity> signs = getNearbySigns(event.chunk());
 
-            chatSigns(signs, event.chunk, mc);
+            chatSigns(signs, event.chunk(), mc);
         }
     }
 

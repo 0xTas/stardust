@@ -148,7 +148,7 @@ public class TreasureESP extends Module {
     @EventHandler
     private void onChunkData(ChunkDataEvent event) {
         if (mc.world == null || mc.player == null) return;
-        Map<BlockPos, BlockEntity> blockEntities = event.chunk.getBlockEntities();
+        Map<BlockPos, BlockEntity> blockEntities = event.chunk().getBlockEntities();
 
         for (BlockPos pos : blockEntities.keySet()) {
             if (notified.contains(pos)) continue;
