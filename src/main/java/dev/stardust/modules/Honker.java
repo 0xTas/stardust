@@ -76,7 +76,7 @@ public class Honker extends Module {
         new BoolSetting.Builder()
             .name("Mute All Horns")
             .description("Mute everybody's horns, not just your own.")
-            .visible(this.muteHorns::get)
+            .visible(muteHorns::get)
             .defaultValue(false)
             .build()
     );
@@ -87,7 +87,7 @@ public class Honker extends Module {
     private void honkHorn(int hornSlot, int activeSlot) {
         if (mc.interactionManager == null) return;
 
-        this.needsMuting = true;
+        needsMuting = true;
         InvUtils.move().from(hornSlot).to(activeSlot);
         mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND);
         InvUtils.move().from(activeSlot).to(hornSlot);
@@ -137,12 +137,11 @@ public class Honker extends Module {
         return muteHorns.get() && needsMuting || muteHorns.get() && muteAllHorns.get();
     }
 
-
     @Override
     public void onActivate() {
         if (mc.world == null) return;
-        if (this.hornSpam.get()) {
-            this.ticksSinceUsedHorn = 0;
+        if (hornSpam.get()) {
+            ticksSinceUsedHorn = 0;
             return;
         }
 
@@ -152,13 +151,13 @@ public class Honker extends Module {
                 break;
             }
         }
-        this.needsMuting = false;
-        this.ticksSinceUsedHorn = 0;
+        needsMuting = false;
+        ticksSinceUsedHorn = 0;
     }
 
     @EventHandler
     private void onEntityAdd(EntityAddedEvent event) {
-        if (this.hornSpam.get() || mc.player == null) return;
+        if (hornSpam.get() || mc.player == null) return;
         if (!(event.entity instanceof PlayerEntity player)) return;
         if (player instanceof ClientPlayerEntity) return;
 
@@ -167,30 +166,30 @@ public class Honker extends Module {
             if (players.stream().noneMatch(entry -> entry.getProfile().getId().equals(player.getUuid()))) return;
         }
 
-        if (!this.hornSpam.get()) {
+        if (!hornSpam.get()) {
             honkDesiredHorn();
-            this.needsMuting = false;
+            needsMuting = false;
         }
     }
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
-        if (!this.hornSpam.get() || mc.player == null) return;
+        if (!hornSpam.get() || mc.player == null) return;
 
         Item activeItem = mc.player.getActiveItem().getItem();
         if (activeItem.isFood() || activeItem == Items.BOW || activeItem == Items.TRIDENT && mc.mouse.wasRightButtonClicked()) return;
 
-        ++this.ticksSinceUsedHorn;
-        if (this.ticksSinceUsedHorn > 150) {
+        ++ticksSinceUsedHorn;
+        if (ticksSinceUsedHorn > 150) {
             honkDesiredHorn();
-            this.needsMuting = false;
-            this.ticksSinceUsedHorn = 0;
+            needsMuting = false;
+            ticksSinceUsedHorn = 0;
         }
     }
 
     @EventHandler
     private void onPacketReceive(PacketEvent.Receive event) {
-        if (!(event.packet instanceof PlaySoundFromEntityS2CPacket) || !this.shouldMuteHorns()) return;
+        if (!(event.packet instanceof PlaySoundFromEntityS2CPacket) || !shouldMuteHorns()) return;
 
         SoundEvent soundEvent = ((PlaySoundFromEntityS2CPacket) event.packet).getSound().value();
 

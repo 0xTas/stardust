@@ -99,7 +99,7 @@ public class TreasureESP extends Module {
 
     @Override
     public void onDeactivate() {
-        this.notified.clear();
+        notified.clear();
     }
 
     @Override
@@ -126,7 +126,7 @@ public class TreasureESP extends Module {
                             int localZ = ChunkSectionPos.getLocalCoord(blockPos.getZ());
 
                             // Buried treasure chests always generate at local chunk coordinates of x=9,z=9
-                            if (localX == 9 && localZ == 9 && this.isBuriedNaturally(blockPos)) {
+                            if (localX == 9 && localZ == 9 && isBuriedNaturally(blockPos)) {
                                 if (soundSetting.get()) {
                                     mc.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE, volumeSetting.get().floatValue(), 1f);
                                 }
@@ -136,7 +136,7 @@ public class TreasureESP extends Module {
                                             +blockPos.getX()+"§8, §7§o"+blockPos.getY()+"§8, §7§o"+blockPos.getZ()+"§8]"
                                     )
                                 );
-                                this.notified.add(blockPos);
+                                notified.add(blockPos);
                             }
                         }
                     }
@@ -151,20 +151,20 @@ public class TreasureESP extends Module {
         Map<BlockPos, BlockEntity> blockEntities = event.chunk.getBlockEntities();
 
         for (BlockPos pos : blockEntities.keySet()) {
-            if (this.notified.contains(pos)) continue;
+            if (notified.contains(pos)) continue;
             if (blockEntities.get(pos) instanceof ChestBlockEntity) {
                 int localX = ChunkSectionPos.getLocalCoord(pos.getX());
                 int localZ = ChunkSectionPos.getLocalCoord(pos.getZ());
 
                 // Buried treasure chests always generate at local chunk coordinates of x=9,z=9
-                if (localX == 9 && localZ == 9 && this.isBuriedNaturally(pos)) {
+                if (localX == 9 && localZ == 9 && isBuriedNaturally(pos)) {
                     if (soundSetting.get()) {
                         mc.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE, volumeSetting.get().floatValue(), 1f);
                     }
                     if (chatSetting.get()) mc.player.sendMessage(
                         Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §3§oFound buried treasure at §8[§7§o"+pos.getX()+"§8, §7§o"+pos.getY()+"§8, §7§o"+pos.getZ()+"§8]")
                     );
-                    this.notified.add(pos);
+                    notified.add(pos);
                 }
             }
         }
@@ -174,14 +174,14 @@ public class TreasureESP extends Module {
     private void onRender(Render3DEvent event) {
         if (!espSetting.get()) return;
         if (mc.player == null || mc.world == null) return;
-        List<BlockPos> inRange = this.notified
+        List<BlockPos> inRange = notified
             .stream()
             .filter(pos -> pos.isWithinDistance(mc.player.getBlockPos(), mc.options.getViewDistance().getValue() * 16+32))
             .toList();
 
         ESPBlockData espSettings = espColorSettings.get();
         for (BlockPos pos : inRange) {
-            if (this.looted.contains(pos)) continue;
+            if (looted.contains(pos)) continue;
             event.renderer.box(
                 pos.getX(), pos.getY(), pos.getZ(),
                 pos.getX()+1, pos.getY()+1, pos.getZ()+1,
@@ -205,9 +205,9 @@ public class TreasureESP extends Module {
     @EventHandler
     private void onInteractBlock(InteractBlockEvent event) {
         if (mc.player == null || mc.world == null) return;
-        if (this.notified.contains(event.result.getBlockPos())) {
+        if (notified.contains(event.result.getBlockPos())) {
             if (event.result.getType() == HitResult.Type.BLOCK && mc.world.getBlockState(event.result.getBlockPos()).getBlock() instanceof ChestBlock) {
-                this.looted.add(event.result.getBlockPos());
+                looted.add(event.result.getBlockPos());
             }
         }
     }

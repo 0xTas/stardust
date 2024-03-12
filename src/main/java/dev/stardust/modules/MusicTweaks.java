@@ -28,14 +28,14 @@ import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 public class MusicTweaks extends Module {
     public MusicTweaks() {
         super(Stardust.CATEGORY, "MusicTweaks", "Allows you to fuck with the background music.");
-        this.runInMainMenu = true;
-        this.sgOverworldSoundtrack.sectionExpanded = false;
-        this.sgCreativeSoundtrack.sectionExpanded = false;
-        this.sgUnderwaterSoundtrack.sectionExpanded = false;
-        this.sgNetherSoundtrack.sectionExpanded = false;
-        this.sgEndSoundtrack.sectionExpanded = false;
-        this.sgRecordsSoundtrack.sectionExpanded = false;
-        this.sgMenuSoundtrack.sectionExpanded = false;
+        runInMainMenu = true;
+        sgOverworldSoundtrack.sectionExpanded = false;
+        sgCreativeSoundtrack.sectionExpanded = false;
+        sgUnderwaterSoundtrack.sectionExpanded = false;
+        sgNetherSoundtrack.sectionExpanded = false;
+        sgEndSoundtrack.sectionExpanded = false;
+        sgRecordsSoundtrack.sectionExpanded = false;
+        sgMenuSoundtrack.sectionExpanded = false;
     }
 
     public enum DisplayType {
@@ -679,7 +679,7 @@ public class MusicTweaks extends Module {
 
     // See MinecraftClientMixin.java
     public MusicSound getType() {
-        if (this.currentType != null) return this.currentType;
+        if (currentType != null) return currentType;
 
         int min;
         int max;
@@ -687,8 +687,8 @@ public class MusicTweaks extends Module {
             min = 69;
             max = 420;
         } else if (overrideDelayMode.get()) {
-            min = this.getTimeUntilNextSong();
-            max = this.getTimeUntilNextSong();
+            min = getTimeUntilNextSong();
+            max = getTimeUntilNextSong();
         } else {
             min = minTimeUntilNextSong.get() * 20;
             max = maxTimeUntilNextSong.get() * 20;
@@ -699,7 +699,7 @@ public class MusicTweaks extends Module {
         // actually I lied tho don't use the music disc events, or it won't work (see WeightedSoundSetMixin.java)
         MusicSound type = new MusicSound(SoundEvents.MUSIC_GAME, min, ThreadLocalRandom.current().nextInt(min, max), false);
 
-        this.currentType = type;
+        currentType = type;
         return type;
     }
 
@@ -852,11 +852,11 @@ public class MusicTweaks extends Module {
         if (recordRelic.get()) ids.add("minecraft:records/relic");
 
         // Prevent duplicates
-        if (this.currentSong != null && ids.size() > 1) {
+        if (currentSong != null && ids.size() > 1) {
             for (int n = 0; n < ids.size(); n++) {
-                if (this.currentSong.equals("Sound["+ids.get(n)+"]")) {
+                if (currentSong.equals("Sound["+ids.get(n)+"]")) {
                     ids.remove(n);
-                    this.currentSong = null;
+                    currentSong = null;
                     break;
                 }
             }
@@ -867,13 +867,13 @@ public class MusicTweaks extends Module {
 
     // See SoundSystemMixin.java
     public float getNextPitchStep(float currentPitch) {
-        if (this.lastDirection == null) {
-            this.lastDirection = PitchDirection.Descending;
+        if (lastDirection == null) {
+            lastDirection = PitchDirection.Descending;
             float intensity = -(pitchIntensity.get() / 10000f);
             return MathHelper.clamp(currentPitch + (currentPitch * intensity), -5f, 5f);
         }
 
-        switch (this.lastDirection) { // Lmao
+        switch (lastDirection) { // Lmao
             case Ascending -> {
                 float weightedChance = ThreadLocalRandom.current().nextFloat(0, 1);
 
@@ -882,7 +882,7 @@ public class MusicTweaks extends Module {
                     intensity = pitchIntensity.get() / 10000f;
                 } else {
                     intensity = -(pitchIntensity.get() / 10000f);
-                    this.lastDirection = PitchDirection.Descending;
+                    lastDirection = PitchDirection.Descending;
                 }
                 return MathHelper.clamp(currentPitch + (currentPitch * intensity), -5f, 5f);
             }
@@ -894,7 +894,7 @@ public class MusicTweaks extends Module {
                     intensity = -(pitchIntensity.get() / 10000f);
                 } else {
                     intensity = pitchIntensity.get() / 10000f;
-                    this.lastDirection = PitchDirection.Ascending;
+                    lastDirection = PitchDirection.Ascending;
                 }
                 return MathHelper.clamp(currentPitch + (currentPitch * intensity), -5f, 5f);
             }
@@ -906,26 +906,26 @@ public class MusicTweaks extends Module {
         if (mc.player == null) return;
         String[] pieces = songName.split(" - ");
         ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-            Text.of("§8<"+this.rcc+"§o✨§r§8> §2§oNow Playing§r§8: §7§o"+pieces[0]+" §8- "+this.rcc+"§o"+pieces[1]+"§r§8."),
+            Text.of("§8<"+rcc+"§o✨§r§8> §2§oNow Playing§r§8: §7§o"+pieces[0]+" §8- "+rcc+"§o"+pieces[1]+"§r§8."),
             songName.hashCode()
         );
     }
 
     // See MusicTrackerMixin.java
     public void nullifyCurrentType() {
-        this.currentType = null;
-        this.rcc = StardustUtil.rCC();
+        currentType = null;
+        rcc = StardustUtil.rCC();
     }
 
     // See SoundSystemMixin.java
-    public MinecraftClient getClient() { return this.mc; }
+    public MinecraftClient getClient() { return mc; }
     public boolean shouldFadeOut() { return fadeOut.get(); }
     public boolean randomPitch() { return randomPitch.get(); }
     public boolean trippyPitch() { return trippyPitchSetting.get(); }
     public float getVolumeAdjustment() { return volume.get() / 100f; }
     public boolean overrideDelay() { return overrideDelayMode.get(); }
     public DisplayType getDisplayMode() { return displayTypeSetting.get(); }
-    public void setCurrentSong(@Nullable String id) { this.currentSong = id; }
+    public void setCurrentSong(@Nullable String id) { currentSong = id; }
     public int getTimeUntilNextSong() { return timeUntilNextSong.get() * 20; }
     public float getPitchAdjustment() { return pitchAdjustment.get() / 1000f; }
     public boolean shouldDisplayNowPlaying() { return displayNowPlaying.get(); }
@@ -950,21 +950,21 @@ public class MusicTweaks extends Module {
     public void onActivate() {
         if (!startOnEnable.get()) return;
 
-        MusicSound type = this.getType();
+        MusicSound type = getType();
         if (((MusicTrackerAccessor) mc.getMusicTracker()).getCurrent() == null) mc.getMusicTracker().play(type);
     }
 
     @Override
     public void onDeactivate() {
         if (stopOnDisable.get()) mc.getMusicTracker().stop();
-        this.nullifyCurrentType();
+        nullifyCurrentType();
     }
 
     @EventHandler
     private void onGameJoin(GameJoinedEvent event) {
         SoundInstance instance = ((MusicTrackerAccessor) mc.getMusicTracker()).getCurrent();
         if (instance != null) {
-            MusicSound type = this.getType();
+            MusicSound type = getType();
             if (type != mc.getMusicType()) {
                 mc.getMusicTracker().stop();
                 mc.getMusicTracker().play(type);
@@ -972,7 +972,7 @@ public class MusicTweaks extends Module {
         }
 
         if (mc.world != null) {
-            this.lastDim = mc.world.getDimensionKey().toString();
+            lastDim = mc.world.getDimensionKey().toString();
         }
     }
 
@@ -980,13 +980,13 @@ public class MusicTweaks extends Module {
     private void onDimensionChange(PacketEvent.Receive event) {
         if (!(event.packet instanceof PlayerRespawnS2CPacket packet)) return;
 
-        if (this.lastDim != null) {
-            if (!packet.getDimensionType().toString().equals(this.lastDim)) {
-                MusicSound type = this.getType();
+        if (lastDim != null) {
+            if (!packet.getDimensionType().toString().equals(lastDim)) {
+                MusicSound type = getType();
 
                 mc.getMusicTracker().stop();
                 mc.getMusicTracker().play(type);
-                this.lastDim = packet.getDimensionType().toString();
+                lastDim = packet.getDimensionType().toString();
             }
         }
     }

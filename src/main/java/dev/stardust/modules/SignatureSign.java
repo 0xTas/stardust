@@ -86,15 +86,15 @@ public class SignatureSign extends Module {
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(1))
             .onChanged(txt -> {
-                if (truncateLines.isVisible() && truncateLines.get() && this.inputTooLong(txt)) {
-                    this.restoreValidInput(1);
-                    if (this.mc.player != null) {
-                        this.mc.player.sendMessage(
+                if (truncateLines.isVisible() && truncateLines.get() && inputTooLong(txt)) {
+                    restoreValidInput(1);
+                    if (mc.player != null) {
+                        mc.player.sendMessage(
                             Text.of("§8<§4✨§8> §4Input too long§7..")
                         );
                     }
                 } else {
-                    this.lastLine1Text = txt;
+                    lastLine1Text = txt;
                 }
             })
             .build()
@@ -145,15 +145,15 @@ public class SignatureSign extends Module {
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(2))
             .onChanged(txt -> {
-                if (truncateLines.isVisible() && truncateLines.get() && this.inputTooLong(txt)) {
-                    this.restoreValidInput(2);
-                    if (this.mc.player != null) {
-                        this.mc.player.sendMessage(
+                if (truncateLines.isVisible() && truncateLines.get() && inputTooLong(txt)) {
+                    restoreValidInput(2);
+                    if (mc.player != null) {
+                        mc.player.sendMessage(
                             Text.of("§8<§4✨§8> §4Input too long§7..")
                         );
                     }
                 } else {
-                    this.lastLine2Text = txt;
+                    lastLine2Text = txt;
                 }
             })
             .build()
@@ -204,15 +204,15 @@ public class SignatureSign extends Module {
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(3))
             .onChanged(txt -> {
-                if (truncateLines.isVisible() && truncateLines.get() && this.inputTooLong(txt)) {
-                    this.restoreValidInput(3);
-                    if (this.mc.player != null) {
-                        this.mc.player.sendMessage(
+                if (truncateLines.isVisible() && truncateLines.get() && inputTooLong(txt)) {
+                    restoreValidInput(3);
+                    if (mc.player != null) {
+                        mc.player.sendMessage(
                             Text.of("§8<§4✨§8> §4Input too long§7..")
                         );
                     }
                 } else {
-                    this.lastLine3Text = txt;
+                    lastLine3Text = txt;
                 }
             })
             .build()
@@ -263,15 +263,15 @@ public class SignatureSign extends Module {
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(4))
             .onChanged(txt -> {
-                if (truncateLines.isVisible() && truncateLines.get() && this.inputTooLong(txt)) {
-                    this.restoreValidInput(4);
-                    if (this.mc.player != null) {
-                        this.mc.player.sendMessage(
+                if (truncateLines.isVisible() && truncateLines.get() && inputTooLong(txt)) {
+                    restoreValidInput(4);
+                    if (mc.player != null) {
+                        mc.player.sendMessage(
                             Text.of("§8<§4✨§8> §4Input too long§7..")
                         );
                     }
                 } else {
-                    this.lastLine4Text = txt;
+                    lastLine4Text = txt;
                 }
             })
             .build()
@@ -365,10 +365,10 @@ public class SignatureSign extends Module {
 
     @Override
     public void onActivate() {
-        this.lastLine1Text = line1Text.get();
-        this.lastLine2Text = line2Text.get();
-        this.lastLine3Text = line3Text.get();
-        this.lastLine4Text = line4Text.get();
+        lastLine1Text = line1Text.get();
+        lastLine2Text = line2Text.get();
+        lastLine3Text = line3Text.get();
+        lastLine4Text = line4Text.get();
     }
 
     @Override
@@ -412,15 +412,15 @@ public class SignatureSign extends Module {
     }
 
     private boolean inputTooLong(String input) {
-        return this.mc.textRenderer.getWidth(input) > 90;
+        return mc.textRenderer.getWidth(input) > 90;
     }
 
     private void restoreValidInput(int line) {
         switch (line) {
-            case 1 -> line1Text.set(this.lastLine1Text);
-            case 2 -> line2Text.set(this.lastLine2Text);
-            case 3 -> line3Text.set(this.lastLine3Text);
-            default -> line4Text.set(this.lastLine4Text);
+            case 1 -> line1Text.set(lastLine1Text);
+            case 2 -> line2Text.set(lastLine2Text);
+            case 3 -> line3Text.set(lastLine3Text);
+            default -> line4Text.set(lastLine4Text);
         }
     }
 
@@ -512,7 +512,7 @@ public class SignatureSign extends Module {
 
         if (!truncateLines.get()) return signText;
         for (int i = 0; i < signText.size(); i++) {
-            if (this.inputTooLong(signText.get(i))) {
+            if (inputTooLong(signText.get(i))) {
                 if (mc.player != null) {
                     mc.player.sendMessage(
                         Text.of("§8<§4✨§8> §7§oLine §4§o"+(i+1)+" §7was §4§otruncated §7due to length§7..")
@@ -534,7 +534,7 @@ public class SignatureSign extends Module {
 
                 return line <= lines.size() ? lines.get(line) : lines.get(lines.size()-1);
             } catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Failed too read from "+ file.getAbsolutePath() +"! - Why:\n"+err);
+                Stardust.LOG.error("[Stardust] Failed to read from "+ file.getAbsolutePath() +"! - Why:\n"+err);
             }
         } else {
             try {
@@ -788,7 +788,7 @@ public class SignatureSign extends Module {
 
         }
 
-        this.openFolder.set(false);
+        openFolder.set(false);
     }
 
     private String dayOfMonthSuffix(int dom) {

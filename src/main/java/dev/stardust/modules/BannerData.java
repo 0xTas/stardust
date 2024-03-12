@@ -3,7 +3,6 @@ package dev.stardust.modules;
 import java.util.List;
 import java.util.Optional;
 import dev.stardust.Stardust;
-import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.block.entity.*;
@@ -21,6 +20,7 @@ import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.EnumSetting;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
+import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import meteordevelopment.meteorclient.events.entity.player.InteractBlockEvent;
 
 
@@ -49,6 +49,14 @@ public class BannerData extends Module {
             .build()
     );
 
+    private final Setting<Boolean> bannerNameOnly = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Names Only")
+            .description("Display banner names on right click only.")
+            .defaultValue(false)
+            .build()
+    );
+
     private final Setting<Boolean> copyToClipboard = settings.getDefaultGroup().add(new BoolSetting.Builder()
         .name("Copy to Clipboard")
         .description("Copy NBT data to your clipboard.")
@@ -56,60 +64,59 @@ public class BannerData extends Module {
         .build()
     );
 
-    private int totalTicksEnabled = 0;
+    private int timer = 0;
     private BlockPos lastEventPos = new BlockPos(0,0,0);
 
     private String patternNameFromID(String id) {
         return switch (id) {
             case "b" -> "Base";
-            case "bs" -> "Base Fess (Bottom Stripe)";
-            case "ts" -> "Chief (Top Stripe)";
-            case "ls" -> "Pale Dexter (Left Stripe)";
-            case "rs" -> "Pale Sinister (Right Stripe)";
-            case "cs" -> "Pale (Center Vertical Stripe)";
-            case "ms" -> "Fess (Middle Horizontal Stripe)";
-            case "drs" -> "Bend (Down Right Stripe)";
-            case "dls" -> "Bend Sinister (Down Left Stripe)";
-            case "ss" -> "Paly (Small Vertical Stripes)";
-            case "cr" -> "Saltire (Diagonal Cross [X])";
-            case "sc" -> "Cross (Square Cross [+])";
-            case "ld" -> "Per Bend Sinister (Left of Diagonal)";
-            case "rud" -> "Per Bend (Right of Upside-down Diagonal)";
-            case "lud" -> "Per Bend Inverted (Left of Upside-Down Diagonal)";
-            case "rd" -> "Per Bend Sinister Inverted (Right of Diagonal)";
-            case "vh" -> "Per Pale (Vertical Half Left)";
-            case "vhr" -> "Per Pale Inverted (Vertical Half Right)";
-            case "hh" -> "Per Fess (Horizontal Half Top)";
-            case "hhb" -> "Per Fess Inverted (Horizontal Half Bottom)";
-            case "bl" -> "Base Dexter Canton (Bottom Left Corner)";
-            case "br" -> "Base Sinister Canton (Bottom Right Corner)";
-            case "tl" -> "Chief Dexter Canton (Top Left Corner)";
-            case "tr" -> "Chief Sinister Canton (Top Right Corner)";
-            case "bt" -> "Chevron (Bottom Triangle)";
-            case "tt" -> "Inverted Chevron (Top Triangle)";
-            case "bts" -> "Base Indented (Bottom Sawtooth)";
-            case "tts" -> "Chief Indented (Top Sawtooth)";
-            case "mc" -> "Roundel (Middle Circle)";
-            case "mr" -> "Lozenge (Middle Rhombus)";
-            case "bo" -> "Bordure (Border)";
-            case "cbo" -> "Bordure Indented (Curly Border)";
-            case "bri" -> "Field Masoned (Brick)";
+            case "glb" -> "Globe";
             case "gra" -> "Gradient";
-            case "gru" -> "Base Gradient";
-            case "cre" -> "Creeper Charge";
             case "sku" -> "Skull Charge";
             case "flo" -> "Flower Charge";
+            case "gru" -> "Base Gradient";
             case "moj" -> "Thing (Mojang)";
-            case "glb" -> "Globe";
             case "pig" -> "Snout (Piglin)";
+            case "cre" -> "Creeper Charge";
+            case "bo" -> "Bordure (Border)";
+            case "ts" -> "Chief (Top Stripe)";
+            case "bri" -> "Field Masoned (Brick)";
+            case "mc" -> "Roundel (Middle Circle)";
+            case "mr" -> "Lozenge (Middle Rhombus)";
+            case "sc" -> "Cross (Square Cross [+])";
+            case "bs" -> "Base Fess (Bottom Stripe)";
+            case "ls" -> "Pale Dexter (Left Stripe)";
+            case "drs" -> "Bend (Down Right Stripe)";
+            case "bt" -> "Chevron (Bottom Triangle)";
+            case "cr" -> "Saltire (Diagonal Cross [X])";
+            case "rs" -> "Pale Sinister (Right Stripe)";
+            case "vh" -> "Per Pale (Vertical Half Left)";
+            case "ss" -> "Paly (Small Vertical Stripes)";
+            case "cs" -> "Pale (Center Vertical Stripe)";
+            case "hh" -> "Per Fess (Horizontal Half Top)";
+            case "tts" -> "Chief Indented (Top Sawtooth)";
+            case "tt" -> "Inverted Chevron (Top Triangle)";
+            case "ms" -> "Fess (Middle Horizontal Stripe)";
+            case "cbo" -> "Bordure Indented (Curly Border)";
+            case "bts" -> "Base Indented (Bottom Sawtooth)";
+            case "dls" -> "Bend Sinister (Down Left Stripe)";
+            case "ld" -> "Per Bend Sinister (Left of Diagonal)";
+            case "tl" -> "Chief Dexter Canton (Top Left Corner)";
+            case "bl" -> "Base Dexter Canton (Bottom Left Corner)";
+            case "vhr" -> "Per Pale Inverted (Vertical Half Right)";
+            case "tr" -> "Chief Sinister Canton (Top Right Corner)";
+            case "rud" -> "Per Bend (Right of Upside-down Diagonal)";
+            case "br" -> "Base Sinister Canton (Bottom Right Corner)";
+            case "hhb" -> "Per Fess Inverted (Horizontal Half Bottom)";
+            case "rd" -> "Per Bend Sinister Inverted (Right of Diagonal)";
+            case "lud" -> "Per Bend Inverted (Left of Upside-Down Diagonal)";
             default -> "Oasis Sigil";
         };
     }
 
-
     @Override
     public void onDeactivate() {
-        this.totalTicksEnabled = 0;
+        this.timer = 0;
     }
 
     @EventHandler
@@ -154,19 +161,21 @@ public class BannerData extends Module {
                         .append(cc).append(txtFormat).append(baseColor).append(" Banner\n§r");
                 }
 
-                for (Pair<RegistryEntry<BannerPattern>, DyeColor> patternEntry : patterns) {
-                    String patternColor = patternEntry.getSecond().name().charAt(0)
-                        +patternEntry.getSecond().name().substring(1).toLowerCase();
+                if (!bannerNameOnly.get()) {
+                    for (Pair<RegistryEntry<BannerPattern>, DyeColor> patternEntry : patterns) {
+                        String patternColor = patternEntry.getSecond().name().charAt(0)
+                            +patternEntry.getSecond().name().substring(1).toLowerCase();
 
-                    if (patternColor.contains("_")) {
-                        int i = patternColor.indexOf("_");
-                        patternColor = patternColor.substring(0, i)+" "+patternColor.substring(i+1, i+2).toUpperCase()
-                            +patternColor.substring(i+2);
+                        if (patternColor.contains("_")) {
+                            int i = patternColor.indexOf("_");
+                            patternColor = patternColor.substring(0, i)+" "+patternColor.substring(i+1, i+2).toUpperCase()
+                                +patternColor.substring(i+2);
+                        }
+
+                        patternsList.append(cc).append("   ◦ ").append("§7")
+                            .append(txtFormat).append(patternColor).append(" ")
+                            .append(this.patternNameFromID(patternEntry.getFirst().value().getId())).append("\n");
                     }
-
-                    patternsList.append(cc).append("   ◦ ").append("§7")
-                        .append(txtFormat).append(patternColor).append(" ")
-                        .append(patternNameFromID(patternEntry.getFirst().value().getId())).append("\n");
                 }
 
                 String bannerData = patternsList.toString().trim();
@@ -178,9 +187,9 @@ public class BannerData extends Module {
                     ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
                         Text.of(
                             "§8<"+StardustUtil.rCC()+"§o✨§r§8> §7"
-                                + txtFormat + "Copied NBT data to clipboard§7."
+                                + txtFormat + "Copied NBT data to clipboard§8."
                         ),
-                        "Clipboard update".hashCode()
+                        "clipboardUpdate".hashCode()
                     );
                 }
 
@@ -192,9 +201,9 @@ public class BannerData extends Module {
                     ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
                         Text.of(
                             "§8<"+StardustUtil.rCC()+"§o✨§r§8> §7§o"
-                                + "Copied NBT data to clipboard."
+                                + "Copied NBT data to clipboard§8."
                         ),
-                        "Clipboard update".hashCode()
+                        "clipboardUpdate".hashCode()
                     );
                 } else {
                     mc.player.sendMessage(
@@ -211,11 +220,10 @@ public class BannerData extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        if (this.totalTicksEnabled >= 65535) this.totalTicksEnabled = 0;
-
         // InteractBlockEvents fire twice sometimes, so we must cull the extra ones manually.
-        this.totalTicksEnabled++;
-        if (this.totalTicksEnabled % 20 == 0) {
+        this.timer++;
+        if (this.timer >= 20) {
+            this.timer = 0;
             this.lastEventPos = this.lastEventPos.add(2000000, 2000000, 2000000);
         }
     }

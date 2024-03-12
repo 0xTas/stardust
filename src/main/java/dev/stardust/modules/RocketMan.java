@@ -164,7 +164,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> notifyAudible = sgSound.add(
         new BoolSetting.Builder()
-            .name("Sound")
+            .name("Low Rockets Sound")
             .defaultValue(false)
             .visible(notifyOnLow::get)
             .build()
@@ -199,7 +199,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> warnAudible = sgSound.add(
         new BoolSetting.Builder()
-            .name("Sound")
+            .name("Low Durability Sound")
             .defaultValue(false)
             .visible(warnOnLow::get)
             .build()
@@ -383,11 +383,11 @@ public class RocketMan extends Module {
     public boolean shouldTickRotation() {
         if (mc.player == null) return false;
         if (freeLookOnly.get() && !Modules.get().get(FreeLook.class).isActive()) return false;
-        return this.keyboardControl.get() && mc.player.isFallFlying();
+        return keyboardControl.get() && mc.player.isFallFlying();
     }
 
     public boolean shouldInvertPitch() {
-        return this.invertPitch.isVisible() && this.invertPitch.get();
+        return invertPitch.isVisible() && invertPitch.get();
     }
 
     public String getUsageMode() {
@@ -395,15 +395,15 @@ public class RocketMan extends Module {
     }
 
     public MinecraftClient getClientInstance() {
-        return this.mc;
+        return mc;
     }
 
     public int getPitchSpeed() {
-        return this.pitchSpeed.get();
+        return pitchSpeed.get();
     }
 
     public int getYawSpeed() {
-        return this.yawSpeed.get();
+        return yawSpeed.get();
     }
 
     // See ClientPlayerEntityMixin.java && ElytraSoundInstanceMixin.java
@@ -415,7 +415,7 @@ public class RocketMan extends Module {
 
     @Override
     public void onActivate() {
-        this.fireworkTicks = 0;
+        fireworkTicks = 0;
         if (mc.player == null) return;
         boolean isWearingElytra = mc.player.getEquippedStack(EquipmentSlot.CHEST).getItem() == Items.ELYTRA;
 

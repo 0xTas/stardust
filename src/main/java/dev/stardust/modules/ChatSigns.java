@@ -225,7 +225,7 @@ public class ChatSigns extends Module {
             .name("Case-sensitive Blacklist")
             .description("Force matches in the blacklist file to be case-sensitive.")
             .defaultValue(false)
-            .visible(this.signBlacklist::get)
+            .visible(signBlacklist::get)
             .build()
     );
 
@@ -234,7 +234,7 @@ public class ChatSigns extends Module {
             .name("Open Blacklist File")
             .description("Open the chatsigns-blacklist.txt file.")
             .defaultValue(false)
-            .visible(this.signBlacklist::get)
+            .visible(signBlacklist::get)
             .onChanged(it -> {
                 if (it) {
                     if (checkOrCreateBlacklistFile()) openBlacklistFile();
@@ -244,7 +244,7 @@ public class ChatSigns extends Module {
             .build()
     );
 
-    private int totalTicksEnabled = 0;
+    private int timer = 0;
     @Nullable private BlockPos lastFocusedSign = null;
     private final HashSet<BlockPos> posSet = new HashSet<>();
     private final HashSet<BlockPos> oldSet = new HashSet<>();
@@ -308,7 +308,7 @@ public class ChatSigns extends Module {
         // with standard text entries in 1.19 (unless I'm just dumb and missing something).
 
         // You must now consider context clues such as the sign's environment, material, and content,
-        // to determine if it is truly likely be old.
+        // in order to determine if it is truly likely to be old.
 
         // We can check for old (pre 1.8) chunks easily with granite, andesite, & diorite to rule out signs in newer chunks,
         // and we can make sure the sign material is oak for those signs in chunks devoid of alt-stones,
@@ -330,10 +330,10 @@ public class ChatSigns extends Module {
                 NbtCompound metadata = sign.toInitialChunkDataNbt();
                 if (!metadata.toString().contains("{\"extra\":[{\"") && !lines.isEmpty()) {
                     String testString = String.join(" ", lines);
-                    Matcher fullYearsMatcher = this.fullYearsPattern.matcher(testString);
+                    Matcher fullYearsMatcher = fullYearsPattern.matcher(testString);
 
                     if (!fullYearsMatcher.find()) {
-                        Matcher truncatedYearsMatcher = this.truncatedYearsPattern.matcher(testString);
+                        Matcher truncatedYearsMatcher = truncatedYearsPattern.matcher(testString);
 
                         if (!truncatedYearsMatcher.find()) {
                             couldBeOld = !likelyNewChunk(chunk, mc, dimension);
@@ -346,7 +346,7 @@ public class ChatSigns extends Module {
         if (!couldBeOld && showOldSigns.get() && onlyOldSigns.get()) return "";
         if (couldBeOld && showOldSigns.get()) {
             color = oldSignColor.get().label;
-            this.oldSet.add(sign.getPos());
+            oldSet.add(sign.getPos());
         }
         String signText = chatFormat.get() ?
             String.join("\n"+ color + format, lines) : String.join(" ", lines);
@@ -381,8 +381,8 @@ public class ChatSigns extends Module {
     private boolean likelyNewChunk(WorldChunk chunk, MinecraftClient mc, RegistryKey<World> dimension) {
         if (mc.world == null) return false;
         ChunkPos chunkPos = chunk.getPos();
-        if (this.chunkCache.containsKey(chunkPos)) {
-            return this.chunkCache.get(chunkPos);
+        if (chunkCache.containsKey(chunkPos)) {
+            return chunkCache.get(chunkPos);
         }
 
         if (dimension == World.NETHER) {
@@ -392,14 +392,14 @@ public class ChatSigns extends Module {
             int newBlocks = 0;
             for (BlockPos pos : BlockPos.iterate(startPosDebris, endPosDebris)) {
                 if (newBlocks >= 13) {
-                    this.chunkCache.put(chunkPos, true);
+                    chunkCache.put(chunkPos, true);
                     return true;
                 }
                 Block block = mc.world.getBlockState(pos).getBlock();
                 if (block == Blocks.ANCIENT_DEBRIS || block == Blocks.BLACKSTONE || block == Blocks.BASALT
                     || block == Blocks.WARPED_NYLIUM || block == Blocks.CRIMSON_NYLIUM || block == Blocks.SOUL_SOIL) ++newBlocks;
             }
-            this.chunkCache.put(chunkPos, (newBlocks >= 13));
+            chunkCache.put(chunkPos, (newBlocks >= 13));
             return newBlocks >= 13;
         } else if (dimension == World.OVERWORLD){
             BlockPos startPosAltStones = chunkPos.getBlockPos(0, 0, 0);
@@ -408,7 +408,7 @@ public class ChatSigns extends Module {
             int newBlocks = 0;
             for (BlockPos pos : BlockPos.iterate(startPosAltStones, endPosAltStones)) {
                 if (newBlocks >=  33) {
-                    this.chunkCache.put(chunkPos, true);
+                    chunkCache.put(chunkPos, true);
                     return true;
                 }
                 // Andesite, Diorite, and Granite were added in 1.8,
@@ -416,11 +416,11 @@ public class ChatSigns extends Module {
                 Block block = mc.world.getBlockState(pos).getBlock();
                 if (block == Blocks.ANDESITE || block == Blocks.GRANITE || block == Blocks.DIORITE) ++newBlocks;
             }
-            this.chunkCache.put(chunkPos, (newBlocks >= 33));
+            chunkCache.put(chunkPos, (newBlocks >= 33));
             return newBlocks >= 33;
         }// idk what to do about the end, so we'll detect signs by default. if you don't want it, turn it off in there.
 
-        this.chunkCache.put(chunkPos, false);
+        chunkCache.put(chunkPos, false);
         return false;
     }
 
@@ -429,18 +429,18 @@ public class ChatSigns extends Module {
 
         signs.forEach(sign -> {
             String textOnSign = Arrays.stream(sign.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" ")).trim();
-            if (this.signMessages.containsKey(textOnSign) && ignoreDuplicates.get()) return;
+            if (signMessages.containsKey(textOnSign) && ignoreDuplicates.get()) return;
 
-            if (signBlacklist.get() && !this.blacklisted.isEmpty()) {
-                if (this.caseSensitive.get()) {
-                    if (this.blacklisted.stream().anyMatch(line -> textOnSign.contains(line.trim()))) return;
-                } else if (this.blacklisted.stream().anyMatch(line -> textOnSign.toLowerCase().contains(line.trim().toLowerCase()))) return;
+            if (signBlacklist.get() && !blacklisted.isEmpty()) {
+                if (caseSensitive.get()) {
+                    if (blacklisted.stream().anyMatch(line -> textOnSign.contains(line.trim()))) return;
+                } else if (blacklisted.stream().anyMatch(line -> textOnSign.toLowerCase().contains(line.trim().toLowerCase()))) return;
             }
 
             if (chatMode.get() == ChatMode.ESP && posSet.contains(sign.getPos())) return;
             if (chatMode.get() == ChatMode.Both) {
                 if (posSet.contains(sign.getPos())) {
-                    if (!sign.getPos().equals(this.lastFocusedSign)) return;
+                    if (!sign.getPos().equals(lastFocusedSign)) return;
                 }
             }
 
@@ -448,13 +448,13 @@ public class ChatSigns extends Module {
 
             posSet.add(sign.getPos());
             if (msg.isBlank()) return;
-            if (this.signMessages.containsKey(textOnSign) && !sign.getPos().equals(this.lastFocusedSign)) {
-                int timesSeen = this.signMessages.get(textOnSign) + 1;
-                this.signMessages.put(textOnSign, timesSeen);
+            if (signMessages.containsKey(textOnSign) && !sign.getPos().equals(lastFocusedSign)) {
+                int timesSeen = signMessages.get(textOnSign) + 1;
+                signMessages.put(textOnSign, timesSeen);
                 msg = msg + " " + "§8[§7§ox§4§o"+ timesSeen + "§r§8]";
                 ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(Text.of(msg), textOnSign.hashCode());
             } else {
-                this.signMessages.put(textOnSign, 1);
+                signMessages.put(textOnSign, 1);
                 ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(Text.of(msg), textOnSign.hashCode());
             }
         });
@@ -492,7 +492,7 @@ public class ChatSigns extends Module {
         File blackListFile = meteorFolder.resolve("chatsigns-blacklist.txt").toFile();
 
         try(Stream<String> lineStream = Files.lines(blackListFile.toPath())) {
-            this.blacklisted.addAll(lineStream.toList());
+            blacklisted.addAll(lineStream.toList());
         }catch (Exception err) {
             Stardust.LOG.error("[Stardust] Failed to read from "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err);
         }
@@ -525,18 +525,18 @@ public class ChatSigns extends Module {
             }
         }
 
-        this.openBlacklistFile.set(false);
+        openBlacklistFile.set(false);
     }
 
     private void resetBlacklistFileSetting() {
-        this.openBlacklistFile.set(false);
+        openBlacklistFile.set(false);
     }
 
 
     @Override
     public void onActivate() {
         if (mc.player == null || mc.world == null) return;
-        if (this.signBlacklist.get() && checkOrCreateBlacklistFile()) initBlacklistText();
+        if (signBlacklist.get() && checkOrCreateBlacklistFile()) initBlacklistText();
 
         BlockPos pos = mc.player.getBlockPos();
         if (chatMode.get() == ChatMode.ESP || chatMode.get() == ChatMode.Both) {
@@ -562,13 +562,13 @@ public class ChatSigns extends Module {
 
     @Override
     public void onDeactivate() {
-        this.posSet.clear();
-        this.oldSet.clear();
-        this.cooldowns.clear();
-        this.chunkCache.clear();
-        this.blacklisted.clear();
-        this.signMessages.clear();
-        this.totalTicksEnabled = 0;
+        timer = 0;
+        posSet.clear();
+        oldSet.clear();
+        cooldowns.clear();
+        chunkCache.clear();
+        blacklisted.clear();
+        signMessages.clear();
     }
 
     @EventHandler
@@ -586,19 +586,20 @@ public class ChatSigns extends Module {
     private void onTick(TickEvent.Pre event) {
         if (chatMode.get() == ChatMode.ESP) return;
         if (mc.world == null || mc.player == null) return;
-        if (this.totalTicksEnabled >= 65535) this.totalTicksEnabled = 0;
-        else if (this.totalTicksEnabled % 6000 == 0) this.signMessages.clear();
+        if (timer >= 65535) timer = 0;
+        else if (timer % 6000 == 0) signMessages.clear();
 
-        ++this.totalTicksEnabled;
-        if (this.totalTicksEnabled % 5 == 0) {
+        ++timer;
+        if (timer % 5 == 0) {
+            timer = 0;
             BlockPos targetedSign = getTargetedSign();
             if (targetedSign == null) {
-                this.lastFocusedSign = null;
+                lastFocusedSign = null;
                 return;
             }
 
-            if (targetedSign.equals(this.lastFocusedSign) && repeatMode.get() == RepeatMode.On_Focus) return;
-            else if (!targetedSign.equals(this.lastFocusedSign)) this.lastFocusedSign = targetedSign;
+            if (targetedSign.equals(lastFocusedSign) && repeatMode.get() == RepeatMode.On_Focus) return;
+            else if (!targetedSign.equals(lastFocusedSign)) lastFocusedSign = targetedSign;
 
             WorldChunk chunk = mc.world.getChunk(targetedSign.getX() >> 4, targetedSign.getZ() >> 4);
             if (repeatMode.get() == RepeatMode.Cooldown) {
@@ -620,7 +621,7 @@ public class ChatSigns extends Module {
     @EventHandler
     private void onRender(Render3DEvent event) {
         if (mc.player == null || mc.world == null || !renderOldSigns.get()) return;
-        List<BlockPos> inRange = this.oldSet
+        List<BlockPos> inRange = oldSet
             .stream()
             .filter(pos -> pos.isWithinDistance(mc.player.getBlockPos(), mc.options.getViewDistance().getValue() * 16+32))
             .toList();

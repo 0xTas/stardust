@@ -86,9 +86,9 @@ public class AutoDrawDistance extends Module {
             .build()
     );
 
+    private int timer = 0;
     private int justIncreased = 0;
     private int sweetSpotCounter = 0;
-    private int totalTicksEnabled = 0;
     private boolean sweetSpot = false;
     private final IntArrayList fpsData = new IntArrayList();
 
@@ -123,20 +123,19 @@ public class AutoDrawDistance extends Module {
         }
     }
 
-
     @Override
     public void onDeactivate() {
-        this.sweetSpotCounter = 0;
-        this.totalTicksEnabled = 0;
+        sweetSpotCounter = 0;
+        timer = 0;
     }
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
         if (fpsData.size() > 500) fpsData.clear();
-        if (this.totalTicksEnabled >= 65535) this.totalTicksEnabled = 0;
+        if (timer >= 65535) timer = 0;
 
-        if (sweetSpot) this.sweetSpotCounter++; else sweetSpotCounter = 0;
-        if (this.sweetSpotCounter >= sweetSpotDelay.get()) {
+        if (sweetSpot) ++sweetSpotCounter; else sweetSpotCounter = 0;
+        if (sweetSpotCounter >= sweetSpotDelay.get()) {
             sweetSpot = false;
             sweetSpotCounter = 0;
         }
@@ -144,8 +143,8 @@ public class AutoDrawDistance extends Module {
         int currentFps = mc.getCurrentFps();
 
         fpsData.add(currentFps);
-        this.totalTicksEnabled++;
-        if (this.totalTicksEnabled % 10 == 0) {
+        ++timer;
+        if (timer % 10 == 0) {
             int drawDistance = mc.options.getViewDistance().getValue();
 
             int averageFps = 0;
@@ -174,7 +173,7 @@ public class AutoDrawDistance extends Module {
                         );
                     }
                 } else {
-                    justIncreased++;
+                    ++justIncreased;
                 }
                 return;
             } else if (sweetSpot) {
@@ -184,7 +183,7 @@ public class AutoDrawDistance extends Module {
             if (averageFps >= fpsTarget.get() - closeEnough) {
                 if (drawDistance >= maxDistance.get()) return;
 
-                justIncreased++;
+                ++justIncreased;
                 fpsData.clear();
                 if (verbose.get() && reportFPS.get() && mc.player != null) {
                     ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
@@ -207,7 +206,7 @@ public class AutoDrawDistance extends Module {
                 }
 
                 fpsData.clear();
-                if (this.totalTicksEnabled < 250) return;
+                if (timer < 250) return;
 
                 int diff = targetFps - averageFps;
                 if (diff <= 15) {

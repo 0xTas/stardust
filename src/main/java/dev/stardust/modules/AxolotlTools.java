@@ -270,8 +270,8 @@ public class AxolotlTools extends Module {
     private final Set<String> interactVariants = new HashSet<>();
 
     private void disableFishModes() {
-        this.fishFarm.set(false);
-        this.catchFish.set(false);
+        fishFarm.set(false);
+        catchFish.set(false);
     }
 
     private boolean hasEmptySlots() {
@@ -374,26 +374,26 @@ public class AxolotlTools extends Module {
     @Override
     public void onActivate() {
         switch (interactPink.get()) {
-            case Both, Interact -> this.interactVariants.add(AxolotlEntity.Variant.LUCY.toString());
+            case Both, Interact -> interactVariants.add(AxolotlEntity.Variant.LUCY.toString());
         }
         switch (interactWild.get()) {
-            case Both, Interact -> this.interactVariants.add(AxolotlEntity.Variant.WILD.toString());
+            case Both, Interact -> interactVariants.add(AxolotlEntity.Variant.WILD.toString());
         }
         switch (interactGold.get()) {
-            case Both, Interact -> this.interactVariants.add(AxolotlEntity.Variant.GOLD.toString());
+            case Both, Interact -> interactVariants.add(AxolotlEntity.Variant.GOLD.toString());
         }
         switch (interactCyan.get()) {
-            case Both, Interact -> this.interactVariants.add(AxolotlEntity.Variant.CYAN.toString());
+            case Both, Interact -> interactVariants.add(AxolotlEntity.Variant.CYAN.toString());
         }
         switch (interactBlue.get()) {
-            case Both, Interact -> this.interactVariants.add(AxolotlEntity.Variant.BLUE.toString());
+            case Both, Interact -> interactVariants.add(AxolotlEntity.Variant.BLUE.toString());
         }
     }
 
     @Override
     public void onDeactivate() {
-        this.timer = 0;
-        this.interactVariants.clear();
+        timer = 0;
+        interactVariants.clear();
     }
 
     @EventHandler private void onTick(TickEvent.Pre event) {
@@ -403,12 +403,12 @@ public class AxolotlTools extends Module {
 
         ItemStack current = mc.player.getInventory().getMainHandStack();
         if (current.isFood() && mc.mouse.wasRightButtonClicked()) {
-            ++this.timer;
+            ++timer;
             return;
         }
 
-        if (this.timer >= tickRate.get()) {
-            this.timer = 0;
+        if (timer >= tickRate.get()) {
+            timer = 0;
             List<AxolotlEntity> axolotls = new ArrayList<>();
             List<TropicalFishEntity> tropicalFishes = new ArrayList<>();
             for (Entity entity : mc.world.getEntities()) {
@@ -420,10 +420,10 @@ public class AxolotlTools extends Module {
                 switch (interactionMode.get()) {
                     case Full -> {
                         if (axolotlMode.get() == AxolotlMode.Release) {
-                            BlockPos source = this.getNearbyWaterSource(true);
+                            BlockPos source = getNearbyWaterSource(true);
                             if (current.getItem() != Items.AXOLOTL_BUCKET) {
-                                if (this.trySwapValidBucket(Items.AXOLOTL_BUCKET)) {
-                                    this.timer = tickRate.get()-1;
+                                if (trySwapValidBucket(Items.AXOLOTL_BUCKET)) {
+                                    timer = tickRate.get()-1;
                                     return;
                                 }
                             } else if (source != null) {
@@ -432,7 +432,7 @@ public class AxolotlTools extends Module {
                                     Rotations.getPitch(source), 69420,
                                     () -> mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND)
                                 );
-                                ++this.timer;
+                                ++timer;
                                 return;
                             }
                         }
@@ -443,7 +443,7 @@ public class AxolotlTools extends Module {
                             .toList();
 
                         TargetPredicate predicate = TargetPredicate.createNonAttackable();
-                        Predicate<LivingEntity> targetTest = ax -> this.interactVariants.contains(((AxolotlEntity) ax).getVariant().toString());
+                        Predicate<LivingEntity> targetTest = ax -> interactVariants.contains(((AxolotlEntity) ax).getVariant().toString());
 
                         targetTest = targetTest
                             .and(ax -> (axolotlMode.get() == AxolotlMode.Catch
@@ -461,20 +461,20 @@ public class AxolotlTools extends Module {
 
                         if (target != null) {
                             if (axolotlMode.get() == AxolotlMode.Catch) {
-                                if (fillBuckets.get() && this.hasNoValidBucket(Items.WATER_BUCKET) && current.getItem() != Items.BUCKET) {
-                                    if (this.trySwapValidBucket(Items.BUCKET)) {
-                                        this.timer = tickRate.get()-1;
+                                if (fillBuckets.get() && hasNoValidBucket(Items.WATER_BUCKET) && current.getItem() != Items.BUCKET) {
+                                    if (trySwapValidBucket(Items.BUCKET)) {
+                                        timer = tickRate.get()-1;
                                         return;
                                     }
-                                } else if (fillBuckets.get() && this.hasNoValidBucket(Items.WATER_BUCKET) && current.getItem() == Items.BUCKET) {
-                                    BlockPos source = this.getNearbyWaterSource(false);
-                                    if (source != null && (this.hasEmptySlots() || current.getCount() == 1)) {
+                                } else if (fillBuckets.get() && hasNoValidBucket(Items.WATER_BUCKET) && current.getItem() == Items.BUCKET) {
+                                    BlockPos source = getNearbyWaterSource(false);
+                                    if (source != null && (hasEmptySlots() || current.getCount() == 1)) {
                                         Rotations.rotate(
                                             Rotations.getYaw(source),
                                             Rotations.getPitch(source), 69420,
                                             () -> mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND)
                                         );
-                                        ++this.timer;
+                                        ++timer;
                                         return;
                                     } else {
                                         ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
@@ -483,24 +483,24 @@ public class AxolotlTools extends Module {
                                         );
                                     }
                                 }
-                                if (this.tryInteractMobFull(target, Items.WATER_BUCKET)) return;
+                                if (tryInteractMobFull(target, Items.WATER_BUCKET)) return;
                             } else if (axolotlMode.get() == AxolotlMode.Breed) {
-                                if (this.tryInteractMobFull(target, Items.TROPICAL_FISH_BUCKET)) return;
-                                else if (emptyBuckets.get() && this.hasNoValidBucket(Items.TROPICAL_FISH_BUCKET)) {
+                                if (tryInteractMobFull(target, Items.TROPICAL_FISH_BUCKET)) return;
+                                else if (emptyBuckets.get() && hasNoValidBucket(Items.TROPICAL_FISH_BUCKET)) {
                                     if (current.getItem() != Items.WATER_BUCKET) {
-                                        if (this.trySwapValidBucket(Items.WATER_BUCKET)) {
-                                            this.timer = tickRate.get()-1;
+                                        if (trySwapValidBucket(Items.WATER_BUCKET)) {
+                                            timer = tickRate.get()-1;
                                             return;
                                         }
                                     } else {
-                                        BlockPos source = this.getNearbyWaterSource(true);
+                                        BlockPos source = getNearbyWaterSource(true);
                                         if (source != null) {
                                             Rotations.rotate(
                                                 Rotations.getYaw(source),
                                                 Rotations.getPitch(source), 69420,
                                                 () -> mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND)
                                             );
-                                            ++this.timer;
+                                            ++timer;
                                             return;
                                         }
                                     }
@@ -516,13 +516,13 @@ public class AxolotlTools extends Module {
                                     if (!catchBabies.get() && axolotl.isBaby()) return;
                                     else if (catchBabies.get() && onlyCatchBabies.get() && !axolotl.isBaby()) return;
 
-                                    if (!this.interactVariants.contains(axolotl.getVariant().toString())) return;
-                                    else if (this.tryInteractMobTrigger(axolotl, Items.WATER_BUCKET)) return;
+                                    if (!interactVariants.contains(axolotl.getVariant().toString())) return;
+                                    else if (tryInteractMobTrigger(axolotl, Items.WATER_BUCKET)) return;
                                 } else if (axolotlMode.get() == AxolotlMode.Breed) {
                                     if (!feedBabies.get() && axolotl.isBaby()) return;
                                     if (feedBabies.get() && onlyFeedBabies.get() && !axolotl.isBaby()) return;
-                                    if (!this.interactVariants.contains(axolotl.getVariant().toString())) return;
-                                    if (this.tryInteractMobTrigger(axolotl, Items.TROPICAL_FISH_BUCKET)) return;
+                                    if (!interactVariants.contains(axolotl.getVariant().toString())) return;
+                                    if (tryInteractMobTrigger(axolotl, Items.TROPICAL_FISH_BUCKET)) return;
                                     else {
                                         ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
                                             Text.of("§8<§5§o✨§r§8> §4§oThat axolotl isn't ready to eat yet§8§o!"),
@@ -540,8 +540,8 @@ public class AxolotlTools extends Module {
                                 BlockHitResult hit = (BlockHitResult) result;
                                 if (mc.world.getFluidState(hit.getBlockPos()).getFluid() == Fluids.WATER) {
                                     if (current.getItem() != Items.AXOLOTL_BUCKET) {
-                                        if (this.trySwapValidBucket(Items.AXOLOTL_BUCKET)) {
-                                            this.timer = tickRate.get() - 1;
+                                        if (trySwapValidBucket(Items.AXOLOTL_BUCKET)) {
+                                            timer = tickRate.get() - 1;
                                             return;
                                         }
                                     } else {
@@ -568,7 +568,7 @@ public class AxolotlTools extends Module {
                         );
 
                         if (target != null) {
-                            if (this.tryInteractMobFull(target, Items.WATER_BUCKET)) return;
+                            if (tryInteractMobFull(target, Items.WATER_BUCKET)) return;
                         }
                     }
                     case Trigger -> {
@@ -581,12 +581,12 @@ public class AxolotlTools extends Module {
                         // Make sure to align your crosshair so that you can't interact with anything but water & fish.
                         // This code will keep the cycle going until your inventory runs out of empty buckets.
                         if (fishFarm.get()) {
-                            if (current.getItem() != Items.BUCKET && this.hasNoValidBucket(Items.WATER_BUCKET)) {
-                                this.trySwapValidBucket(Items.BUCKET);
+                            if (current.getItem() != Items.BUCKET && hasNoValidBucket(Items.WATER_BUCKET)) {
+                                trySwapValidBucket(Items.BUCKET);
                             }
 
-                            if (current.getItem() == Items.BUCKET && this.hasNoValidBucket(Items.WATER_BUCKET)) {
-                                if (this.hasEmptySlots() || current.getCount() == 1) {
+                            if (current.getItem() == Items.BUCKET && hasNoValidBucket(Items.WATER_BUCKET)) {
+                                if (hasEmptySlots() || current.getCount() == 1) {
                                     mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND);
                                 } else {
                                     ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
@@ -594,15 +594,15 @@ public class AxolotlTools extends Module {
                                         "fullInventoryWarning".hashCode()
                                     );
                                 }
-                                ++this.timer;
+                                ++timer;
                                 return;
                             }
 
-                            if (!this.hasNoValidBucket(Items.TROPICAL_FISH_BUCKET)) {
+                            if (!hasNoValidBucket(Items.TROPICAL_FISH_BUCKET)) {
                                 for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
                                     if (mc.player.getInventory().getStack(n).getItem() == Items.TROPICAL_FISH_BUCKET) {
                                         InvUtils.drop().slot(n);
-                                        ++this.timer;
+                                        ++timer;
                                         return;
                                     }
                                 }
@@ -612,14 +612,14 @@ public class AxolotlTools extends Module {
                         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY) {
                             EntityHitResult hit = (EntityHitResult) mc.crosshairTarget;
                             if (hit.getEntity() instanceof TropicalFishEntity fishy) {
-                                if (this.tryInteractMobTrigger(fishy, Items.WATER_BUCKET)) return;
+                                if (tryInteractMobTrigger(fishy, Items.WATER_BUCKET)) return;
                             }
                         }
                     }
                 }
             }
         }
-        ++this.timer;
+        ++timer;
     }
 
     @EventHandler
