@@ -14,8 +14,8 @@ import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.gui.screen.TitleScreen;
 import org.spongepowered.asm.mixin.injection.Inject;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.screen.ConnectScreen;
 import net.minecraft.client.gui.screen.SplashTextRenderer;
+import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(TitleScreen.class)
 public abstract class TitleScreenMixin extends Screen {
     @Unique
-    private static final ServerInfo OLD_SERVER = new ServerInfo("2builders2tools", "2b2t.org", false);
+    private static final ServerInfo OLD_SERVER = new ServerInfo("2builders2tools", "2b2t.org", ServerInfo.ServerType.OTHER);
 
     @Shadow
     private @Nullable SplashTextRenderer splashText;
@@ -52,7 +52,7 @@ public abstract class TitleScreenMixin extends Screen {
         if (Stardust.directConnectButtonSetting.get()) {
             this.addDrawableChild(ButtonWidget.builder(
                     Text.of("§c§l2§a§lB"), this::onClick2b2tButton)
-                .dimensions(this.width / 2 + 104, (this.height / 4 + 48) + 72, 20, 20)
+                .dimensions(this.width / 2 + 104, this.height / 4 + 72, 20, 20)
                 .build()
             );
         }
