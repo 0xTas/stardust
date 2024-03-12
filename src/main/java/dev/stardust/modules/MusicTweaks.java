@@ -707,24 +707,24 @@ public class MusicTweaks extends Module {
     public String getSongName(String songID) {
         String songName;
         switch (songID) {
-            case "calm1.ogg" -> songName = "C418 - Minecraft";
-            case "calm2.ogg" -> songName = "C418 - Clark";
-            case "calm3.ogg" -> songName = "C418 - Sweden";
-            case "creative1.ogg" -> songName = "C418 - Biome Fest";
-            case "creative2.ogg" -> songName = "C418 - Blind Spots";
-            case "creative3.ogg" -> songName = "C418 - Haunt Muskie";
-            case "creative4.ogg" -> songName = "C418 - Aria Math";
-            case "creative5.ogg" -> songName = "C418 - Dreiton";
-            case "creative6.ogg" -> songName = "C418 - Taswell";
-            case "hal1.ogg" -> songName = "C418 - Subwoofer Lullaby";
-            case "hal2.ogg" -> songName = "C418 - Living Mice";
-            case "hal3.ogg" -> songName = "C418 - Haggstrom";
-            case "hal4.ogg" -> songName = "C418 - Danny";
-            case "nuance1.ogg" -> songName = "C418 - Key";
-            case "nuance2.ogg" -> songName = "C418 - Oxygène";
-            case "piano1.ogg" -> songName = "C418 - Dry Hands";
-            case "piano2.ogg" -> songName = "C418 - Wet Hands";
-            case "piano3.ogg" -> songName = "C418 - Mice on Venus";
+            case "minecraft.ogg" -> songName = "C418 - Minecraft";
+            case "clark.ogg" -> songName = "C418 - Clark";
+            case "sweden.ogg" -> songName = "C418 - Sweden";
+            case "biome_fest.ogg" -> songName = "C418 - Biome Fest";
+            case "blind_spots.ogg" -> songName = "C418 - Blind Spots";
+            case "haunt_muskie.ogg" -> songName = "C418 - Haunt Muskie";
+            case "aria_math.ogg" -> songName = "C418 - Aria Math";
+            case "dreiton.ogg" -> songName = "C418 - Dreiton";
+            case "taswell.ogg" -> songName = "C418 - Taswell";
+            case "subwoofer_lullaby.ogg" -> songName = "C418 - Subwoofer Lullaby";
+            case "living_mice.ogg" -> songName = "C418 - Living Mice";
+            case "haggstrom.ogg" -> songName = "C418 - Haggstrom";
+            case "danny.ogg" -> songName = "C418 - Danny";
+            case "key.ogg" -> songName = "C418 - Key";
+            case "oxygene.ogg" -> songName = "C418 - Oxygène";
+            case "dry_hands.ogg" -> songName = "C418 - Dry Hands";
+            case "wet_hands.ogg" -> songName = "C418 - Wet Hands";
+            case "mice_on_venus.ogg" -> songName = "C418 - Mice on Venus";
             case "aerie.ogg" -> songName = "Lena Raine - Aerie";
             case "ancestry.ogg" -> songName = "Lena Raine - Ancestry";
             case "a_familiar_room.ogg" -> songName = "Aaron Cherof - A Familiar Room";
@@ -744,20 +744,20 @@ public class MusicTweaks extends Module {
             case "axolotl.ogg" -> songName = "C418 - Axolotl";
             case "dragon_fish.ogg" -> songName = "C418 - Dragon Fish";
             case "shuniji.ogg" -> songName = "C418 - Shuniji";
-            case "nether1.ogg" -> songName = "C418 - Concrete Halls";
-            case "nether2.ogg" -> songName = "C418 - Dead Voxel";
-            case "nether3.ogg" -> songName = "C418 - Warmth";
-            case "nether4.ogg" -> songName = "C418 - Ballad of the Cats";
+            case "concrete_halls.ogg" -> songName = "C418 - Concrete Halls";
+            case "dead_voxel.ogg" -> songName = "C418 - Dead Voxel";
+            case "warmth.ogg" -> songName = "C418 - Warmth";
+            case "ballad_of_the_cats.ogg" -> songName = "C418 - Ballad of the Cats";
             case "chrysopoeia.ogg" -> songName = "Lena Raine - Chrysopoeia";
             case "rubedo.ogg" -> songName = "Lena Raine - Rubedo";
             case "so_below.ogg" -> songName = "Lena Raine - So Below";
             case "boss.ogg" -> songName = "C418 - Boss";
-            case "end.ogg" -> songName = "C418 - The End";
-            case "menu1.ogg" -> songName = "C418 - Mutation";
-            case "menu2.ogg" -> songName = "C418 - Moog City 2";
-            case "menu3.ogg" -> songName = "C418 - Beginning 2";
-            case "menu4.ogg" -> songName = "C418 - Floating Trees";
-            case "credits.ogg" -> songName = "C418 - Alpha";
+            case "the_end.ogg" -> songName = "C418 - The End";
+            case "mutation.ogg" -> songName = "C418 - Mutation";
+            case "moog_city_2.ogg" -> songName = "C418 - Moog City 2";
+            case "beginning_2.ogg" -> songName = "C418 - Beginning 2";
+            case "floating_trees.ogg" -> songName = "C418 - Floating Trees";
+            case "alpha.ogg" -> songName = "C418 - Alpha";
             case "5.ogg" -> songName = "Samuel Aberg - 5";
             case "11.ogg" -> songName = "C418 - 11";
             case "13.ogg" -> songName = "C418 - 13";
@@ -783,24 +783,24 @@ public class MusicTweaks extends Module {
     // See WeightedSoundSetMixin.java
     public List<String> getSoundSet() {
         List<String> ids = new ArrayList<>();
-        if (minecraft.get()) ids.add("minecraft:music/game/calm1");
-        if (clark.get()) ids.add("minecraft:music/game/calm2");
-        if (sweden.get()) ids.add("minecraft:music/game/calm3");
-        if (biomeFest.get()) ids.add("minecraft:music/game/creative/creative1");
-        if (blindSpots.get()) ids.add("minecraft:music/game/creative/creative2");
-        if (hauntMuskie.get()) ids.add("minecraft:music/game/creative/creative3");
-        if (ariaMath.get()) ids.add("minecraft:music/game/creative/creative4");
-        if (dreiton.get()) ids.add("minecraft:music/game/creative/creative5");
-        if (tasWell.get()) ids.add("minecraft:music/game/creative/creative6");
-        if (subwooferLullaby.get()) ids.add("minecraft:music/game/hal1");
-        if (livingMice.get()) ids.add("minecraft:music/game/hal2");
-        if (haggstrom.get()) ids.add("minecraft:music/game/hal3");
-        if (danny.get()) ids.add("minecraft:music/game/hal4");
-        if (key.get()) ids.add("minecraft:music/game/nuance1");
-        if (oxygene.get()) ids.add("minecraft:music/game/nuance2");
-        if (dryHands.get()) ids.add("minecraft:music/game/piano1");
-        if (wetHands.get()) ids.add("minecraft:music/game/piano2");
-        if (miceOnVenus.get()) ids.add("minecraft:music/game/piano3");
+        if (minecraft.get()) ids.add("minecraft:music/game/minecraft");
+        if (clark.get()) ids.add("minecraft:music/game/clark");
+        if (sweden.get()) ids.add("minecraft:music/game/sweden");
+        if (biomeFest.get()) ids.add("minecraft:music/game/creative/biome_fest");
+        if (blindSpots.get()) ids.add("minecraft:music/game/creative/blind_spots");
+        if (hauntMuskie.get()) ids.add("minecraft:music/game/creative/haunt_muskie");
+        if (ariaMath.get()) ids.add("minecraft:music/game/creative/aria_math");
+        if (dreiton.get()) ids.add("minecraft:music/game/creative/dreiton");
+        if (tasWell.get()) ids.add("minecraft:music/game/creative/taswell");
+        if (subwooferLullaby.get()) ids.add("minecraft:music/game/subwoofer_lullaby");
+        if (livingMice.get()) ids.add("minecraft:music/game/living_mice");
+        if (haggstrom.get()) ids.add("minecraft:music/game/haggstrom");
+        if (danny.get()) ids.add("minecraft:music/game/danny");
+        if (key.get()) ids.add("minecraft:music/game/key");
+        if (oxygene.get()) ids.add("minecraft:music/game/oxygene");
+        if (dryHands.get()) ids.add("minecraft:music/game/dry_hands");
+        if (wetHands.get()) ids.add("minecraft:music/game/wet_hands");
+        if (miceOnVenus.get()) ids.add("minecraft:music/game/mice_on_venus");
         if (aerie.get()) ids.add("minecraft:music/game/swamp/aerie");
         if (bromeliad.get()) ids.add("minecraft:music/game/bromeliad");
         if (firebugs.get()) ids.add("minecraft:music/game/swamp/firebugs");
@@ -820,20 +820,20 @@ public class MusicTweaks extends Module {
         if (crescentDunes.get()) ids.add("minecraft:music/game/crescent_dunes");
         if (floatingDream.get()) ids.add("minecraft:music/game/floating_dream");
         if (comfortingMemories.get()) ids.add("minecraft:music/game/comforting_memories");
-        if (mutation.get()) ids.add("minecraft:music/menu/menu1");
-        if (moogCity2.get()) ids.add("minecraft:music/menu/menu2");
-        if (beginning2.get()) ids.add("minecraft:music/menu/menu3");
-        if (floatingTrees.get()) ids.add("minecraft:music/menu/menu4");
-        if (alpha.get()) ids.add("minecraft:music/game/end/credits");
-        if (theEnd.get()) ids.add("minecraft:music/game/end/end");
+        if (mutation.get()) ids.add("minecraft:music/menu/mutation");
+        if (moogCity2.get()) ids.add("minecraft:music/menu/moog_city_2");
+        if (beginning2.get()) ids.add("minecraft:music/menu/beginning_2");
+        if (floatingTrees.get()) ids.add("minecraft:music/menu/floating_trees");
+        if (alpha.get()) ids.add("minecraft:music/game/end/alpha");
+        if (theEnd.get()) ids.add("minecraft:music/game/end/the_end");
         if (boss.get()) ids.add("minecraft:music/game/end/boss");
         if (soBelow.get()) ids.add("minecraft:music/game/nether/soulsand_valley/so_below");
         if (rubedo.get()) ids.add("minecraft:music/game/nether/nether_wastes/rubedo");
         if (chrysopoeia.get()) ids.add("minecraft:music/game/nether/crimson_forest/chrysopoeia");
-        if (concreteHalls.get()) ids.add("minecraft:music/game/nether/nether1");
-        if (deadVoxel.get()) ids.add("minecraft:music/game/nether/nether2");
-        if (warmth.get()) ids.add("minecraft:music/game/nether/nether3");
-        if (balladOfTheCats.get()) ids.add("minecraft:music/game/nether/nether4");
+        if (concreteHalls.get()) ids.add("minecraft:music/game/nether/concrete_halls");
+        if (deadVoxel.get()) ids.add("minecraft:music/game/nether/dead_voxel");
+        if (warmth.get()) ids.add("minecraft:music/game/nether/warmth");
+        if (balladOfTheCats.get()) ids.add("minecraft:music/game/nether/ballad_of_the_cats");
         if (record5.get()) ids.add("minecraft:records/5");
         if (record11.get()) ids.add("minecraft:records/11");
         if (record13.get()) ids.add("minecraft:records/13");
@@ -978,15 +978,17 @@ public class MusicTweaks extends Module {
 
     @EventHandler
     private void onDimensionChange(PacketEvent.Receive event) {
-        if (!(event.packet instanceof PlayerRespawnS2CPacket packet)) return;
+        if (mc.world == null) return;
+        if (!(event.packet instanceof PlayerRespawnS2CPacket)) return;
 
+        String dimensionType = mc.world.getDimensionKey().toString();
         if (lastDim != null) {
-            if (!packet.getDimensionType().toString().equals(lastDim)) {
+            if (!dimensionType.equals(lastDim)) {
                 MusicSound type = getType();
 
                 mc.getMusicTracker().stop();
                 mc.getMusicTracker().play(type);
-                lastDim = packet.getDimensionType().toString();
+                lastDim = dimensionType;
             }
         }
     }
