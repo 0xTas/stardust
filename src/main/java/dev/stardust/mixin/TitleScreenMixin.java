@@ -52,7 +52,7 @@ public abstract class TitleScreenMixin extends Screen {
         if (Stardust.directConnectButtonSetting.get()) {
             this.addDrawableChild(ButtonWidget.builder(
                     Text.of("§c§l2§a§lB"), this::onClick2b2tButton)
-                .dimensions(this.width / 2 + 104, (this.height / 4 + 48) + 72, 20, 20)
+                .dimensions(this.width / 2 + 104, this.height / 4 + 72, 20, 20)
                 .build()
             );
         }
