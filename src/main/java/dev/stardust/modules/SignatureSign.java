@@ -34,10 +34,10 @@ public class SignatureSign extends Module {
 
     public static final String[] lineModes = {"Custom", "Empty", "File", "Username",
         "Username was here", "Timestamp", "Stardust", "Oasis", "Base64", "Hex", "0xHex", "ROT13"};
-
     public static final String[] timestampTypes = {"MM/DD/YY", "MM/DD/YYYY", "DD/MM/YY", "DD/MM/YYYY",
         "YYYY/MM/DD", "YYYY/DD/MM", "Day Month Year", "Month Day Year", "Month Year", "Year", "Day Month", "Month Day",
         "Unix Epoch"};
+    public static final String[] timestampDelimiters = {"/", "//", "\\", "\\\\", "|", "||", "-", "_", "~", ".", ",", "x", "•", "✨"};
 
     private final SettingGroup sgMode = settings.createGroup("Module Mode");
     private final SettingGroup sgLine1 = settings.createGroup("Line 1");
@@ -120,6 +120,15 @@ public class SignatureSign extends Module {
             .build()
     );
 
+    private final Setting<String> line1TimestampDelim = sgLine1.add(
+        new ProvidedStringSetting.Builder()
+            .name("Line 1 Timestamp Delimiter")
+            .defaultValue("/")
+            .supplier(() -> timestampDelimiters)
+            .visible(() -> !storyMode.get() && line1Mode.get().equals("Timestamp") && line1TimestampType.get().contains("/"))
+            .build()
+    );
+
     private final Setting<String> line2Mode = sgLine2.add(
         new ProvidedStringSetting.Builder()
             .name("Line 2 Mode")
@@ -167,6 +176,15 @@ public class SignatureSign extends Module {
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
             .visible(() -> !storyMode.get() && line2Mode.get().equals("Timestamp"))
+            .build()
+    );
+
+    private final Setting<String> line2TimestampDelim = sgLine2.add(
+        new ProvidedStringSetting.Builder()
+            .name("Line 2 Timestamp Delimiter")
+            .defaultValue("/")
+            .supplier(() -> timestampDelimiters)
+            .visible(() -> !storyMode.get() && line2Mode.get().equals("Timestamp") && line2TimestampType.get().contains("/"))
             .build()
     );
 
@@ -220,6 +238,15 @@ public class SignatureSign extends Module {
             .build()
     );
 
+    private final Setting<String> line3TimestampDelim = sgLine3.add(
+        new ProvidedStringSetting.Builder()
+            .name("Line 3 Timestamp Delimiter")
+            .defaultValue("/")
+            .supplier(() -> timestampDelimiters)
+            .visible(() -> !storyMode.get() && line3Mode.get().equals("Timestamp") && line3TimestampType.get().contains("/"))
+            .build()
+    );
+
     private final Setting<String> line4Mode = sgLine4.add(
         new ProvidedStringSetting.Builder()
             .name("Line 4 Mode")
@@ -267,6 +294,15 @@ public class SignatureSign extends Module {
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
             .visible(() -> !storyMode.get() && line4Mode.get().equals("Timestamp"))
+            .build()
+    );
+
+    private final Setting<String> line4TimestampDelim = sgLine4.add(
+        new ProvidedStringSetting.Builder()
+            .name("Line 4 Timestamp Delimiter")
+            .defaultValue("/")
+            .supplier(() -> timestampDelimiters)
+            .visible(() -> !storyMode.get() && line4Mode.get().equals("Timestamp") && line4TimestampType.get().contains("/"))
             .build()
     );
 
@@ -643,12 +679,12 @@ public class SignatureSign extends Module {
         switch (line) {
             case 1 -> {
                 return switch (line1TimestampType.get()) {
-                    case "MM/DD/YY" -> currentDate.format(mmddyy);
-                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy);
-                    case "DD/MM/YY" -> currentDate.format(ddmmyy);
-                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy);
-                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd);
-                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm);
+                    case "MM/DD/YY" -> currentDate.format(mmddyy).replace("/", line1TimestampDelim.get());
+                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy).replace("/", line1TimestampDelim.get());
+                    case "DD/MM/YY" -> currentDate.format(ddmmyy).replace("/", line1TimestampDelim.get());
+                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy).replace("/", line1TimestampDelim.get());
+                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd).replace("/", line1TimestampDelim.get());
+                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm).replace("/", line1TimestampDelim.get());
                     case "Day Month Year" ->
                         dayOfMonthSuffix(currentDate.getDayOfMonth()) + " " + currentMonth + " " + currentDate.getYear();
                     case "Month Day Year" ->
@@ -662,12 +698,12 @@ public class SignatureSign extends Module {
             }
             case 2 -> {
                 return switch (line2TimestampType.get()) {
-                    case "MM/DD/YY" -> currentDate.format(mmddyy);
-                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy);
-                    case "DD/MM/YY" -> currentDate.format(ddmmyy);
-                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy);
-                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd);
-                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm);
+                    case "MM/DD/YY" -> currentDate.format(mmddyy).replace("/", line2TimestampDelim.get());
+                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy).replace("/", line2TimestampDelim.get());
+                    case "DD/MM/YY" -> currentDate.format(ddmmyy).replace("/", line2TimestampDelim.get());
+                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy).replace("/", line2TimestampDelim.get());
+                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd).replace("/", line2TimestampDelim.get());
+                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm).replace("/", line2TimestampDelim.get());
                     case "Day Month Year" ->
                         dayOfMonthSuffix(currentDate.getDayOfMonth()) + " " + currentMonth + " " + currentDate.getYear();
                     case "Month Day Year" ->
@@ -681,12 +717,12 @@ public class SignatureSign extends Module {
             }
             case 3 -> {
                 return switch (line3TimestampType.get()) {
-                    case "MM/DD/YY" -> currentDate.format(mmddyy);
-                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy);
-                    case "DD/MM/YY" -> currentDate.format(ddmmyy);
-                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy);
-                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd);
-                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm);
+                    case "MM/DD/YY" -> currentDate.format(mmddyy).replace("/", line3TimestampDelim.get());
+                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy).replace("/", line3TimestampDelim.get());
+                    case "DD/MM/YY" -> currentDate.format(ddmmyy).replace("/", line3TimestampDelim.get());
+                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy).replace("/", line3TimestampDelim.get());
+                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd).replace("/", line3TimestampDelim.get());
+                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm).replace("/", line3TimestampDelim.get());
                     case "Day Month Year" ->
                         dayOfMonthSuffix(currentDate.getDayOfMonth()) + " " + currentMonth + " " + currentDate.getYear();
                     case "Month Day Year" ->
@@ -700,12 +736,12 @@ public class SignatureSign extends Module {
             }
             case 4 -> {
                 return switch (line4TimestampType.get()) {
-                    case "MM/DD/YY" -> currentDate.format(mmddyy);
-                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy);
-                    case "DD/MM/YY" -> currentDate.format(ddmmyy);
-                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy);
-                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd);
-                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm);
+                    case "MM/DD/YY" -> currentDate.format(mmddyy).replace("/", line4TimestampDelim.get());
+                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy).replace("/", line4TimestampDelim.get());
+                    case "DD/MM/YY" -> currentDate.format(ddmmyy).replace("/", line4TimestampDelim.get());
+                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy).replace("/", line4TimestampDelim.get());
+                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd).replace("/", line4TimestampDelim.get());
+                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm).replace("/", line4TimestampDelim.get());
                     case "Day Month Year" ->
                         dayOfMonthSuffix(currentDate.getDayOfMonth()) + " " + currentMonth + " " + currentDate.getYear();
                     case "Month Day Year" ->
