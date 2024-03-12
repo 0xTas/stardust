@@ -5,9 +5,12 @@ import dev.stardust.modules.*;
 import dev.stardust.commands.*;
 import com.mojang.logging.LogUtils;
 import dev.stardust.util.StardustUtil;
+import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.commands.Commands;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
+import meteordevelopment.meteorclient.settings.BoolSetting;
+import meteordevelopment.meteorclient.systems.config.Config;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.Category;
 
@@ -18,6 +21,9 @@ import meteordevelopment.meteorclient.systems.modules.Category;
 public class Stardust extends MeteorAddon {
     public static final Logger LOG = LogUtils.getLogger();
     public static final Category CATEGORY = new Category("Stardust", StardustUtil.chooseMenuIcon());
+    public static Setting<Boolean> greenSplashTextSetting = new BoolSetting.Builder().build();
+    public static Setting<Boolean> rotateSplashTextSetting = new BoolSetting.Builder().build();
+    public static Setting<Boolean> directConnectButtonSetting = new BoolSetting.Builder().build();
 
     @Override
     public void onInitialize() {
@@ -39,6 +45,30 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new SignatureSign());
         Modules.get().add(new UpdateNotifier());
         Modules.get().add(new AutoDrawDistance());
+
+        // See SplashTextRendererMixin.java
+        greenSplashTextSetting = Config.get().settings.getGroup("Visual").add(
+            new BoolSetting.Builder()
+                .name("Green Splash Text")
+                .description(">Makes the title splash texts green.")
+                .defaultValue(false)
+                .build()
+        );
+        // See TitleScreenMixin.java
+        rotateSplashTextSetting = Config.get().settings.getGroup("Visual").add(
+            new BoolSetting.Builder()
+                .name("Rotate Splash Text")
+                .description("Picks a new random splash text every 20 seconds.")
+                .defaultValue(false)
+                .build()
+        );
+        directConnectButtonSetting = Config.get().settings.getGroup("Visual").add(
+            new BoolSetting.Builder()
+                .name("Direct Connect Button")
+                .description("Adds a button to the main menu that directly connects you to 2b2t.org")
+                .defaultValue(false)
+                .build()
+        );
 
         LOG.info("<✨> Stardust initialized.");
     }
