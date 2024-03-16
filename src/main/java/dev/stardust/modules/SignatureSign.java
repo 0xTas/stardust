@@ -554,7 +554,7 @@ public class SignatureSign extends Module {
             if (inputTooLong(signText.get(i))) {
                 if (mc.player != null) {
                     mc.player.sendMessage(
-                        Text.of("§8<§4✨§8> §7§oLine §4§o"+(i+1)+" §7was §4§otruncated §7due to length§7..")
+                        Text.of("§8<§4✨§8> §7§oLine §4§o"+(i+1)+" §7§owon't render fully due to length..")
                     );
                 }
             }
@@ -906,14 +906,14 @@ public class SignatureSign extends Module {
                 if (dyeSlot < 9) InvUtils.swapBack();
                 else InvUtils.move().from(mc.player.getInventory().selectedSlot).to(dyeSlot);
                 dyeSlot = -1;
-                timer = 3;
+                timer = 7;
             }
         }
 
         if (signsToColor.isEmpty() && signsToGlowInk.isEmpty()) return;
 
         ++timer;
-        if (timer >= 5) {
+        if (timer >= 10) {
             timer = 0;
             if (!signsToColor.isEmpty()) {
                 List<SignBlockEntity> signs = signsToColor
