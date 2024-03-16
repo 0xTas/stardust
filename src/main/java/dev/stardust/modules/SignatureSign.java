@@ -7,23 +7,33 @@ import java.util.List;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.nio.file.Files;
+import net.minecraft.text.*;
 import dev.stardust.Stardust;
 import java.util.stream.Stream;
-import net.minecraft.text.Text;
-import net.minecraft.text.Style;
+import net.minecraft.util.Hand;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
+import net.minecraft.item.DyeItem;
 import net.minecraft.util.DyeColor;
 import java.util.stream.Collectors;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.MutableText;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.Vec3d;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.BlockPos;
 import java.time.format.DateTimeFormatter;
 import net.minecraft.block.entity.SignText;
 import org.apache.commons.codec.binary.Hex;
 import net.fabricmc.loader.api.FabricLoader;
+import meteordevelopment.orbit.EventHandler;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.client.font.TextRenderer;
 import meteordevelopment.meteorclient.settings.*;
+import net.minecraft.block.entity.SignBlockEntity;
+import meteordevelopment.meteorclient.utils.player.InvUtils;
+import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.utils.player.Rotations;
 
 
 /**
@@ -61,10 +71,26 @@ public class SignatureSign extends Module {
             .build()
     );
 
-    private final Setting<Boolean> truncateLines = settings.getDefaultGroup().add(
+    private final Setting<Boolean> glowSigns = sgMode.add(
         new BoolSetting.Builder()
-            .name("Truncate Lines")
-            .description("Truncate text lines to fit on the renderable portion of the sign.")
+            .name("Glow Signs")
+            .description("Apply glow squid ink onto signs if found in inventory.")
+            .defaultValue(false)
+            .build()
+    );
+
+    private final Setting<DyeColor> signColor = sgMode.add(
+        new EnumSetting.Builder<DyeColor>()
+            .name("Sign Color")
+            .description("Apply selected dye color onto signs if found in inventory.")
+            .defaultValue(DyeColor.BLACK)
+            .build()
+    );
+
+    public final Setting<Boolean> signFreedom = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Bypass Length Limits")
+            .description("Bypass client-sided length limits for sign text.")
             .defaultValue(true)
             .visible(() -> !secretSign.get())
             .build()
@@ -86,7 +112,7 @@ public class SignatureSign extends Module {
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(1))
             .onChanged(txt -> {
-                if (truncateLines.isVisible() && truncateLines.get() && inputTooLong(txt)) {
+                if (signFreedom.isVisible() && !signFreedom.get() && inputTooLong(txt)) {
                     restoreValidInput(1);
                     if (mc.player != null) {
                         mc.player.sendMessage(
@@ -145,7 +171,7 @@ public class SignatureSign extends Module {
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(2))
             .onChanged(txt -> {
-                if (truncateLines.isVisible() && truncateLines.get() && inputTooLong(txt)) {
+                if (signFreedom.isVisible() && !signFreedom.get() && inputTooLong(txt)) {
                     restoreValidInput(2);
                     if (mc.player != null) {
                         mc.player.sendMessage(
@@ -204,7 +230,7 @@ public class SignatureSign extends Module {
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(3))
             .onChanged(txt -> {
-                if (truncateLines.isVisible() && truncateLines.get() && inputTooLong(txt)) {
+                if (signFreedom.isVisible() && !signFreedom.get() && inputTooLong(txt)) {
                     restoreValidInput(3);
                     if (mc.player != null) {
                         mc.player.sendMessage(
@@ -263,7 +289,7 @@ public class SignatureSign extends Module {
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(4))
             .onChanged(txt -> {
-                if (truncateLines.isVisible() && truncateLines.get() && inputTooLong(txt)) {
+                if (signFreedom.isVisible() && !signFreedom.get() && inputTooLong(txt)) {
                     restoreValidInput(4);
                     if (mc.player != null) {
                         mc.player.sendMessage(
@@ -353,6 +379,8 @@ public class SignatureSign extends Module {
             .build()
     );
 
+    private int timer = 0;
+    private int dyeSlot = -1;
     private int storyIndex = 0;
     private int lastIndexAmount = 0;
     private String lastLine1Text = line1Text.get();
@@ -361,6 +389,8 @@ public class SignatureSign extends Module {
     private String lastLine4Text = line4Text.get();
     private final ArrayList<String> lastLines = new ArrayList<>();
     private final ArrayList<String> storyText = new ArrayList<>();
+    private final HashSet<SignBlockEntity> signsToColor = new HashSet<>();
+    private final HashSet<SignBlockEntity> signsToGlowInk = new HashSet<>();
 
 
     @Override
@@ -375,19 +405,28 @@ public class SignatureSign extends Module {
     public void onDeactivate() {
         storyText.clear();
         lastLines.clear();
+        signsToColor.clear();
 
+        timer = 0;
         storyIndex = 0;
         lastIndexAmount = 0;
     }
 
 
     // See AbstractSignEditScreenMixin.java
-    public SignText getSignature() {
+    public SignText getSignature(SignBlockEntity sign) {
         Text[] signature = new Text[4];
 
         List<String> lines = getSignText();
         for (int i = 0; i < lines.size(); i++) {
             signature[i] = Text.of(lines.get(i));
+        }
+
+        if (glowSigns.get()) {
+            signsToGlowInk.add(sign);
+        }
+        if (signColor.get() != DyeColor.BLACK) {
+            signsToColor.add(sign);
         }
 
         return new SignText(signature, signature, DyeColor.BLACK, false);
@@ -510,7 +549,7 @@ public class SignatureSign extends Module {
             return signText;
         }
 
-        if (!truncateLines.get()) return signText;
+        if (signFreedom.get()) return signText;
         for (int i = 0; i < signText.size(); i++) {
             if (inputTooLong(signText.get(i))) {
                 if (mc.player != null) {
@@ -819,5 +858,86 @@ public class SignatureSign extends Module {
             rot.append(c);
         }
         return rot.toString();
+    }
+
+    private void interactSign(SignBlockEntity sbe, Item dye) {
+        if (mc.player == null || mc.interactionManager == null) return;
+
+        BlockPos pos = sbe.getPos();
+        Vec3d hitVec = Vec3d.ofCenter(pos);
+        BlockHitResult hit = new BlockHitResult(hitVec, mc.player.getHorizontalFacing().getOpposite(), pos, false);
+
+        ItemStack current = mc.player.getInventory().getMainHandStack();
+        if (current.getItem() != dye) {
+            for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+                ItemStack stack = mc.player.getInventory().getStack(n);
+                if (stack.getItem() == dye) {
+                    if (n < 9) InvUtils.swap(n, true);
+                    else InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
+
+                    dyeSlot = n;
+                    timer = 3;
+                    return;
+                }
+            }
+        } else {
+            Rotations.rotate(
+                Rotations.getYaw(pos),
+                Rotations.getPitch(pos), 69420,
+                () -> mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, hit)
+            );
+            timer = -1;
+        }
+
+        if (dye == Items.GLOW_INK_SAC) {
+            this.signsToGlowInk.remove(sbe);
+        } else {
+            this.signsToColor.remove(sbe);
+        }
+    }
+
+    @EventHandler
+    private void onTick(TickEvent.Pre event) {
+        if (mc.player == null) return;
+        if (mc.currentScreen != null) return;
+
+        if (timer == -1) {
+            if (dyeSlot != -1) {
+                if (dyeSlot < 9) InvUtils.swapBack();
+                else InvUtils.move().from(mc.player.getInventory().selectedSlot).to(dyeSlot);
+                dyeSlot = -1;
+                timer = 3;
+            }
+        }
+
+        if (signsToColor.isEmpty() && signsToGlowInk.isEmpty()) return;
+
+        ++timer;
+        if (timer >= 5) {
+            timer = 0;
+            if (!signsToColor.isEmpty()) {
+                List<SignBlockEntity> signs = signsToColor
+                    .stream()
+                    .toList();
+
+                if (signs.isEmpty()) return;
+                SignBlockEntity sbe = signs.get(0);
+                Text[] msgs = sbe.getFrontText().getMessages(false);
+                if (Arrays.stream(msgs).allMatch(msg -> msg.getString().trim().isEmpty())) return;
+
+                interactSign(sbe, DyeItem.byColor(signColor.get()));
+            } else {
+                List<SignBlockEntity> signs = signsToGlowInk
+                    .stream()
+                    .toList();
+
+                if (signs.isEmpty()) return;
+                SignBlockEntity sbe = signs.get(0);
+                Text[] msgs = sbe.getFrontText().getMessages(false);
+                if (Arrays.stream(msgs).allMatch(msg -> msg.getString().trim().isEmpty())) return;
+
+                interactSign(sbe, Items.GLOW_INK_SAC);
+            }
+        }
     }
 }
