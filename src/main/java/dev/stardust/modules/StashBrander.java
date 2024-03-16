@@ -145,20 +145,24 @@ public class StashBrander extends Module {
                         if (mc.player.experienceLevel >= cost) {
                             InvUtils.shiftClick().slotId(AnvilScreenHandler.OUTPUT_ID);
                         } else {
-                            if (!notified) mc.player.sendMessage(
-                                Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §4§oNot enough experience§8§o...")
-                            );
+                            if (!notified) {
+                                mc.player.sendMessage(
+                                    Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNot enough experience§8§o...")
+                                );
+                                if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
+                            }
                             notified = true;
-                            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
                             if (closeOnDone.get()) mc.player.closeHandledScreen();
                             if (disableOnDone.get()) this.toggle();
                         }
                         if (n == 38) {
-                            if (!notified) mc.player.sendMessage(
-                                Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §4§oNo more items to rename§8§o.")
-                            );
+                            if (!notified) {
+                                mc.player.sendMessage(
+                                    Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNo more items to rename§8§o.")
+                                );
+                                if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
+                            }
                             notified = true;
-                            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
                             if (closeOnDone.get()) mc.player.closeHandledScreen();
                             if (disableOnDone.get()) this.toggle();
                         }
@@ -166,11 +170,13 @@ public class StashBrander extends Module {
                     }
                 }
             }
-            if (!notified) mc.player.sendMessage(
-                Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §4§oNo more items to rename§8§o.")
-            );
+            if (!notified) {
+                mc.player.sendMessage(
+                    Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNo more items to rename§8§o.")
+                );
+                if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
+            }
             notified = true;
-            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
             if (closeOnDone.get()) mc.player.closeHandledScreen();
             if (disableOnDone.get()) this.toggle();
         } else if (!output.isEmpty() && itemList.get().contains(output.getItem()) && output.getName().getString().equals(itemName.get())) {
@@ -178,11 +184,13 @@ public class StashBrander extends Module {
             if (mc.player.experienceLevel >= cost) {
                 InvUtils.shiftClick().slotId(AnvilScreenHandler.OUTPUT_ID);
             } else {
-                if (!notified) mc.player.sendMessage(
-                    Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §4§oNot enough experience§8§o...")
-                );
+                if (!notified) {
+                    mc.player.sendMessage(
+                        Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNot enough experience§8§o...")
+                    );
+                    if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
+                }
                 notified = true;
-                if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
                 if (closeOnDone.get()) mc.player.closeHandledScreen();
                 if (disableOnDone.get()) this.toggle();
             }
