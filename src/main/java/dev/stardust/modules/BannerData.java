@@ -57,6 +57,14 @@ public class BannerData extends Module {
             .build()
     );
 
+    private final Setting<Boolean> signData = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Sign Data")
+            .description("Display NBT data when right clicking signs.")
+            .defaultValue(false)
+            .build()
+    );
+
     private final Setting<Boolean> copyToClipboard = settings.getDefaultGroup().add(new BoolSetting.Builder()
         .name("Copy to Clipboard")
         .description("Copy NBT data to your clipboard.")
@@ -116,7 +124,7 @@ public class BannerData extends Module {
 
     @Override
     public void onDeactivate() {
-        this.timer = 0;
+        timer = 0;
     }
 
     @EventHandler
@@ -124,13 +132,13 @@ public class BannerData extends Module {
         if (mc.world == null || mc.player == null) return;
 
         BlockHitResult result = event.result;
-        if (this.isActive() && result.getType() == HitResult.Type.BLOCK) {
+        if (isActive() && result.getType() == HitResult.Type.BLOCK) {
             BlockPos pos = result.getBlockPos();
             BlockEntity blockEntity = mc.world.getBlockEntity(pos);
 
             if (blockEntity == null) return;
             // InteractBlockEvents fire twice sometimes, so we must cull the extra ones manually.
-            if (this.lastEventPos == pos) return;
+            if (lastEventPos == pos) return;
 
             if (blockEntity instanceof BannerBlockEntity banner) {
                 StringBuilder customName = new StringBuilder();
@@ -174,7 +182,7 @@ public class BannerData extends Module {
 
                         patternsList.append(cc).append("   ◦ ").append("§7")
                             .append(txtFormat).append(patternColor).append(" ")
-                            .append(this.patternNameFromID(patternEntry.getFirst().value().getId())).append("\n");
+                            .append(patternNameFromID(patternEntry.getFirst().value().getId())).append("\n");
                     }
                 }
 
@@ -193,8 +201,9 @@ public class BannerData extends Module {
                     );
                 }
 
-                this.lastEventPos = pos;
+                lastEventPos = pos;
             } else if (blockEntity instanceof SignBlockEntity sign) {
+                if (!signData.get()) return;
                 NbtCompound metadata = sign.toInitialChunkDataNbt();
                 if (copyToClipboard.get()) {
                     mc.keyboard.setClipboard(metadata.toString());
@@ -213,7 +222,7 @@ public class BannerData extends Module {
                     );
                 }
 
-                this.lastEventPos = pos;
+                lastEventPos = pos;
             }
         }
     }
@@ -221,10 +230,10 @@ public class BannerData extends Module {
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         // InteractBlockEvents fire twice sometimes, so we must cull the extra ones manually.
-        this.timer++;
-        if (this.timer >= 20) {
-            this.timer = 0;
-            this.lastEventPos = this.lastEventPos.add(2000000, 2000000, 2000000);
+        timer++;
+        if (timer >= 20) {
+            timer = 0;
+            lastEventPos = lastEventPos.add(2000000, 2000000, 2000000);
         }
     }
 }
