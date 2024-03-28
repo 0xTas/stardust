@@ -262,7 +262,7 @@ public class ChatSigns extends Module {
         int viewDistance = mc.options.getViewDistance().getValue();
 
         double maxRangeBlocks = viewDistance * 16;
-        HitResult trace = player.raycast(maxRangeBlocks, mc.getTickDelta(), true);
+        HitResult trace = player.raycast(maxRangeBlocks, mc.getTickDelta(), false);
         if (trace != null) {
             BlockPos pos = ((BlockHitResult) trace).getBlockPos();
             if (mc.world.getBlockEntity(pos) instanceof SignBlockEntity) return pos;
