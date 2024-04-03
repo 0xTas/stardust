@@ -1,22 +1,18 @@
 package dev.stardust.modules;
 
-import java.awt.*;
 import java.util.*;
 import java.io.File;
 import java.util.List;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.nio.file.Files;
+import net.minecraft.item.*;
 import net.minecraft.text.*;
 import dev.stardust.Stardust;
 import java.util.stream.Stream;
 import net.minecraft.util.Hand;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.item.DyeItem;
 import net.minecraft.util.DyeColor;
 import java.util.stream.Collectors;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.sound.SoundEvents;
@@ -50,10 +46,11 @@ public class SignatureSign extends Module {
     public static final String[] timestampDelimiters = {"/", "//", "\\", "\\\\", "|", "||", "-", "_", "~", ".", ",", "x", "•", "✨"};
 
     private final SettingGroup sgMode = settings.createGroup("Module Mode");
-    private final SettingGroup sgLine1 = settings.createGroup("Line 1");
-    private final SettingGroup sgLine2 = settings.createGroup("Line 2");
-    private final SettingGroup sgLine3 = settings.createGroup("Line 3");
-    private final SettingGroup sgLine4 = settings.createGroup("Line 4");
+    private final SettingGroup sgSignsOpts = settings.createGroup("Sign Options");
+    private final SettingGroup sgLine1Front = settings.createGroup("Front Line 1");
+    private final SettingGroup sgLine2Front = settings.createGroup("Front Line 2");
+    private final SettingGroup sgLine3Front = settings.createGroup("Front Line 3");
+    private final SettingGroup sgLine4Front = settings.createGroup("Front Line 4");
 
     private final Setting<Boolean> storyMode = sgMode.add(
         new BoolSetting.Builder()
@@ -71,7 +68,15 @@ public class SignatureSign extends Module {
             .build()
     );
 
-    private final Setting<Boolean> glowSigns = sgMode.add(
+    private final Setting<Boolean> protectSigns = sgSignsOpts.add(
+        new BoolSetting.Builder()
+            .name("Wax Signs")
+            .description("Apply honeycomb wax onto signs if found in inventory.")
+            .defaultValue(true)
+            .build()
+    );
+
+    private final Setting<Boolean> glowSigns = sgSignsOpts.add(
         new BoolSetting.Builder()
             .name("Glow Signs")
             .description("Apply glow squid ink onto signs if found in inventory.")
@@ -79,7 +84,7 @@ public class SignatureSign extends Module {
             .build()
     );
 
-    private final Setting<DyeColor> signColor = sgMode.add(
+    private final Setting<DyeColor> signColor = sgSignsOpts.add(
         new EnumSetting.Builder<DyeColor>()
             .name("Sign Color")
             .description("Apply selected dye color onto signs if found in inventory.")
@@ -87,7 +92,7 @@ public class SignatureSign extends Module {
             .build()
     );
 
-    public final Setting<Boolean> signFreedom = settings.getDefaultGroup().add(
+    public final Setting<Boolean> signFreedom = sgSignsOpts.add(
         new BoolSetting.Builder()
             .name("Bypass Length Limits")
             .description("Bypass client-sided length limits for sign text.")
@@ -96,7 +101,7 @@ public class SignatureSign extends Module {
             .build()
     );
 
-    private final Setting<String> line1Mode = sgLine1.add(
+    private final Setting<String> line1ModeFront = sgLine1Front.add(
         new ProvidedStringSetting.Builder()
             .name("Line 1 Mode")
             .description("Line 1 template mode")
@@ -106,7 +111,7 @@ public class SignatureSign extends Module {
             .build()
     );
 
-    private final Setting<String> line1Text = sgLine1.add(
+    private final Setting<String> line1TextFront = sgLine1Front.add(
         new StringSetting.Builder()
             .name("Line 1 Text")
             .defaultValue("")
@@ -120,42 +125,42 @@ public class SignatureSign extends Module {
                         );
                     }
                 } else {
-                    lastLine1Text = txt;
+                    lastLine1TextFront = txt;
                 }
             })
             .build()
     );
 
-    private final Setting<Integer> line1FileLine = sgLine1.add(
+    private final Setting<Integer> line1FileLineFront = sgLine1Front.add(
         new IntSetting.Builder()
             .name("Line 1 File Line")
             .description("Which line of .minecraft/meteor-client/autosign.txt to use.")
             .range(1, 1000)
             .sliderRange(1, 420)
             .defaultValue(1)
-            .visible(() -> !storyMode.get() && line1Mode.get().equals("File"))
+            .visible(() -> !storyMode.get() && line1ModeFront.get().equals("File"))
             .build()
     );
 
-    private final Setting<String> line1TimestampType = sgLine1.add(
+    private final Setting<String> line1TimestampTypeFront = sgLine1Front.add(
         new ProvidedStringSetting.Builder()
             .name("Line 1 Timestamp Type")
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
-            .visible(() -> !storyMode.get() && line1Mode.get().equals("Timestamp"))
+            .visible(() -> !storyMode.get() && line1ModeFront.get().equals("Timestamp"))
             .build()
     );
 
-    private final Setting<String> line1TimestampDelim = sgLine1.add(
+    private final Setting<String> line1TimestampDelimFront = sgLine1Front.add(
         new ProvidedStringSetting.Builder()
             .name("Line 1 Timestamp Delimiter")
             .defaultValue("/")
             .supplier(() -> timestampDelimiters)
-            .visible(() -> !storyMode.get() && line1Mode.get().equals("Timestamp") && line1TimestampType.get().contains("/"))
+            .visible(() -> !storyMode.get() && line1ModeFront.get().equals("Timestamp") && line1TimestampTypeFront.get().contains("/"))
             .build()
     );
 
-    private final Setting<String> line2Mode = sgLine2.add(
+    private final Setting<String> line2ModeFront = sgLine2Front.add(
         new ProvidedStringSetting.Builder()
             .name("Line 2 Mode")
             .description("Line 2 template mode")
@@ -165,7 +170,7 @@ public class SignatureSign extends Module {
             .build()
     );
 
-    private final Setting<String> line2Text = sgLine2.add(
+    private final Setting<String> line2TextFront = sgLine2Front.add(
         new StringSetting.Builder()
             .name("Line 2 Text")
             .defaultValue("")
@@ -179,42 +184,42 @@ public class SignatureSign extends Module {
                         );
                     }
                 } else {
-                    lastLine2Text = txt;
+                    lastLine2TextFront = txt;
                 }
             })
             .build()
     );
 
-    private final Setting<Integer> line2FileLine = sgLine2.add(
+    private final Setting<Integer> line2FileLineFront = sgLine2Front.add(
         new IntSetting.Builder()
             .name("Line 2 File Line")
             .description("Which line of .minecraft/meteor-client/autosign.txt to use.")
             .range(1, 1000)
             .sliderRange(1, 420)
             .defaultValue(2)
-            .visible(() -> !storyMode.get() && line2Mode.get().equals("File"))
+            .visible(() -> !storyMode.get() && line2ModeFront.get().equals("File"))
             .build()
     );
 
-    private final Setting<String> line2TimestampType = sgLine2.add(
+    private final Setting<String> line2TimestampTypeFront = sgLine2Front.add(
         new ProvidedStringSetting.Builder()
             .name("Line 2 Timestamp Type")
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
-            .visible(() -> !storyMode.get() && line2Mode.get().equals("Timestamp"))
+            .visible(() -> !storyMode.get() && line2ModeFront.get().equals("Timestamp"))
             .build()
     );
 
-    private final Setting<String> line2TimestampDelim = sgLine2.add(
+    private final Setting<String> line2TimestampDelimFront = sgLine2Front.add(
         new ProvidedStringSetting.Builder()
             .name("Line 2 Timestamp Delimiter")
             .defaultValue("/")
             .supplier(() -> timestampDelimiters)
-            .visible(() -> !storyMode.get() && line2Mode.get().equals("Timestamp") && line2TimestampType.get().contains("/"))
+            .visible(() -> !storyMode.get() && line2ModeFront.get().equals("Timestamp") && line2TimestampTypeFront.get().contains("/"))
             .build()
     );
 
-    private final Setting<String> line3Mode = sgLine3.add(
+    private final Setting<String> line3ModeFront = sgLine3Front.add(
         new ProvidedStringSetting.Builder()
             .name("Line 3 Mode")
             .defaultValue("Stardust")
@@ -224,7 +229,7 @@ public class SignatureSign extends Module {
             .build()
     );
 
-    private final Setting<String> line3Text = sgLine3.add(
+    private final Setting<String> line3TextFront = sgLine3Front.add(
         new StringSetting.Builder()
             .name("Line 3 Text")
             .defaultValue("")
@@ -238,42 +243,42 @@ public class SignatureSign extends Module {
                         );
                     }
                 } else {
-                    lastLine3Text = txt;
+                    lastLine3TextFront = txt;
                 }
             })
             .build()
     );
 
-    private final Setting<Integer> line3FileLine = sgLine3.add(
+    private final Setting<Integer> line3FileLineFront = sgLine3Front.add(
         new IntSetting.Builder()
             .name("Line 3 File Line")
             .description("Which line of .minecraft/meteor-client/autosign.txt to use.")
             .range(1, 1000)
             .sliderRange(1, 420)
             .defaultValue(3)
-            .visible(() -> !storyMode.get() && line3Mode.get().equals("File"))
+            .visible(() -> !storyMode.get() && line3ModeFront.get().equals("File"))
             .build()
     );
 
-    private final Setting<String> line3TimestampType = sgLine3.add(
+    private final Setting<String> line3TimestampTypeFront = sgLine3Front.add(
         new ProvidedStringSetting.Builder()
             .name("Line 3 Timestamp Type")
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
-            .visible(() -> !storyMode.get() && line3Mode.get().equals("Timestamp"))
+            .visible(() -> !storyMode.get() && line3ModeFront.get().equals("Timestamp"))
             .build()
     );
 
-    private final Setting<String> line3TimestampDelim = sgLine3.add(
+    private final Setting<String> line3TimestampDelimFront = sgLine3Front.add(
         new ProvidedStringSetting.Builder()
             .name("Line 3 Timestamp Delimiter")
             .defaultValue("/")
             .supplier(() -> timestampDelimiters)
-            .visible(() -> !storyMode.get() && line3Mode.get().equals("Timestamp") && line3TimestampType.get().contains("/"))
+            .visible(() -> !storyMode.get() && line3ModeFront.get().equals("Timestamp") && line3TimestampTypeFront.get().contains("/"))
             .build()
     );
 
-    private final Setting<String> line4Mode = sgLine4.add(
+    private final Setting<String> line4ModeFront = sgLine4Front.add(
         new ProvidedStringSetting.Builder()
             .name("Line 4 Mode")
             .defaultValue("Stardust")
@@ -283,7 +288,7 @@ public class SignatureSign extends Module {
             .build()
     );
 
-    private final Setting<String> line4Text = sgLine4.add(
+    private final Setting<String> line4TextFront = sgLine4Front.add(
         new StringSetting.Builder()
             .name("Line 4 Text")
             .defaultValue("")
@@ -297,38 +302,46 @@ public class SignatureSign extends Module {
                         );
                     }
                 } else {
-                    lastLine4Text = txt;
+                    lastLine4TextFront = txt;
                 }
             })
             .build()
     );
 
-    private final Setting<Integer> line4FileLine = sgLine4.add(
+    private final Setting<Integer> line4FileLineFront = sgLine4Front.add(
         new IntSetting.Builder()
             .name("Line 4 File Line")
             .description("Which line of .minecraft/meteor-client/autosign.txt to use.")
             .range(1, 1000)
             .sliderRange(1, 420)
             .defaultValue(4)
-            .visible(() -> !storyMode.get() && line4Mode.get().equals("File"))
+            .visible(() -> !storyMode.get() && line4ModeFront.get().equals("File"))
             .build()
     );
 
-    private final Setting<String> line4TimestampType = sgLine4.add(
+    private final Setting<String> line4TimestampTypeFront = sgLine4Front.add(
         new ProvidedStringSetting.Builder()
             .name("Line 4 Timestamp Type")
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
-            .visible(() -> !storyMode.get() && line4Mode.get().equals("Timestamp"))
+            .visible(() -> !storyMode.get() && line4ModeFront.get().equals("Timestamp"))
             .build()
     );
 
-    private final Setting<String> line4TimestampDelim = sgLine4.add(
+    private final Setting<String> line4TimestampDelimFront = sgLine4Front.add(
         new ProvidedStringSetting.Builder()
             .name("Line 4 Timestamp Delimiter")
             .defaultValue("/")
             .supplier(() -> timestampDelimiters)
-            .visible(() -> !storyMode.get() && line4Mode.get().equals("Timestamp") && line4TimestampType.get().contains("/"))
+            .visible(() -> !storyMode.get() && line4ModeFront.get().equals("Timestamp") && line4TimestampTypeFront.get().contains("/"))
+            .build()
+    );
+
+    private final Setting<Boolean> shortenedMonth = sgSignsOpts.add(
+        new BoolSetting.Builder()
+            .name("Shortened Month")
+            .description("Shorten the month to its abbreviation")
+            .defaultValue(false)
             .build()
     );
 
@@ -337,14 +350,6 @@ public class SignatureSign extends Module {
             .name("Auto Confirm")
             .description("Automatically confirm and close the sign edit screen.")
             .defaultValue(true)
-            .build()
-    );
-
-    private final Setting<Boolean> shortenedMonth = settings.getDefaultGroup().add(
-        new BoolSetting.Builder()
-            .name("Shortened Month")
-            .description("Shorten the month to its abbreviation")
-            .defaultValue(false)
             .build()
     );
 
@@ -383,51 +388,54 @@ public class SignatureSign extends Module {
     private int dyeSlot = -1;
     private int storyIndex = 0;
     private int lastIndexAmount = 0;
-    private String lastLine1Text = line1Text.get();
-    private String lastLine2Text = line2Text.get();
-    private String lastLine3Text = line3Text.get();
-    private String lastLine4Text = line4Text.get();
+    private int rotationPriority = 69420;
+    private String lastLine1TextFront = line1TextFront.get();
+    private String lastLine2TextFront = line2TextFront.get();
+    private String lastLine3TextFront = line3TextFront.get();
+    private String lastLine4TextFront = line4TextFront.get();
     private final ArrayList<String> lastLines = new ArrayList<>();
     private final ArrayList<String> storyText = new ArrayList<>();
+    private final HashSet<SignBlockEntity> signsToWax = new HashSet<>();
     private final HashSet<SignBlockEntity> signsToColor = new HashSet<>();
     private final HashSet<SignBlockEntity> signsToGlowInk = new HashSet<>();
 
 
     @Override
     public void onActivate() {
-        lastLine1Text = line1Text.get();
-        lastLine2Text = line2Text.get();
-        lastLine3Text = line3Text.get();
-        lastLine4Text = line4Text.get();
+        lastLine1TextFront = line1TextFront.get();
+        lastLine2TextFront = line2TextFront.get();
+        lastLine3TextFront = line3TextFront.get();
+        lastLine4TextFront = line4TextFront.get();
     }
 
     @Override
     public void onDeactivate() {
         storyText.clear();
         lastLines.clear();
+        signsToWax.clear();
         signsToColor.clear();
+        signsToGlowInk.clear();
 
         timer = 0;
         storyIndex = 0;
         lastIndexAmount = 0;
+        rotationPriority = 69420;
     }
 
 
     // See AbstractSignEditScreenMixin.java
     public SignText getSignature(SignBlockEntity sign) {
         Text[] signature = new Text[4];
-
         List<String> lines = getSignText();
         for (int i = 0; i < lines.size(); i++) {
             signature[i] = Text.of(lines.get(i));
         }
 
-        if (glowSigns.get()) {
-            signsToGlowInk.add(sign);
+        if (protectSigns.get() && !sign.isWaxed()) {
+            signsToWax.add(sign);
         }
-        if (signColor.get() != DyeColor.BLACK) {
-            signsToColor.add(sign);
-        }
+        if (signColor.get() != sign.getFrontText().getColor()) signsToColor.add(sign);
+        if (glowSigns.get() && !sign.getFrontText().isGlowing()) signsToGlowInk.add(sign);
 
         return new SignText(signature, signature, DyeColor.BLACK, false);
     }
@@ -439,12 +447,14 @@ public class SignatureSign extends Module {
     public boolean getAutoConfirm() { return autoConfirm.get(); }
 
     private boolean textLineVisibility(int line) {
-        String md = switch (line) {
-            case 1 -> line1Mode.get();
-            case 2 -> line2Mode.get();
-            case 3 -> line3Mode.get();
-            default -> line4Mode.get();
+        String md;
+        md = switch (line) {
+            case 1 -> line1ModeFront.get();
+            case 2 -> line2ModeFront.get();
+            case 3 -> line3ModeFront.get();
+            default -> line4ModeFront.get();
         };
+
 
         return md.equals("Custom") || md.equals("Base64") || md.equals("Hex")
             || md.equals("0xHex") || md.equals("ROT13");
@@ -456,10 +466,10 @@ public class SignatureSign extends Module {
 
     private void restoreValidInput(int line) {
         switch (line) {
-            case 1 -> line1Text.set(lastLine1Text);
-            case 2 -> line2Text.set(lastLine2Text);
-            case 3 -> line3Text.set(lastLine3Text);
-            default -> line4Text.set(lastLine4Text);
+            case 1 -> line1TextFront.set(lastLine1TextFront);
+            case 2 -> line2TextFront.set(lastLine2TextFront);
+            case 3 -> line3TextFront.set(lastLine3TextFront);
+            default -> line4TextFront.set(lastLine4TextFront);
         }
     }
 
@@ -480,59 +490,59 @@ public class SignatureSign extends Module {
                 signText.addAll(getNextLinesOfStory());
             }
         } else {
-            switch (line1Mode.get()) {
-                case "Custom" -> signText.add(line1Text.get());
+            switch (line1ModeFront.get()) {
+                case "Custom" -> signText.add(line1TextFront.get());
                 case "Empty" -> signText.add(" ");
-                case "File" -> signText.add(getSignTextFromFile(line1FileLine.get()-1));
+                case "File" -> signText.add(getSignTextFromFile(line1FileLineFront.get()-1));
                 case "Timestamp" -> signText.add(getTimestamp(1));
                 case "Username" -> signText.add(username);
                 case "Username was here" -> signText.add(username+" was here");
                 case "Stardust" -> signText.add("<✨>");
                 case "Oasis" -> signText.add("<☯>");
-                case "Base64" -> signText.add(Base64.getEncoder().encodeToString(line1Text.get().getBytes()));
-                case "Hex" -> signText.add(Hex.encodeHexString(line1Text.get().getBytes()));
-                case "0xHex" -> signText.add("0x"+Hex.encodeHexString(line1Text.get().getBytes()));
-                case "ROT13" -> signText.add(rot13(line1Text.get()));
+                case "Base64" -> signText.add(Base64.getEncoder().encodeToString(line1TextFront.get().getBytes()));
+                case "Hex" -> signText.add(Hex.encodeHexString(line1TextFront.get().getBytes()));
+                case "0xHex" -> signText.add("0x"+Hex.encodeHexString(line1TextFront.get().getBytes()));
+                case "ROT13" -> signText.add(rot13(line1TextFront.get()));
             }
-            switch (line2Mode.get()) {
-                case "Custom" -> signText.add(line2Text.get());
+            switch (line2ModeFront.get()) {
+                case "Custom" -> signText.add(line2TextFront.get());
                 case "Empty" -> signText.add(" ");
-                case "File" -> signText.add(getSignTextFromFile(line2FileLine.get()-1));
+                case "File" -> signText.add(getSignTextFromFile(line2FileLineFront.get()-1));
                 case "Timestamp" -> signText.add(getTimestamp(2));
                 case "Username" -> signText.add(username);
                 case "Username was here" -> signText.add(username+" was here");
                 case "Stardust", "Oasis" -> signText.add("<"+username+">");
-                case "Base64" -> signText.add(Base64.getEncoder().encodeToString(line2Text.get().getBytes()));
-                case "Hex" -> signText.add(Hex.encodeHexString(line2Text.get().getBytes()));
-                case "0xHex" -> signText.add("0x"+Hex.encodeHexString(line2Text.get().getBytes()));
-                case "ROT13" -> signText.add(rot13(line2Text.get()));
+                case "Base64" -> signText.add(Base64.getEncoder().encodeToString(line2TextFront.get().getBytes()));
+                case "Hex" -> signText.add(Hex.encodeHexString(line2TextFront.get().getBytes()));
+                case "0xHex" -> signText.add("0x"+Hex.encodeHexString(line2TextFront.get().getBytes()));
+                case "ROT13" -> signText.add(rot13(line2TextFront.get()));
             }
-            switch (line3Mode.get()) {
-                case "Custom" -> signText.add(line3Text.get());
+            switch (line3ModeFront.get()) {
+                case "Custom" -> signText.add(line3TextFront.get());
                 case "Empty" -> signText.add(" ");
-                case "File" -> signText.add(getSignTextFromFile(line3FileLine.get()-1));
+                case "File" -> signText.add(getSignTextFromFile(line3FileLineFront.get()-1));
                 case "Timestamp" -> signText.add(getTimestamp(3));
                 case "Username" -> signText.add(username);
                 case "Username was here" -> signText.add(username+" was here");
                 case "Stardust", "Oasis" -> signText.add(System.currentTimeMillis() / 1000 + " UTC");
-                case "Base64" -> signText.add(Base64.getEncoder().encodeToString(line3Text.get().getBytes()));
-                case "Hex" -> signText.add(Hex.encodeHexString(line3Text.get().getBytes()));
-                case "0xHex" -> signText.add("0x"+Hex.encodeHexString(line3Text.get().getBytes()));
-                case "ROT13" -> signText.add(rot13(line3Text.get()));
+                case "Base64" -> signText.add(Base64.getEncoder().encodeToString(line3TextFront.get().getBytes()));
+                case "Hex" -> signText.add(Hex.encodeHexString(line3TextFront.get().getBytes()));
+                case "0xHex" -> signText.add("0x"+Hex.encodeHexString(line3TextFront.get().getBytes()));
+                case "ROT13" -> signText.add(rot13(line3TextFront.get()));
             }
-            switch (line4Mode.get()) {
-                case "Custom" -> signText.add(line4Text.get());
+            switch (line4ModeFront.get()) {
+                case "Custom" -> signText.add(line4TextFront.get());
                 case "Empty" -> signText.add(" ");
-                case "File" -> signText.add(getSignTextFromFile(line4FileLine.get()-1));
+                case "File" -> signText.add(getSignTextFromFile(line4FileLineFront.get()-1));
                 case "Timestamp" -> signText.add(getTimestamp(4));
                 case "Username" -> signText.add(username);
                 case "Username was here" -> signText.add(username+" was here");
                 case "Stardust" -> signText.add("<✨>");
                 case "Oasis" -> signText.add("<☯>");
-                case "Base64" -> signText.add(Base64.getEncoder().encodeToString(line4Text.get().getBytes()));
-                case "Hex" -> signText.add(Hex.encodeHexString(line4Text.get().getBytes()));
-                case "0xHex" -> signText.add("0x"+Hex.encodeHexString(line4Text.get().getBytes()));
-                case "ROT13" -> signText.add(rot13(line4Text.get()));
+                case "Base64" -> signText.add(Base64.getEncoder().encodeToString(line4TextFront.get().getBytes()));
+                case "Hex" -> signText.add(Hex.encodeHexString(line4TextFront.get().getBytes()));
+                case "0xHex" -> signText.add("0x"+Hex.encodeHexString(line4TextFront.get().getBytes()));
+                case "ROT13" -> signText.add(rot13(line4TextFront.get()));
             }
         }
 
@@ -717,13 +727,13 @@ public class SignatureSign extends Module {
 
         switch (line) {
             case 1 -> {
-                return switch (line1TimestampType.get()) {
-                    case "MM/DD/YY" -> currentDate.format(mmddyy).replace("/", line1TimestampDelim.get());
-                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy).replace("/", line1TimestampDelim.get());
-                    case "DD/MM/YY" -> currentDate.format(ddmmyy).replace("/", line1TimestampDelim.get());
-                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy).replace("/", line1TimestampDelim.get());
-                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd).replace("/", line1TimestampDelim.get());
-                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm).replace("/", line1TimestampDelim.get());
+                return switch (line1TimestampTypeFront.get()) {
+                    case "MM/DD/YY" -> currentDate.format(mmddyy).replace("/", line1TimestampDelimFront.get());
+                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy).replace("/", line1TimestampDelimFront.get());
+                    case "DD/MM/YY" -> currentDate.format(ddmmyy).replace("/", line1TimestampDelimFront.get());
+                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy).replace("/", line1TimestampDelimFront.get());
+                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd).replace("/", line1TimestampDelimFront.get());
+                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm).replace("/", line1TimestampDelimFront.get());
                     case "Day Month Year" ->
                         dayOfMonthSuffix(currentDate.getDayOfMonth()) + " " + currentMonth + " " + currentDate.getYear();
                     case "Month Day Year" ->
@@ -736,13 +746,13 @@ public class SignatureSign extends Module {
                 };
             }
             case 2 -> {
-                return switch (line2TimestampType.get()) {
-                    case "MM/DD/YY" -> currentDate.format(mmddyy).replace("/", line2TimestampDelim.get());
-                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy).replace("/", line2TimestampDelim.get());
-                    case "DD/MM/YY" -> currentDate.format(ddmmyy).replace("/", line2TimestampDelim.get());
-                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy).replace("/", line2TimestampDelim.get());
-                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd).replace("/", line2TimestampDelim.get());
-                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm).replace("/", line2TimestampDelim.get());
+                return switch (line2TimestampTypeFront.get()) {
+                    case "MM/DD/YY" -> currentDate.format(mmddyy).replace("/", line2TimestampDelimFront.get());
+                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy).replace("/", line2TimestampDelimFront.get());
+                    case "DD/MM/YY" -> currentDate.format(ddmmyy).replace("/", line2TimestampDelimFront.get());
+                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy).replace("/", line2TimestampDelimFront.get());
+                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd).replace("/", line2TimestampDelimFront.get());
+                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm).replace("/", line2TimestampDelimFront.get());
                     case "Day Month Year" ->
                         dayOfMonthSuffix(currentDate.getDayOfMonth()) + " " + currentMonth + " " + currentDate.getYear();
                     case "Month Day Year" ->
@@ -755,13 +765,13 @@ public class SignatureSign extends Module {
                 };
             }
             case 3 -> {
-                return switch (line3TimestampType.get()) {
-                    case "MM/DD/YY" -> currentDate.format(mmddyy).replace("/", line3TimestampDelim.get());
-                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy).replace("/", line3TimestampDelim.get());
-                    case "DD/MM/YY" -> currentDate.format(ddmmyy).replace("/", line3TimestampDelim.get());
-                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy).replace("/", line3TimestampDelim.get());
-                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd).replace("/", line3TimestampDelim.get());
-                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm).replace("/", line3TimestampDelim.get());
+                return switch (line3TimestampTypeFront.get()) {
+                    case "MM/DD/YY" -> currentDate.format(mmddyy).replace("/", line3TimestampDelimFront.get());
+                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy).replace("/", line3TimestampDelimFront.get());
+                    case "DD/MM/YY" -> currentDate.format(ddmmyy).replace("/", line3TimestampDelimFront.get());
+                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy).replace("/", line3TimestampDelimFront.get());
+                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd).replace("/", line3TimestampDelimFront.get());
+                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm).replace("/", line3TimestampDelimFront.get());
                     case "Day Month Year" ->
                         dayOfMonthSuffix(currentDate.getDayOfMonth()) + " " + currentMonth + " " + currentDate.getYear();
                     case "Month Day Year" ->
@@ -774,13 +784,13 @@ public class SignatureSign extends Module {
                 };
             }
             case 4 -> {
-                return switch (line4TimestampType.get()) {
-                    case "MM/DD/YY" -> currentDate.format(mmddyy).replace("/", line4TimestampDelim.get());
-                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy).replace("/", line4TimestampDelim.get());
-                    case "DD/MM/YY" -> currentDate.format(ddmmyy).replace("/", line4TimestampDelim.get());
-                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy).replace("/", line4TimestampDelim.get());
-                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd).replace("/", line4TimestampDelim.get());
-                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm).replace("/", line4TimestampDelim.get());
+                return switch (line4TimestampTypeFront.get()) {
+                    case "MM/DD/YY" -> currentDate.format(mmddyy).replace("/", line4TimestampDelimFront.get());
+                    case "MM/DD/YYYY" -> currentDate.format(mmddyyyy).replace("/", line4TimestampDelimFront.get());
+                    case "DD/MM/YY" -> currentDate.format(ddmmyy).replace("/", line4TimestampDelimFront.get());
+                    case "DD/MM/YYYY" -> currentDate.format(ddmmyyyy).replace("/", line4TimestampDelimFront.get());
+                    case "YYYY/MM/DD" -> currentDate.format(yyyymmdd).replace("/", line4TimestampDelimFront.get());
+                    case "YYYY/DD/MM" -> currentDate.format(yyyyddmm).replace("/", line4TimestampDelimFront.get());
                     case "Day Month Year" ->
                         dayOfMonthSuffix(currentDate.getDayOfMonth()) + " " + currentMonth + " " + currentDate.getYear();
                     case "Month Day Year" ->
@@ -796,37 +806,10 @@ public class SignatureSign extends Module {
                 return System.currentTimeMillis() / 1000 + " UTC";
             }
         }
-
     }
 
     private void openMeteorFolder() {
-        Path meteorFolder = FabricLoader.getInstance().getGameDir().resolve("meteor-client");
-        File folder = meteorFolder.toFile();
-
-        if (Desktop.isDesktopSupported()) {
-            EventQueue.invokeLater(() -> {
-                try {
-                    Desktop.getDesktop().open(folder);
-                }catch (Exception err) {
-                    Stardust.LOG.error("[Stardust] Failed to open "+ folder.getAbsolutePath() +"! - Why:\n"+err);
-                }
-            });
-        } else {
-            try {
-                Runtime runtime = Runtime.getRuntime();
-                if (System.getenv("OS") == null) return;
-                if (System.getenv("OS").contains("Windows")) {
-                    runtime.exec("rundll32 url.dll, FileProtocolHandler " + folder.getAbsolutePath());
-                } else {
-                    runtime.exec("xdg-open " + folder.getAbsolutePath());
-                }
-            } catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Failed to open "+ folder.getAbsolutePath() +"! - Why:\n"+err);
-                if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open meteor-client folder§7."));
-            }
-
-        }
-
+        StardustUtil.openFile(mc, "meteor-client");
         openFolder.set(false);
     }
 
@@ -872,27 +855,32 @@ public class SignatureSign extends Module {
             for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
                 ItemStack stack = mc.player.getInventory().getStack(n);
                 if (stack.getItem() == dye) {
+                    if (current.getItem() instanceof SignItem) dyeSlot = n;
                     if (n < 9) InvUtils.swap(n, true);
                     else InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
 
-                    dyeSlot = n;
-                    timer = 3;
+                    timer = 5;
                     return;
                 }
             }
         } else {
             Rotations.rotate(
                 Rotations.getYaw(pos),
-                Rotations.getPitch(pos), 69420,
+                Rotations.getPitch(pos), rotationPriority,
                 () -> mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, hit)
             );
-            timer = -1;
+            ++rotationPriority;
         }
 
         if (dye == Items.GLOW_INK_SAC) {
-            this.signsToGlowInk.remove(sbe);
+            signsToGlowInk.remove(sbe);
+            if (!signsToWax.contains(sbe) && !signsToColor.contains(sbe)) timer = -1;
+        } else if (dye == Items.HONEYCOMB){
+            signsToWax.remove(sbe);
+            if (!signsToColor.contains(sbe) && !signsToGlowInk.contains(sbe)) timer = -1;
         } else {
-            this.signsToColor.remove(sbe);
+            signsToColor.remove(sbe);
+            if (!signsToGlowInk.contains(sbe) && !signsToWax.contains(sbe)) timer = -1;
         }
     }
 
@@ -906,37 +894,57 @@ public class SignatureSign extends Module {
                 if (dyeSlot < 9) InvUtils.swapBack();
                 else InvUtils.move().from(mc.player.getInventory().selectedSlot).to(dyeSlot);
                 dyeSlot = -1;
-                timer = 7;
+                timer = 5;
             }
         }
 
-        if (signsToColor.isEmpty() && signsToGlowInk.isEmpty()) return;
-
         ++timer;
-        if (timer >= 10) {
+        if (timer >= 5) {
             timer = 0;
+
+            signsToWax.removeIf(sbe -> !sbe.getPos().isWithinDistance(mc.player.getBlockPos(), 6));
+            signsToColor.removeIf(sbe -> !sbe.getPos().isWithinDistance(mc.player.getBlockPos(), 6));
+            signsToGlowInk.removeIf(sbe -> !sbe.getPos().isWithinDistance(mc.player.getBlockPos(), 6));
             if (!signsToColor.isEmpty()) {
                 List<SignBlockEntity> signs = signsToColor
                     .stream()
+                    .filter(sbe -> sbe.getPos().isWithinDistance(mc.player.getBlockPos(), 5))
+                    .filter(sbe -> Arrays.stream(sbe.getFrontText().getMessages(false)).anyMatch(msg -> !msg.getString().isEmpty())
+                        || Arrays.stream(sbe.getBackText().getMessages(false)).anyMatch(msg -> !msg.getString().isEmpty()))
                     .toList();
 
-                if (signs.isEmpty()) return;
-                SignBlockEntity sbe = signs.get(0);
-                Text[] msgs = sbe.getFrontText().getMessages(false);
-                if (Arrays.stream(msgs).allMatch(msg -> msg.getString().trim().isEmpty())) return;
-
-                interactSign(sbe, DyeItem.byColor(signColor.get()));
-            } else {
+                if (!signs.isEmpty()) {
+                    SignBlockEntity sbe = signs.get(0);
+                    interactSign(sbe, DyeItem.byColor(signColor.get()));
+                    return;
+                }
+            }
+            if (!signsToGlowInk.isEmpty()) {
                 List<SignBlockEntity> signs = signsToGlowInk
                     .stream()
+                    .filter(sbe -> sbe.getPos().isWithinDistance(mc.player.getBlockPos(), 5))
+                    .filter(sbe -> Arrays.stream(sbe.getFrontText().getMessages(false)).anyMatch(msg -> !msg.getString().isEmpty())
+                        || Arrays.stream(sbe.getBackText().getMessages(false)).anyMatch(msg -> !msg.getString().isEmpty()))
                     .toList();
 
-                if (signs.isEmpty()) return;
-                SignBlockEntity sbe = signs.get(0);
-                Text[] msgs = sbe.getFrontText().getMessages(false);
-                if (Arrays.stream(msgs).allMatch(msg -> msg.getString().trim().isEmpty())) return;
+                if (!signs.isEmpty()) {
+                    SignBlockEntity sbe = signs.get(0);
+                    interactSign(sbe, Items.GLOW_INK_SAC);
+                    return;
+                }
+            }
+            if (!signsToWax.isEmpty()) {
+                List<SignBlockEntity> signs = signsToWax
+                    .stream()
+                    .filter(sbe -> sbe.getPos().isWithinDistance(mc.player.getBlockPos(), 5))
+                    .filter(sbe -> Arrays.stream(sbe.getFrontText().getMessages(false)).anyMatch(msg -> !msg.getString().isEmpty())
+                        || Arrays.stream(sbe.getBackText().getMessages(false)).anyMatch(msg -> !msg.getString().isEmpty()))
+                    .toList();
 
-                interactSign(sbe, Items.GLOW_INK_SAC);
+                if (!signs.isEmpty()) {
+                    SignBlockEntity sbe = signs.get(0);
+                    interactSign(sbe, Items.HONEYCOMB);
+                }
             }
         }
     }
