@@ -33,6 +33,7 @@ public class Stardust extends MeteorAddon {
         Commands.add(new FirstSeen2b2t());
 
         Modules.get().add(new Honker());
+        Modules.get().add(new WaxAura());
         Modules.get().add(new AutoDoors());
         Modules.get().add(new BookTools());
         Modules.get().add(new ChatSigns());

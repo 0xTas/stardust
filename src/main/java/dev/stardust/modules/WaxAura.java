@@ -1,0 +1,238 @@
+package dev.stardust.modules;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.nio.file.Files;
+import dev.stardust.Stardust;
+import java.util.stream.Stream;
+import net.minecraft.text.Text;
+import net.minecraft.util.Hand;
+import net.minecraft.item.Items;
+import java.util.stream.Collectors;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.Vec3d;
+import dev.stardust.util.StardustUtil;
+import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
+import meteordevelopment.orbit.EventHandler;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.block.entity.SignBlockEntity;
+import meteordevelopment.meteorclient.settings.Setting;
+import meteordevelopment.meteorclient.settings.IntSetting;
+import meteordevelopment.meteorclient.settings.BoolSetting;
+import meteordevelopment.meteorclient.utils.player.InvUtils;
+import meteordevelopment.meteorclient.utils.player.Rotations;
+import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.events.world.TickEvent;
+
+
+/**
+ * @author Tas [0xTas] <root@0xTas.dev>
+ **/
+public class WaxAura extends Module {
+    public WaxAura() { super(Stardust.CATEGORY, "WaxAura", "Automatically waxes signs within your reach."); }
+
+    private final String BLACKLIST_FILE = "meteor-client/waxaura-blacklist.txt";
+
+    private final Setting<Boolean> hotbarOnly = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Hotbar Only")
+            .description("Only use honeycombs if they're already in your hotbar.")
+            .defaultValue(false)
+            .build()
+    );
+
+    private final Setting<Boolean> swapBack = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Swap Back")
+            .description("Swap honeycombs back to where they came from in your inventory after using.")
+            .defaultValue(true)
+            .build()
+    );
+
+    private final Setting<Boolean> standingStill = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Standing Still")
+            .description("Wait until you are standing still to wax signs. Prevents rubberbanding with a low tick-rate value.")
+            .defaultValue(true)
+            .build()
+    );
+
+    private final Setting<Boolean> contentBlacklist = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Content Blacklist")
+            .description("Ignore waxing signs that contain specific words or phrases (line-separated list in waxaura-blacklist.txt)")
+            .defaultValue(false)
+            .onChanged(it -> {
+                if (it && StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) {
+                    this.blacklisted.clear();
+                    initBlacklistText();
+                    if (mc.player != null) {
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."));
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."));
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Toggle the module after updating the blacklist's contents."));
+                    }
+                }
+            })
+            .build()
+    );
+
+    private final Setting<Boolean> openBlacklistFile = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Open Blacklist File")
+            .description("Open the waxaura-blacklist.txt file.")
+            .defaultValue(false)
+            .visible(contentBlacklist::get)
+            .onChanged(it -> {
+                if (it) {
+                    if (StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) StardustUtil.openFile(mc, BLACKLIST_FILE);
+                    resetBlacklistFileSetting();
+                }
+            })
+            .build()
+    );
+
+    private final Setting<Integer> tickRate = settings.getDefaultGroup().add(
+        new IntSetting.Builder()
+            .name("Tick Rate")
+            .range(2, 200)
+            .sliderRange(2, 20)
+            .defaultValue(2)
+            .build()
+    );
+
+    private int timer = 0;
+    private int combSlot = -1;
+    private int rotPriority = 69420;
+    private @Nullable SignBlockEntity currentSign = null;
+    private final HashSet<String> blacklisted = new HashSet<>();
+    private final HashSet<SignBlockEntity> signsToWax = new HashSet<>();
+
+    private void initBlacklistText() {
+        File blackListFile = FabricLoader.getInstance().getGameDir().resolve(BLACKLIST_FILE).toFile();
+
+        try(Stream<String> lineStream = Files.lines(blackListFile.toPath())) {
+            blacklisted.addAll(lineStream.toList());
+        }catch (Exception err) {
+            Stardust.LOG.error("[Stardust] Failed to read from "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err);
+        }
+    }
+
+    private void resetBlacklistFileSetting() { openBlacklistFile.set(false); }
+
+    private boolean isSignEmpty(SignBlockEntity sbe) {
+        return !sbe.getFrontText().hasText(mc.player) && !sbe.getBackText().hasText(mc.player);
+    }
+
+    private boolean containsBlacklistedText(SignBlockEntity sbe) {
+        String front = Arrays.stream(sbe.getFrontText().getMessages(false))
+            .map(Text::getString)
+            .collect(Collectors.joining(" "))
+            .trim();
+
+        String back = Arrays.stream(sbe.getBackText().getMessages(false))
+            .map(Text::getString)
+            .collect(Collectors.joining(" "))
+            .trim();
+
+        return blacklisted.stream()
+            .anyMatch(line -> front.toLowerCase().contains(line.trim().toLowerCase())
+                || back.toLowerCase().contains(line.trim().toLowerCase()));
+    }
+
+    private void getSignsToWax() {
+        if (mc.player == null || mc.world == null || mc.currentScreen != null) return;
+        for (BlockPos pos : BlockPos.iterateOutwards(mc.player.getBlockPos(), 5, 5, 5)) {
+            if (mc.world.getBlockEntity(pos) instanceof SignBlockEntity sbe && !sbe.isWaxed()) signsToWax.add(sbe);
+        }
+    }
+
+    private void waxSign(SignBlockEntity sbe) {
+        if (mc.player == null || mc.interactionManager == null) return;
+
+        BlockPos pos = sbe.getPos();
+        Vec3d hitVec = Vec3d.ofCenter(pos);
+        BlockHitResult hit = new BlockHitResult(hitVec, mc.player.getHorizontalFacing().getOpposite(), pos, false);
+
+        ItemStack current = mc.player.getInventory().getMainHandStack();
+        if (current.getItem() != Items.HONEYCOMB) {
+            int end;
+            if (hotbarOnly.get()) {
+                end = 9;
+            } else end = mc.player.getInventory().main.size();
+
+            for (int n = 0; n < end; n++) {
+                ItemStack stack = mc.player.getInventory().getStack(n);
+                if (stack.getItem() == Items.HONEYCOMB) {
+                    combSlot = n;
+                    timer = Math.max(0, tickRate.get() - 5);
+                    if (n < 9) InvUtils.swap(n, true);
+                    else InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
+                    return;
+                }
+            }
+        } else {
+            Rotations.rotate(
+                Rotations.getYaw(pos),
+                Rotations.getPitch(pos), rotPriority,
+                () -> mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, hit)
+            );
+            ++rotPriority;
+            currentSign = null;
+            if (swapBack.get()) timer = -1;
+        }
+    }
+
+    @Override
+    public void onActivate() {
+        if (contentBlacklist.get() && StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) initBlacklistText();
+    }
+
+    @Override
+    public void onDeactivate() {
+        timer = 0;
+        combSlot = -1;
+        currentSign = null;
+        signsToWax.clear();
+        rotPriority = 69420;
+    }
+
+    @EventHandler
+    private void onTick(TickEvent.Pre event) {
+        if (mc.player == null || mc.interactionManager == null) return;
+
+        if (standingStill.get()) {
+            Vec3d vel = mc.player.getVelocity();
+            if (vel.length() >= 0.08d) return;
+        }
+
+        ++timer;
+        if (timer % 2 == 0) getSignsToWax();
+        if (timer >= tickRate.get()) {
+            timer = 0;
+            if (currentSign != null) waxSign(currentSign);
+            else {
+                synchronized (signsToWax) {
+                    signsToWax.removeIf(this::isSignEmpty);
+                    signsToWax.removeIf(SignBlockEntity::isWaxed);
+                    signsToWax.removeIf(sbe -> contentBlacklist.get() && containsBlacklistedText(sbe));
+                    signsToWax.removeIf(sbe -> !sbe.getPos().isWithinDistance(mc.player.getBlockPos(), 6));
+
+                    if (signsToWax.isEmpty()) {
+                        if (swapBack.get() && combSlot != -1) {
+                            if (combSlot < 9) InvUtils.swapBack();
+                            else InvUtils.move().from(mc.player.getInventory().selectedSlot).to(combSlot);
+                            combSlot = -1;
+                        }
+                        return;
+                    }
+                    currentSign = signsToWax.stream().toList().get(0);
+
+                    waxSign(currentSign);
+                }
+            }
+        }
+    }
+}
