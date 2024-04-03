@@ -77,7 +77,7 @@ public class RocketMan extends Module {
             .visible(keyboardControl::get)
             .sliderRange(0, 50)
             .range(0, 1000)
-            .defaultValue(15)
+            .defaultValue(20)
             .build()
     );
 
@@ -87,7 +87,7 @@ public class RocketMan extends Module {
             .visible(keyboardControl::get)
             .sliderRange(0, 50)
             .range(0, 1000)
-            .defaultValue(15)
+            .defaultValue(10)
             .build()
     );
 
@@ -111,7 +111,7 @@ public class RocketMan extends Module {
         new IntSetting.Builder()
             .name("Rocket Usage Cooldown")
             .description("How often (in ticks) to allow using firework rockets.")
-            .range(2, 200)
+            .range(2, 1200)
             .sliderRange(2, 100)
             .defaultValue(10)
             .visible(() -> !usageMode.get().equals("Auto Use"))
@@ -300,7 +300,6 @@ public class RocketMan extends Module {
                 double percent = Math.floor((current / (double) max) * 100);
 
                 if (percent <= replaceThreshold.get()) continue;
-
                 InvUtils.move().from(n).toArmor(2);
                 return true;
             }
