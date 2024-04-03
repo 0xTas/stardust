@@ -122,9 +122,19 @@ public class LoreLocator extends Module {
             .build()
     );
 
+    private final Setting<Boolean> ownInventory = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Inventory Highlight")
+            .description("Highlight items meeting the above criteria on the player inventory screen.")
+            .defaultValue(false)
+            .build()
+    );
+
     private boolean shouldIgnoreCurrentScreenHandler(ClientPlayerEntity player) {
+        if (mc.currentScreen == null) return true;
         if (player.currentScreenHandler == null) return true;
         ScreenHandler handler = player.currentScreenHandler;
+        if (handler instanceof PlayerScreenHandler) return !ownInventory.get();
         return !(handler instanceof AbstractFurnaceScreenHandler || handler instanceof GenericContainerScreenHandler
             || handler instanceof Generic3x3ContainerScreenHandler || handler instanceof ShulkerBoxScreenHandler
             || handler instanceof HopperScreenHandler || handler instanceof HorseScreenHandler);
@@ -154,6 +164,7 @@ public class LoreLocator extends Module {
 
             if (metadata != null) {
                 if (metadata.toString().toLowerCase().contains(query)) return true;
+                else if (metadata.toString().toLowerCase().contains(query.replace(" ", "_"))) return true;
             }
 
             if (stack.getName().getString().toLowerCase().contains(query)) return true;
