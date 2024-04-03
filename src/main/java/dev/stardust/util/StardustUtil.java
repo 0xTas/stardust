@@ -1,7 +1,16 @@
 package dev.stardust.util;
 
+import java.awt.*;
+import java.io.File;
+import dev.stardust.Stardust;
+import net.minecraft.text.Text;
+import net.minecraft.text.Style;
 import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.MutableText;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.enchantment.Enchantments;
 import io.netty.util.internal.ThreadLocalRandom;
 
@@ -155,5 +164,58 @@ public class StardustUtil {
             enchantedPick, sword32k, illegalBow, bindingPumpkin,
             enchantedGlass[ThreadLocalRandom.current().nextInt(enchantedGlass.length)]
         };
+    }
+
+    public static boolean checkOrCreateFile(MinecraftClient mc, String fileName) {
+        File file =FabricLoader.getInstance().getGameDir().resolve(fileName).toFile();
+
+        if (!file.exists()) {
+            try {
+                if (file.createNewFile()) {
+                    if (mc.player != null) {
+                        mc.player.sendMessage(
+                            Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created "+file.getName()+" in meteor-client folder.")
+                        );
+                        Text msg = Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Click §2§lhere §r§7to open the file.");
+                        Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()));
+
+                        MutableText txt = msg.copyContentOnly().setStyle(style);
+                        mc.player.sendMessage(txt);
+                    }
+                    return true;
+                }
+            }catch (Exception err) {
+                Stardust.LOG.error("[Stardust] Error creating"+file.getAbsolutePath()+"! - Why:\n"+err);
+            }
+        } else return true;
+
+        return false;
+    }
+
+    public static void openFile(MinecraftClient mc, String fileName) {
+        File file = FabricLoader.getInstance().getGameDir().resolve(fileName).toFile();
+
+        if (Desktop.isDesktopSupported()) {
+            EventQueue.invokeLater(() -> {
+                try {
+                    Desktop.getDesktop().open(file);
+                }catch (Exception err) {
+                    Stardust.LOG.error("[Stardust] Failed to open "+ file.getAbsolutePath() +"! - Why:\n"+err);
+                }
+            });
+        } else {
+            try {
+                Runtime runtime = Runtime.getRuntime();
+                if (System.getenv("OS") == null) return;
+                if (System.getenv("OS").contains("Windows")) {
+                    runtime.exec("rundll32 url.dll, FileProtocolHandler " + file.getAbsolutePath());
+                }else {
+                    runtime.exec("xdg-open " + file.getAbsolutePath());
+                }
+            } catch (Exception err) {
+                Stardust.LOG.error("[Stardust] Failed to open "+ file.getAbsolutePath() +"! - Why:\n"+err);
+                if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open "+file.getName()+"§7."));
+            }
+        }
     }
 }

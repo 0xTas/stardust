@@ -1,12 +1,10 @@
 package dev.stardust.modules;
 
-import java.awt.*;
 import java.util.*;
 import java.io.File;
 import java.util.List;
 import java.time.Instant;
 import java.time.Duration;
-import java.nio.file.Path;
 import java.nio.file.Files;
 import dev.stardust.Stardust;
 import net.minecraft.block.*;
@@ -14,14 +12,11 @@ import net.minecraft.text.Text;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import net.minecraft.text.Style;
 import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.stream.Collectors;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.ClickEvent;
 import dev.stardust.util.StardustUtil;
-import net.minecraft.text.MutableText;
 import dev.stardust.util.StardustUtil.*;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -64,6 +59,8 @@ public class ChatSigns extends Module {
     public enum RepeatMode {
         Cooldown, On_Focus
     }
+
+    private final String BLACKLIST_FILE = "meteor-client/chatsigns-blacklist.txt";
 
     private final SettingGroup modesGroup = settings.createGroup("Modes", true);
     private final SettingGroup formatGroup = settings.createGroup("Formatting", true);
@@ -207,7 +204,7 @@ public class ChatSigns extends Module {
             .description("Ignore signs that contain specific text (line-separated list in chatsigns-blacklist.txt)")
             .defaultValue(false)
             .onChanged(it -> {
-                if (it && this.isActive() && checkOrCreateBlacklistFile()) {
+                if (it && this.isActive() && StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) {
                     this.blacklisted.clear();
                     initBlacklistText();
                     if (mc.player != null) {
@@ -237,7 +234,7 @@ public class ChatSigns extends Module {
             .visible(signBlacklist::get)
             .onChanged(it -> {
                 if (it) {
-                    if (checkOrCreateBlacklistFile()) openBlacklistFile();
+                    if (StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) openBlacklistFile();
                     else resetBlacklistFileSetting();
                 }
             })
@@ -320,7 +317,7 @@ public class ChatSigns extends Module {
         boolean couldBeOld = false;
 
         RegistryKey<World> dimension = mc.world.getRegistryKey();
-        if (dimension != World.NETHER || !ignoreNether.get()) {
+        if (!String.join("", lines).trim().isEmpty() && dimension != World.NETHER || !ignoreNether.get()) {
             WoodType woodType = WoodType.BAMBOO;
             Block block = sign.getCachedState().getBlock();
             if (block instanceof SignBlock signBlock) woodType = signBlock.getWoodType();
@@ -460,36 +457,8 @@ public class ChatSigns extends Module {
         });
     }
 
-    private boolean checkOrCreateBlacklistFile() {
-        Path meteorFolder = FabricLoader.getInstance().getGameDir().resolve("meteor-client");
-        File blackListFile = meteorFolder.resolve("chatsigns-blacklist.txt").toFile();
-
-        if (!blackListFile.exists()) {
-            try {
-                if (blackListFile.createNewFile()) {
-                    if (mc.player != null) {
-                        mc.player.sendMessage(
-                            Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created chatsigns-blacklist.txt in meteor-client folder.")
-                        );
-                        Text msg = Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Click §2§lhere §r§7to open the file.");
-                        Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, blackListFile.getAbsolutePath()));
-
-                        MutableText txt = msg.copyContentOnly().setStyle(style);
-                        mc.player.sendMessage(txt);
-                    }
-                    return true;
-                }
-            } catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Error creating "+ blackListFile.getAbsolutePath() + "! - Why:\n"+err);
-            }
-        } else return true;
-
-        return false;
-    }
-
     private void initBlacklistText() {
-        Path meteorFolder = FabricLoader.getInstance().getGameDir().resolve("meteor-client");
-        File blackListFile = meteorFolder.resolve("chatsigns-blacklist.txt").toFile();
+        File blackListFile = FabricLoader.getInstance().getGameDir().resolve(BLACKLIST_FILE).toFile();
 
         try(Stream<String> lineStream = Files.lines(blackListFile.toPath())) {
             blacklisted.addAll(lineStream.toList());
@@ -499,33 +468,8 @@ public class ChatSigns extends Module {
     }
 
     private void openBlacklistFile() {
-        Path meteorFolder = FabricLoader.getInstance().getGameDir().resolve("meteor-client");
-        File blackListFile = meteorFolder.resolve("chatsigns-blacklist.txt").toFile();
-
-        if (Desktop.isDesktopSupported()) {
-            EventQueue.invokeLater(() -> {
-                try {
-                    Desktop.getDesktop().open(blackListFile);
-                }catch (Exception err) {
-                    Stardust.LOG.error("[Stardust] Failed to open "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err);
-                }
-            });
-        } else {
-            try {
-                Runtime runtime = Runtime.getRuntime();
-                if (System.getenv("OS") == null) return;
-                if (System.getenv("OS").contains("Windows")) {
-                    runtime.exec("rundll32 url.dll, FileProtocolHandler " + blackListFile.getAbsolutePath());
-                }else {
-                    runtime.exec("xdg-open " + blackListFile.getAbsolutePath());
-                }
-            } catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Failed to open "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err);
-                if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open chatsigns-blacklist.txt§7."));
-            }
-        }
-
-        openBlacklistFile.set(false);
+        resetBlacklistFileSetting();
+        StardustUtil.openFile(mc, BLACKLIST_FILE);
     }
 
     private void resetBlacklistFileSetting() {
@@ -536,7 +480,7 @@ public class ChatSigns extends Module {
     @Override
     public void onActivate() {
         if (mc.player == null || mc.world == null) return;
-        if (signBlacklist.get() && checkOrCreateBlacklistFile()) initBlacklistText();
+        if (signBlacklist.get() && StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) initBlacklistText();
 
         BlockPos pos = mc.player.getBlockPos();
         if (chatMode.get() == ChatMode.ESP || chatMode.get() == ChatMode.Both) {
