@@ -855,11 +855,11 @@ public class SignatureSign extends Module {
             for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
                 ItemStack stack = mc.player.getInventory().getStack(n);
                 if (stack.getItem() == dye) {
-                    if (current.getItem() instanceof SignItem) dyeSlot = n;
+                    if (current.getItem() instanceof SignItem && current.getCount() > 1) dyeSlot = n;
                     if (n < 9) InvUtils.swap(n, true);
                     else InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
 
-                    timer = 5;
+                    timer = 3;
                     return;
                 }
             }
@@ -894,7 +894,7 @@ public class SignatureSign extends Module {
                 if (dyeSlot < 9) InvUtils.swapBack();
                 else InvUtils.move().from(mc.player.getInventory().selectedSlot).to(dyeSlot);
                 dyeSlot = -1;
-                timer = 5;
+                timer = 3;
             }
         }
 
