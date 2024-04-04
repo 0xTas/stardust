@@ -282,8 +282,12 @@ public class ChatSigns extends Module {
         return signs;
     }
 
+    private boolean isSignEmpty(SignBlockEntity sbe) {
+        return !sbe.getFrontText().hasText(mc.player) && !sbe.getBackText().hasText(mc.player);
+    }
+
     private String formatSignText(SignBlockEntity sign, WorldChunk chunk) {
-        if (mc.world == null) return "";
+        if (mc.world == null || isSignEmpty(sign)) return "";
         ArrayList<String> lines = new ArrayList<>();
 
         String color = signColor.get().label;
@@ -317,7 +321,7 @@ public class ChatSigns extends Module {
         boolean couldBeOld = false;
 
         RegistryKey<World> dimension = mc.world.getRegistryKey();
-        if (!String.join("", lines).trim().isEmpty() && dimension != World.NETHER || !ignoreNether.get()) {
+        if (dimension != World.NETHER || !ignoreNether.get()) {
             WoodType woodType = WoodType.BAMBOO;
             Block block = sign.getCachedState().getBlock();
             if (block instanceof SignBlock signBlock) woodType = signBlock.getWoodType();
