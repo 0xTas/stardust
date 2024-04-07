@@ -10,18 +10,24 @@ import net.minecraft.item.ItemStack;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.sound.SoundEvents;
 import meteordevelopment.orbit.EventHandler;
+import io.netty.util.internal.ThreadLocalRandom;
+import net.minecraft.screen.PlayerScreenHandler;
 import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.screen.CraftingScreenHandler;
+import net.minecraft.inventory.RecipeInputInventory;
+import net.minecraft.screen.AbstractRecipeScreenHandler;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import net.minecraft.client.gui.screen.ingame.CraftingScreen;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
 public class AutoDyeShulkers extends Module {
-    public AutoDyeShulkers() { super(Stardust.CATEGORY, "AutoDyeShulkers", "Automatically dye shulker boxes when using crafting tables."); }
+    public AutoDyeShulkers() { super(Stardust.CATEGORY, "AutoDyeShulkers", "Automatically dye shulker boxes in crafting grids."); }
 
     private final Setting<DyeColor> dyeColor = settings.getDefaultGroup().add(
         new EnumSetting.Builder<DyeColor>()
@@ -41,7 +47,7 @@ public class AutoDyeShulkers extends Module {
     private final Setting<Boolean> closeOnDone = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
             .name("Close Screen")
-            .description("Automatically close the crafting screen when no more shulkers can be dyed.")
+            .description("Automatically close the crafting table screen when no more shulkers can be dyed.")
             .defaultValue(true)
             .build()
     );
@@ -119,11 +125,16 @@ public class AutoDyeShulkers extends Module {
         }
     }
 
-    private int getItemSlot(Item wanted, CraftingScreenHandler cs) {
-        final int INV_START = 10;
-        final int INV_END = 46;
+    private int getUnoccupiedSlot(int occupied, int inputEnd) {
+        int slot;
+        do {
+            slot = ThreadLocalRandom.current().nextInt(1, inputEnd);
+        } while (slot == occupied);
+        return  slot;
+    }
 
-        for (int n = INV_START; n < INV_END; n++) {
+    private <T extends AbstractRecipeScreenHandler<RecipeInputInventory>> int getItemSlot(Item wanted, T cs, int invStart, int invEnd) {
+        for (int n = invStart; n < invEnd; n++) {
             ItemStack stack = cs.getSlot(n).getStack();
             if (wanted == Items.SHULKER_BOX) {
                 if (isValidShulker(stack.getItem())) return n;
@@ -131,6 +142,64 @@ public class AutoDyeShulkers extends Module {
         }
 
         return -1;
+    }
+
+    private <T extends AbstractRecipeScreenHandler<RecipeInputInventory>> void dyeShulker(T cs, int inputEnd, int invStart, int invEnd) {
+        ItemStack output = cs.getSlot(0).getStack();
+
+        if (isColoredShulker(output.getItem())) {
+            InvUtils.shiftClick().slotId(0);
+        } else {
+            boolean hasDye = false;
+            boolean hasShulk = false;
+            int occupiedSlotDye = -1;
+            int occupiedSlotShulk = -1;
+            for (int n = 1; n < inputEnd; n++) {
+                ItemStack stack = cs.getSlot(n).getStack();
+                if (stack.getItem() == DyeItem.byColor(dyeColor.get())) {
+                    if (!hasDye) {
+                        hasDye = true;
+                        occupiedSlotDye = n;
+                    } else InvUtils.shiftClick().slotId(n);
+                } else if (isValidShulker(stack.getItem())) {
+                    if (!hasShulk) {
+                        hasShulk = true;
+                        occupiedSlotShulk = n;
+                    } else InvUtils.shiftClick().slotId(n);
+                }
+            }
+            if (!hasDye) {
+                int dyeSlot = getItemSlot(DyeItem.byColor(dyeColor.get()), cs, invStart, invEnd);
+                if (dyeSlot != -1) {
+                    if (occupiedSlotShulk != -1) {
+                        InvUtils.move().fromId(dyeSlot).toId(getUnoccupiedSlot(occupiedSlotShulk, inputEnd));
+                    } else InvUtils.move().fromId(dyeSlot).toId(1);
+                    return;
+                }
+            }
+            if (!hasShulk) {
+                int shulkSlot = getItemSlot(Items.SHULKER_BOX, cs, invStart, invEnd);
+                if (shulkSlot != -1) {
+                    if (occupiedSlotDye != -1) {
+                        InvUtils.move().fromId(shulkSlot).toId(getUnoccupiedSlot(occupiedSlotShulk, inputEnd));
+                    } else InvUtils.move().fromId(shulkSlot).toId(1);
+                    return;
+                }
+            }
+            if (hasDye && hasShulk && output.isEmpty()) {
+                timer = tickRate.get() - 1;
+            } else if (!hasShulk || !hasDye) {
+                if (!notified) {
+                    notified = true;
+                    if (disableOnDone.get()) toggle();
+                    if (closeOnDone.get() && cs instanceof CraftingScreenHandler) mc.player.closeHandledScreen();
+                    if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1f);
+                    mc.player.sendMessage(
+                        Text.of("§8<" + StardustUtil.rCC() + "✨§8> §2§oFinished coloring shulkers§8§o.")
+                    );
+                }
+            }
+        }
     }
 
     @Override
@@ -142,57 +211,22 @@ public class AutoDyeShulkers extends Module {
     @EventHandler
     private void onTick(TickEvent.Post event) {
         if (mc.player == null) return;
-        if (mc.currentScreen == null) onDeactivate();
-        if (!(mc.player.currentScreenHandler instanceof CraftingScreenHandler cs)) return;
+        if (mc.currentScreen == null) {
+            onDeactivate();
+            return;
+        }
 
-        ++timer;
-        if (timer >= tickRate.get()) {
-            timer = 0;
-            final int INPUT_START = 1;
-            final int INPUT_END = 10;
-
-            ItemStack output = cs.getSlot(CraftingScreenHandler.RESULT_ID).getStack();
-
-            if (isColoredShulker(output.getItem())) {
-                InvUtils.shiftClick().slotId(CraftingScreenHandler.RESULT_ID);
-            } else {
-                boolean hasDye = false;
-                boolean hasShulk = false;
-                for (int n = INPUT_START; n < INPUT_END; n++) {
-                    ItemStack stack = cs.getSlot(n).getStack();
-                    if (!hasDye && stack.getItem() == DyeItem.byColor(dyeColor.get())) {
-                        hasDye = true;
-                    } else if (!hasShulk && isValidShulker(stack.getItem())) {
-                        hasShulk = true;
-                    }
-                }
-                if (!hasDye) {
-                    int dyeSlot = getItemSlot(DyeItem.byColor(dyeColor.get()), cs);
-                    if (dyeSlot != -1) {
-                        InvUtils.shiftClick().slotId(dyeSlot);
-                        return;
-                    }
-                }
-                if (!hasShulk) {
-                    int shulkSlot = getItemSlot(Items.SHULKER_BOX, cs);
-                    if (shulkSlot != -1) {
-                        InvUtils.shiftClick().slotId(shulkSlot);
-                        return;
-                    }
-                }
-                if (hasDye && hasShulk && output.isEmpty()) {
-                    timer = tickRate.get() - 1;
-                } else if (!hasShulk || !hasDye) {
-                    if (!notified) {
-                        notified = true;
-                        if (disableOnDone.get()) toggle();
-                        if (closeOnDone.get()) mc.player.closeHandledScreen();
-                        if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1f);
-                        mc.player.sendMessage(
-                            Text.of("§8<" + StardustUtil.rCC() + "✨§8> §2§oFinished coloring shulkers§8§o.")
-                        );
-                    }
-                }
+        if (mc.currentScreen instanceof CraftingScreen && mc.player.currentScreenHandler instanceof CraftingScreenHandler cs) {
+            ++timer;
+            if (timer >= tickRate.get()) {
+                timer = 0;
+                dyeShulker(cs, 10, 10, 46);
+            }
+        } else if (mc.currentScreen instanceof InventoryScreen && mc.player.currentScreenHandler instanceof PlayerScreenHandler ps) {
+            ++timer;
+            if (timer >= tickRate.get()) {
+                timer = 0;
+                dyeShulker(ps, 5, 9, 45);
             }
         }
     }
