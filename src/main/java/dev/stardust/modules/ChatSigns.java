@@ -358,7 +358,6 @@ public class ChatSigns extends Module {
                         while (dateMatcher.find()) {
                             String dateStr = dateMatcher.group();
                             LocalDate date = parseDate(dateStr);
-                            if (date != null) mc.player.sendMessage(Text.of("§2Successfully parsed date as: "+date+" | Year: "+date.getYear()));
                             if (date != null && date.getYear() > 2015) invalidDate = true;
                         }
                         if (!invalidDate) couldBeOld = !inNewChunk(chunk, mc, dimension);
