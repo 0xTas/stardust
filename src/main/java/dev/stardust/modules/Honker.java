@@ -4,7 +4,6 @@ import java.util.Collection;
 import dev.stardust.Stardust;
 import net.minecraft.util.Hand;
 import net.minecraft.item.Item;
-import net.minecraft.item.Items;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.item.ItemStack;
@@ -15,6 +14,7 @@ import net.minecraft.sound.SoundEvents;
 import meteordevelopment.orbit.EventHandler;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.entity.player.PlayerEntity;
+import meteordevelopment.meteorclient.utils.Utils;
 import net.minecraft.client.network.PlayerListEntry;
 import meteordevelopment.meteorclient.settings.Setting;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -60,7 +60,17 @@ public class Honker extends Module {
             .name("Horn Spam")
             .description("Spam the desired horn as soon as it's done cooling down (every 7 seconds.)")
             .defaultValue(false)
-            .onChanged(it -> {if (it) honkDesiredHorn();})
+            .onChanged(it -> { if (it) this.ticksSinceUsedHorn = 420; })
+            .build()
+    );
+
+    private final Setting<Boolean> hornSpamAlone = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("When Alone")
+            .description("If you really want to, I guess..")
+            .defaultValue(false)
+            .visible(hornSpam::get)
+            .onChanged(it -> { if (it) this.ticksSinceUsedHorn = 420; })
             .build()
     );
 
@@ -147,6 +157,10 @@ public class Honker extends Module {
 
         for (Entity entity : mc.world.getEntities()) {
             if (entity instanceof PlayerEntity && !(entity instanceof ClientPlayerEntity)) {
+                if (ignoreFakes.get()) {
+                    Collection<PlayerListEntry> players = mc.player.networkHandler.getPlayerList();
+                    if (players.stream().noneMatch(entry -> entry.getProfile().getId().equals(entity.getUuid()))) continue;
+                }
                 honkDesiredHorn();
                 break;
             }
@@ -174,10 +188,23 @@ public class Honker extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
-        if (!hornSpam.get() || mc.player == null) return;
+        if (!hornSpam.get() || mc.player == null || mc.world == null) return;
 
+        boolean playerNearby = false;
+        for (Entity entity : mc.world.getEntities()) {
+            if (entity instanceof PlayerEntity && !(entity instanceof ClientPlayerEntity)) {
+                if (ignoreFakes.get()) {
+                    Collection<PlayerListEntry> players = mc.player.networkHandler.getPlayerList();
+                    if (players.stream().noneMatch(entry -> entry.getProfile().getId().equals(entity.getUuid()))) continue;
+                }
+                playerNearby = true;
+                break;
+            }
+        }
+
+        if (!playerNearby && !hornSpamAlone.get()) return;
         Item activeItem = mc.player.getActiveItem().getItem();
-        if (activeItem.isFood() || activeItem == Items.BOW || activeItem == Items.TRIDENT && mc.mouse.wasRightButtonClicked()) return;
+        if (activeItem.isFood() || Utils.isThrowable(activeItem) && mc.player.getItemUseTime() > 0) return;
 
         ++ticksSinceUsedHorn;
         if (ticksSinceUsedHorn > 150) {
