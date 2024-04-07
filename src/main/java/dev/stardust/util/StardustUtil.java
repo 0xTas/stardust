@@ -19,6 +19,34 @@ import io.netty.util.internal.ThreadLocalRandom;
  * @author Tas [@0xTas] <root@0xTas.dev>
  **/
 public class StardustUtil {
+    public enum RainbowColor {
+        Reds(new String[]{"§c", "§4"}),
+        Yellows(new String[]{"§e", "§6"}),
+        Greens(new String[]{"§a", "§2"}),
+        Cyans(new String[]{"§b", "§3"}),
+        Blues(new String[]{"§9", "§1"}),
+        Purples(new String[]{"§d", "§5"});
+
+        public final String[] labels;
+
+        RainbowColor(String[] labels) { this.labels = labels; }
+
+        public static RainbowColor getFirst() {
+            return RainbowColor.values()[ThreadLocalRandom.current().nextInt(RainbowColor.values().length)];
+        }
+
+        public static RainbowColor getNext(RainbowColor previous) {
+            return switch (previous) {
+                case Reds -> Yellows;
+                case Yellows -> Greens;
+                case Greens -> Cyans;
+                case Cyans -> Blues;
+                case Blues -> Purples;
+                case Purples -> Reds;
+            };
+        }
+    }
+
     public enum TextColor {
         Black("§0"), White("§f"), Gray("§8"), Light_Gray("§7"),
         Dark_Green("§2"), Green("§a"), Dark_Aqua("§3"), Aqua("§b"),
