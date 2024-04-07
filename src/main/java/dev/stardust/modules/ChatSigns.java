@@ -6,6 +6,7 @@ import java.util.List;
 import java.time.Instant;
 import java.time.Duration;
 import java.nio.file.Files;
+import java.time.LocalDate;
 import dev.stardust.Stardust;
 import net.minecraft.block.*;
 import net.minecraft.text.Text;
@@ -23,6 +24,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.registry.RegistryKey;
+import java.time.format.DateTimeFormatter;
 import net.minecraft.util.shape.VoxelShape;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
@@ -33,7 +35,6 @@ import net.minecraft.block.entity.BlockEntity;
 import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.block.entity.HangingSignBlockEntity;
 import meteordevelopment.meteorclient.renderer.ShapeMode;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
@@ -250,7 +251,7 @@ public class ChatSigns extends Module {
     private final HashMap<String, Integer> signMessages = new HashMap<>();
     private final HashMap<ChunkPos, Boolean> chunkCache = new HashMap<>();
     private final Pattern fullYearsPattern = Pattern.compile("202[0-9]");
-    private final Pattern truncatedYearsPattern = Pattern.compile("[0-9]*[-/.]2[0-9]");
+    private final Pattern fullDatesPattern = Pattern.compile("\\b(\\d{1,2}[-/\\. _,'+]\\d{1,2}[-/\\. _,'+]\\d{2,4}|\\d{4}[-/\\. _,'+]\\d{1,2}[-/\\. _,'+]\\d{1,2})\\b");
 
     @Nullable
     private BlockPos getTargetedSign() {
@@ -273,10 +274,8 @@ public class ChatSigns extends Module {
         Map<BlockPos, BlockEntity> blockEntities = chunk.getBlockEntities();
 
         if (blockEntities == null) return signs;
-        blockEntities.forEach((pos, entity) -> { // I'll deal with hanging signs when 2b gets 1.20
-            if (entity instanceof SignBlockEntity && !(entity instanceof HangingSignBlockEntity)) {
-                signs.add((SignBlockEntity) entity);
-            }
+        blockEntities.forEach((pos, entity) -> {
+            if (entity instanceof SignBlockEntity sbe) signs.add(sbe);
         });
 
         return signs;
@@ -284,6 +283,27 @@ public class ChatSigns extends Module {
 
     private boolean isSignEmpty(SignBlockEntity sbe) {
         return !sbe.getFrontText().hasText(mc.player) && !sbe.getBackText().hasText(mc.player);
+    }
+
+    @Nullable
+    private LocalDate parseDate(String dateStr) {
+        String[] formats = {
+            "M/d/yy", "M/dd/yy", "MM/d/yy", "MM/dd/yy",
+            "M/d/yyyy", "M/dd/yyyy", "MM/d/yyyy", "MM/dd/yyyy",
+            "d/M/yy", "d/MM/yy", "dd/M/yy", "dd/MM/yy", "d/M/yyyy",
+            "d/MM/yyyy", "dd/M/yyyy", "dd/MM/yyyy", "yyyy/M/d", "yyyy/MM/d",
+            "yyyy/M/dd", "yyyy/MM/dd", "yyyy/d/M", "yyyy/dd/M", "yyyy/d/MM", "yyyy/dd/MM",
+        };
+        for (String format : formats) {
+            LocalDate date;
+            try {
+                date = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern(format));
+            } catch (Exception ignored) {
+                continue;
+            }
+            return date;
+        }
+        return null;
     }
 
     private String formatSignText(SignBlockEntity sign, WorldChunk chunk) {
@@ -303,10 +323,10 @@ public class ChatSigns extends Module {
             });
         }
 
-        /* State of OldSigns on 2b2t in 1.19+ */
+        /* State of OldSigns on 2b2t in 1.20+ */
         // Signs that were placed in versions 1.8 - 1.12 are still recognizable,
-        // however, signs placed before 1.8 (old signs) are now indistinguishable from new oak signs placed
-        // with standard text entries in 1.19 (unless I'm just dumb and missing something).
+        // but signs placed before 1.8 (old signs) are now indistinguishable
+        // from new oak signs placed with standard text entries in pre-1.8 chunks after 1.19.
 
         // You must now consider context clues such as the sign's environment, material, and content,
         // in order to determine if it is truly likely to be old.
@@ -319,7 +339,6 @@ public class ChatSigns extends Module {
         // While this will still be useful for identifying old bases for a while,
         // most old signs are at spawn, and the signal-to-noise ratio there will worsen every single day.
         boolean couldBeOld = false;
-
         RegistryKey<World> dimension = mc.world.getRegistryKey();
         if (dimension != World.NETHER || !ignoreNether.get()) {
             WoodType woodType = WoodType.BAMBOO;
@@ -334,11 +353,15 @@ public class ChatSigns extends Module {
                     Matcher fullYearsMatcher = fullYearsPattern.matcher(testString);
 
                     if (!fullYearsMatcher.find()) {
-                        Matcher truncatedYearsMatcher = truncatedYearsPattern.matcher(testString);
-
-                        if (!truncatedYearsMatcher.find()) {
-                            couldBeOld = !likelyNewChunk(chunk, mc, dimension);
+                        boolean invalidDate = false;
+                        Matcher dateMatcher = fullDatesPattern.matcher(testString);
+                        while (dateMatcher.find()) {
+                            String dateStr = dateMatcher.group();
+                            LocalDate date = parseDate(dateStr);
+                            if (date != null) mc.player.sendMessage(Text.of("§2Successfully parsed date as: "+date+" | Year: "+date.getYear()));
+                            if (date != null && date.getYear() > 2015) invalidDate = true;
                         }
+                        if (!invalidDate) couldBeOld = !inNewChunk(chunk, mc, dimension);
                     }
                 }
             }
@@ -379,7 +402,7 @@ public class ChatSigns extends Module {
         return txt.toString();
     }
 
-    private boolean likelyNewChunk(WorldChunk chunk, MinecraftClient mc, RegistryKey<World> dimension) {
+    private boolean inNewChunk(WorldChunk chunk, MinecraftClient mc, RegistryKey<World> dimension) {
         if (mc.world == null) return false;
         ChunkPos chunkPos = chunk.getPos();
         if (chunkCache.containsKey(chunkPos)) {
