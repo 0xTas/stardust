@@ -11,7 +11,10 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.entity.EquipmentSlot;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.enchantment.Enchantments;
 import meteordevelopment.meteorclient.settings.*;
+import meteordevelopment.meteorclient.utils.Utils;
+import net.minecraft.enchantment.EnchantmentHelper;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
@@ -19,7 +22,9 @@ import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
+import net.minecraft.network.packet.c2s.play.TeleportConfirmC2SPacket;
 import meteordevelopment.meteorclient.systems.modules.render.FreeLook;
+import meteordevelopment.meteorclient.systems.modules.movement.TridentBoost;
 
 
 /**
@@ -35,6 +40,21 @@ public class RocketMan extends Module {
     private final SettingGroup sgRockets = settings.createGroup("Rockets");
     private final SettingGroup sgControl = settings.createGroup("Control");
     private final SettingGroup sgSound = settings.createGroup("Sounds");
+
+    // See TridentBoostMixin.java
+    public final Setting<Boolean> tridentBoost = sgRockets.add(
+        new BoolSetting.Builder()
+            .name("Trident Boost")
+            .description("Make use of the Trident Boost module for propulsion instead of rockets.")
+            .defaultValue(false)
+            .onChanged(it -> {
+                TridentBoost boost = Modules.get().get(TridentBoost.class);
+                if (it) {
+                    if (!boost.isActive()) boost.toggle();
+                }
+            })
+            .build()
+    );
 
     private final Setting<String> usageMode = sgRockets.add(
         new ProvidedStringSetting.Builder()
@@ -110,7 +130,7 @@ public class RocketMan extends Module {
     private final Setting<Integer> usageCooldown = sgRockets.add(
         new IntSetting.Builder()
             .name("Rocket Usage Cooldown")
-            .description("How often (in ticks) to allow using firework rockets.")
+            .description("How often (in ticks) to allow using firework rockets (or tridents.)")
             .range(2, 1200)
             .sliderRange(2, 100)
             .defaultValue(10)
@@ -121,7 +141,7 @@ public class RocketMan extends Module {
     private final Setting<Integer> usageTickRate = sgRockets.add(
         new IntSetting.Builder()
             .name("Rocket Usage-Rate")
-            .description("How often (in ticks) to use firework rockets.")
+            .description("How often (in ticks) to use firework rockets (or tridents.)")
             .range(2, 1200)
             .sliderRange(2, 200)
             .defaultValue(50)
@@ -240,14 +260,37 @@ public class RocketMan extends Module {
             .build()
     );
 
+    private int timer = 0;
     private int ticksBusy = 0;
-    private int fireworkTicks = 0;
     private int ticksSinceUsed = 0;
+    private int tridentHoldTicks = 0;
     private int ticksSinceWarned = 0;
     private int ticksSinceNotified = 0;
     private int tridentThrowGracePeriod = 0;
     private boolean justUsed = false;
     private boolean takingOff = false;
+    public boolean chargingTrident = false;
+
+    private boolean equippedTrident() {
+        if (mc.player == null || mc.interactionManager == null) return false;
+
+        ItemStack active = mc.player.getActiveItem();
+        if (active.getItem() == Items.TRIDENT && EnchantmentHelper.get(active).containsKey(Enchantments.RIPTIDE)) return true;
+        for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+            ItemStack stack = mc.player.getInventory().getStack(n);
+            if (stack.getItem() == Items.TRIDENT && EnchantmentHelper.get(stack).containsKey(Enchantments.RIPTIDE)) {
+                if (n < 9) InvUtils.swap(n, false);
+                else InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void useTrident() {
+        chargingTrident = true;
+        mc.options.useKey.setPressed(true);
+    }
 
     private void useFireworkRocket() {
         if (mc.player == null) return;
@@ -321,7 +364,7 @@ public class RocketMan extends Module {
         if (autoReplace.get()) {
             if (percentDurability <= replaceThreshold.get()) {
                 if (!replaceElytra() && warnOnLow.get()) {
-                    if (ticksSinceWarned % 100 != 0) return;
+                    if (ticksSinceWarned < 100) return;
                     if (percentDurability <= durabilityThreshold.get()) {
                         if (warnAudible.get()) {
                             float vol = warnVolume.get() / 100f;
@@ -336,7 +379,7 @@ public class RocketMan extends Module {
                 }
             }
         } else if (warnOnLow.get()) {
-            if (ticksSinceWarned % 100 != 0) return;
+            if (ticksSinceWarned < 100) return;
             if (percentDurability <= durabilityThreshold.get()) {
                 if (warnAudible.get()) {
                     float vol = warnVolume.get() / 100f;
@@ -353,7 +396,7 @@ public class RocketMan extends Module {
 
     private void handleFireworkRocketChecks() {
         if (mc.player == null) return;
-        if (ticksSinceNotified % 100 != 0) return;
+        if (ticksSinceNotified < 100) return;
 
         int totalRockets = 0;
         for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
@@ -414,9 +457,15 @@ public class RocketMan extends Module {
 
     @Override
     public void onActivate() {
-        fireworkTicks = 0;
+        timer = 0;
+        tridentHoldTicks = 0;
         if (mc.player == null) return;
         boolean isWearingElytra = mc.player.getEquippedStack(EquipmentSlot.CHEST).getItem() == Items.ELYTRA;
+
+        if (tridentBoost.get()) {
+            TridentBoost tb = Modules.get().get(TridentBoost.class);
+            if (!tb.isActive()) tb.toggle();
+        }
 
         if (!isWearingElytra) {
             if (autoEquip.get()) {
@@ -450,56 +499,100 @@ public class RocketMan extends Module {
                 );
             }
         } else if (takeoff.get() && mc.player.isFallFlying()) {
-            useFireworkRocket();
+            if (!tridentBoost.get() || !equippedTrident()) useFireworkRocket();
+            else useTrident();
+        }
+    }
+
+    @Override
+    public void onDeactivate() {
+        if (chargingTrident) {
+            tridentHoldTicks = 0;
+            chargingTrident = false;
+            mc.options.useKey.setPressed(false);
+            if (mc.currentScreen != null) mc.interactionManager.stopUsingItem(mc.player);
         }
     }
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        if (mc.player == null) return;
-        if (fireworkTicks >= 65535) fireworkTicks = 0;
-        if (ticksSinceWarned >= 65535) ticksSinceWarned = 0;
-        if (ticksSinceNotified >= 65535) ticksSinceNotified = 0;
+        if (mc.player == null || mc.interactionManager == null) return;
+
+        if (chargingTrident) {
+            if (!mc.player.isFallFlying()) {
+                tridentHoldTicks = 0;
+                chargingTrident = false;
+                mc.options.useKey.setPressed(false);
+                if (mc.currentScreen != null) mc.interactionManager.stopUsingItem(mc.player);
+            } else {
+                ++tridentHoldTicks;
+                if (tridentHoldTicks > 10) {
+                    tridentHoldTicks = 0;
+                    chargingTrident = false;
+                    mc.options.useKey.setPressed(false);
+                    if (mc.currentScreen != null) mc.interactionManager.stopUsingItem(mc.player);
+                } else {
+                    ++timer;
+                    ++ticksSinceWarned;
+                    ++ticksSinceNotified;
+                    mc.options.useKey.setPressed(true);
+                    if (!mc.player.isUsingItem()) Utils.rightClick();
+                    return;
+                }
+            }
+        }
 
         Item activeItem = mc.player.getActiveItem().getItem();
-        if (combatAssist.get() && activeItem.isFood() || activeItem == Items.BOW || activeItem == Items.TRIDENT && mc.mouse.wasRightButtonClicked()) {
-            ++ticksBusy;
-            return;
-        }else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isFallFlying() && activeItem == Items.TRIDENT) {
-            ++tridentThrowGracePeriod;
-            if (tridentThrowGracePeriod >= 20) {
-                ticksBusy = 0;
+        if (!tridentBoost.get()) {
+            if (combatAssist.get() && (activeItem.isFood() || Utils.isThrowable(activeItem)) && mc.player.getItemUseTime() > 0) {
+                ++ticksBusy;
+                return;
+            }else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isFallFlying() && activeItem == Items.TRIDENT) {
+                ++tridentThrowGracePeriod;
+                if (tridentThrowGracePeriod >= 20) {
+                    ticksBusy = 0;
+                    useFireworkRocket();
+                    tridentThrowGracePeriod = 0;
+                }
+            } else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isFallFlying() && activeItem != Items.TRIDENT) {
                 useFireworkRocket();
-                tridentThrowGracePeriod = 0;
+                ticksBusy = 0;
             }
-        } else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isFallFlying() && activeItem != Items.TRIDENT) {
-            useFireworkRocket();
-            ticksBusy = 0;
+        } else if (activeItem.isFood() && mc.player.getItemUseTime() > 0) {
+            ++timer;
+            ++ticksSinceWarned;
+            ++ticksSinceNotified;
+            return;
         }
 
         if (mc.player.isOnGround()) {
             takingOff = false;
         }else if (!takingOff && takeoff.get() && mc.player.isFallFlying()) {
             takingOff = true;
-            useFireworkRocket();
+            if (!tridentBoost.get() || !equippedTrident()) useFireworkRocket();
+            else useTrident();
         }else if (mc.player.isFallFlying()) {
             handleDurabilityChecks();
             handleFireworkRocketChecks();
         }
 
-        ++fireworkTicks;
+        ++timer;
         ++ticksSinceWarned;
         ++ticksSinceNotified;
         if (usageMode.get().equals("Auto Use") && mc.player.isFallFlying()) {
-            if (fireworkTicks % usageTickRate.get() == 0) {
-                useFireworkRocket();
+            if (timer >= usageTickRate.get()) {
+                timer = 0;
+                if (!tridentBoost.get() || !equippedTrident()) useFireworkRocket();
+                else useTrident();
             }
         }else if (usageMode.get().equals("W Key") && mc.player.input.pressingForward && mc.player.isFallFlying() && !justUsed) {
             justUsed = true;
-            useFireworkRocket();
+            if (!tridentBoost.get() || !equippedTrident()) useFireworkRocket();
+            else useTrident();
         } else if (usageMode.get().equals("Spacebar") && mc.player.input.jumping && mc.player.isFallFlying() && !justUsed) {
             justUsed = true;
-            useFireworkRocket();
+            if (!tridentBoost.get() || !equippedTrident()) useFireworkRocket();
+            else useTrident();
         }else if (justUsed) {
             ++ticksSinceUsed;
             if (ticksSinceUsed >= usageCooldown.get()) {
@@ -516,5 +609,25 @@ public class RocketMan extends Module {
         if (packet.getSound().value() == SoundEvents.ENTITY_FIREWORK_ROCKET_LAUNCH) {
             if (muteRockets.get()) event.cancel();
         }
+    }
+
+    @EventHandler
+    private void onSentPacket(PacketEvent.Sent event) {
+        if (mc.player == null) return;
+        if (!tridentBoost.get() || !mc.player.isFallFlying()) return;
+        if (!(event.packet instanceof TeleportConfirmC2SPacket)) return;
+
+        if (usageMode.get().equals("Auto Use")) {
+            timer = usageTickRate.get();
+        } else timer = usageCooldown.get();
+
+        tridentHoldTicks = 0;
+        if (usageMode.get().equals("Auto Use")) {
+            ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §c§oVelocity was reset by server§7§o.. §a§oResetting cooldown in response§7§o!"),
+                "rocketmanTridentReset".hashCode()
+            );
+        }
+        useTrident();
     }
 }

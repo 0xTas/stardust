@@ -22,7 +22,8 @@
     "ElytraSoundInstanceMixin",
     "WrittenBookContentsAccessor",
     "AbstractSignEditScreenMixin",
-    "AbstractSignEditScreenAccessor"
+    "AbstractSignEditScreenAccessor",
+    "ClientPlayerInteractionManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
@@ -31,6 +32,7 @@
     "WorldMixin",
     "DoorBlockMixin",
     "GoatHornItemMixin",
+    "TridentBoostMixin",
     "AnvilScreenHandlerAccessor"
   ]
 }
