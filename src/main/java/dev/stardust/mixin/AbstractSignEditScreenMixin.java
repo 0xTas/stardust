@@ -62,7 +62,7 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
         ((AbstractSignEditScreenAccessor) this).setText(signature);
         ((AbstractSignEditScreenAccessor) this).setMessages(messages);
         if (signatureSign.needsDisabling()) {
-            signatureSign.toggle();
+            signatureSign.disable();
         }
 
         if (signatureSign.getAutoConfirm()) {
