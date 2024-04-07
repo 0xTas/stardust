@@ -30,6 +30,7 @@ import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.player.Rotations;
+import meteordevelopment.meteorclient.systems.modules.Modules;
 
 
 /**
@@ -389,6 +390,8 @@ public class SignatureSign extends Module {
     private int storyIndex = 0;
     private int lastIndexAmount = 0;
     private int rotationPriority = 69420;
+    private boolean didDisableWaxAura = false;
+    private boolean needDelayedDeactivate = false;
     private String lastLine1TextFront = line1TextFront.get();
     private String lastLine2TextFront = line2TextFront.get();
     private String lastLine3TextFront = line3TextFront.get();
@@ -420,6 +423,8 @@ public class SignatureSign extends Module {
         storyIndex = 0;
         lastIndexAmount = 0;
         rotationPriority = 69420;
+        didDisableWaxAura = false;
+        needDelayedDeactivate = false;
     }
 
 
@@ -438,6 +443,12 @@ public class SignatureSign extends Module {
         if (glowSigns.get() && !sign.getFrontText().isGlowing()) signsToGlowInk.add(sign);
 
         return new SignText(signature, signature, DyeColor.BLACK, false);
+    }
+
+    public void disable() {
+        if (signsToWax.isEmpty() && signsToColor.isEmpty() && signsToGlowInk.isEmpty()) {
+            toggle();
+        } else needDelayedDeactivate = true;
     }
 
     public boolean needsDisabling() {
@@ -898,6 +909,14 @@ public class SignatureSign extends Module {
             }
         }
 
+        WaxAura waxAura = Modules.get().get(WaxAura.class);
+        if (!signsToColor.isEmpty() || !signsToGlowInk.isEmpty() || !signsToWax.isEmpty()) {
+            if (waxAura.isActive()) {
+                waxAura.toggle();
+                didDisableWaxAura = true;
+            }
+        }
+
         ++timer;
         if (timer >= 5) {
             timer = 0;
@@ -945,6 +964,12 @@ public class SignatureSign extends Module {
                     SignBlockEntity sbe = signs.get(0);
                     interactSign(sbe, Items.HONEYCOMB);
                 }
+            } else {
+                if (didDisableWaxAura && !waxAura.isActive()) {
+                    waxAura.toggle();
+                    didDisableWaxAura = false;
+                }
+                if (needDelayedDeactivate) toggle();
             }
         }
     }
