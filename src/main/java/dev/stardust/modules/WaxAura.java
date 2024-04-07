@@ -282,6 +282,8 @@ public class WaxAura extends Module {
         else getSignsToESP();
 
         ++timer;
+        ItemStack active = mc.player.getActiveItem();
+        if ((active.isFood() || Utils.isThrowable(active.getItem())) && mc.player.getItemUseTime() > 0) return;
         if (timer >= tickRate.get()) {
             timer = 0;
             if (currentSign != null) waxSign(currentSign);
