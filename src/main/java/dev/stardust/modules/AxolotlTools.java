@@ -21,6 +21,7 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.entity.ai.TargetPredicate;
 import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.entity.passive.AxolotlEntity;
+import meteordevelopment.meteorclient.utils.Utils;
 import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.entity.passive.TropicalFishEntity;
 import meteordevelopment.meteorclient.renderer.ShapeMode;
@@ -267,6 +268,7 @@ public class AxolotlTools extends Module {
     );
 
     private int timer = 0;
+    private int rotPriority = 69420;
     private final Set<String> interactVariants = new HashSet<>();
 
     private void disableFishModes() {
@@ -327,10 +329,10 @@ public class AxolotlTools extends Module {
             AtomicReference<ActionResult> result = new AtomicReference<>();
             Rotations.rotate(
                 Rotations.getYaw(entity),
-                Rotations.getPitch(entity, Target.Body),
-                69420,
+                Rotations.getPitch(entity, Target.Body), rotPriority,
                 () -> result.set(mc.interactionManager.interactEntity(mc.player, entity, Hand.MAIN_HAND))
             );
+            ++rotPriority;
             return result.get() == ActionResult.SUCCESS || result.get() == ActionResult.CONSUME;
         }
 
@@ -393,6 +395,7 @@ public class AxolotlTools extends Module {
     @Override
     public void onDeactivate() {
         timer = 0;
+        rotPriority = 69420;
         interactVariants.clear();
     }
 
@@ -402,7 +405,7 @@ public class AxolotlTools extends Module {
         if (axolotlMode.get() == AxolotlMode.None && !catchFish.get()) return;
 
         ItemStack current = mc.player.getInventory().getMainHandStack();
-        if (current.isFood() && mc.mouse.wasRightButtonClicked()) {
+        if ((current.isFood() || Utils.isThrowable(current.getItem())) && mc.player.getItemUseTime() > 0) {
             ++timer;
             return;
         }
