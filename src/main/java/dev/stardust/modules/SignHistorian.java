@@ -13,6 +13,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.nbt.NbtOps;
 import javax.annotation.Nullable;
+import net.minecraft.world.World;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.DyeColor;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ import java.nio.file.StandardOpenOption;
 import org.jetbrains.annotations.NotNull;
 import net.minecraft.util.math.Direction;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.registry.RegistryKey;
 import com.mojang.serialization.DataResult;
 import net.minecraft.block.entity.SignText;
 import net.minecraft.util.shape.VoxelShape;
@@ -225,6 +227,7 @@ public class SignHistorian extends Module {
     private int rotationPriority = 69420;
     private boolean didDisableWaxAura = false;
     private @Nullable BlockPos lastTargetedSign = null;
+    private @Nullable RegistryKey<World> currentDim = null;
     private final HashSet<String> blacklisted = new HashSet<>();
     private final Set<BlockPos> signsBrokenByPlayer = new HashSet<>();
     private final Set<SignBlockEntity> modifiedSigns = new HashSet<>();
@@ -249,7 +252,7 @@ public class SignHistorian extends Module {
     private void resetBlacklistFileSetting() { openBlacklistFile.set(false); }
 
     private void initOrLoadFromSignFile() {
-        if (mc.getNetworkHandler() == null) return;
+        if (mc.world == null || mc.getNetworkHandler() == null) return;
         Path historianFolder = FabricLoader.getInstance().getGameDir().resolve("meteor-client/sign-historian");
 
         try {
@@ -258,12 +261,15 @@ public class SignHistorian extends Module {
             if (server == null) return;
 
             String address = server.address;
-            Path signsFile = historianFolder.resolve(address+".signs");
+            String dimKey;
+            if (currentDim != null) dimKey = currentDim.getValue().toString().replace("minecraft:", "");
+            else dimKey = mc.world.getRegistryKey().getValue().toString().replace("minecraft:", "");
+            Path signsFile = historianFolder.resolve( dimKey+"."+address+".signs");
             if (signsFile.toFile().exists()) {
                 readSignsFromFile(signsFile);
             } else if (signsFile.toFile().createNewFile()) {
                 if (mc.player != null) mc.player.sendMessage(
-                    Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §7Sign data will be saved to §2§o"+signsFile.toAbsolutePath())
+                    Text.of("§8<"+ StardustUtil.rCC()+"✨§8> [§5SignHistorian§8] §7Sign data will be saved to §2§o"+signsFile.toAbsolutePath())
                 );
                 readSignsFromFile(signsFile);
             }
@@ -312,7 +318,7 @@ public class SignHistorian extends Module {
     }
 
     private void saveSignToFile(SignBlockEntity sign, BlockState state) {
-        if (mc.getNetworkHandler() == null) return;
+        if (mc.world == null || mc.getNetworkHandler() == null) return;
         Path historianFolder = FabricLoader.getInstance().getGameDir().resolve("meteor-client/sign-historian");
 
         try {
@@ -325,7 +331,10 @@ public class SignHistorian extends Module {
             if (server == null) return;
 
             String address = server.address;
-            Path signsFile = historianFolder.resolve(address+".signs");
+            String dimKey;
+            if (currentDim != null) dimKey = currentDim.getValue().toString().replace("minecraft:", "");
+            else dimKey = mc.world.getRegistryKey().getValue().toString().replace("minecraft:", "");
+            Path signsFile = historianFolder.resolve(dimKey+"."+address+".signs");
             if (signsFile.toFile().exists()) {
                 writeSignToFile(metadata, stateNbt, signsFile);
             } else if (signsFile.toFile().createNewFile()) {
@@ -565,6 +574,7 @@ public class SignHistorian extends Module {
         timer = 0;
         pingTicks = 0;
         gracePeriod = 0;
+        currentDim = null;
         signsToWax.clear();
         serverSigns.clear();
         signsToColor.clear();
@@ -640,6 +650,13 @@ public class SignHistorian extends Module {
     @EventHandler
     private void onTick(TickEvent.Post event) {
         if (mc.world == null) return;
+        if (currentDim == null) currentDim = mc.world.getRegistryKey();
+        else if (currentDim != mc.world.getRegistryKey()) {
+            currentDim = mc.world.getRegistryKey();
+            serverSigns.clear();
+            if (persistenceSetting.get()) initOrLoadFromSignFile();
+        }
+
         BlockPos targeted = getTargetedSign();
         if (lastTargetedSign == null) lastTargetedSign = targeted;
         else if (targeted == null) {
