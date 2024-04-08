@@ -203,12 +203,20 @@ public class SignHistorian extends Module {
             .build()
     );
 
+    private final Setting<Boolean> chatNotification = sgPrevention.add(
+        new BoolSetting.Builder()
+            .name("Chat Notification")
+            .description("Warns you in chat when nearby signs are in danger of an approaching creeper.")
+            .defaultValue(true)
+            .build()
+    );
+
     private final Setting<Double> alarmVolume = sgPrevention.add(
         new DoubleSetting.Builder()
             .name("Volume")
             .sliderMax(0)
             .sliderMax(200)
-            .defaultValue(100)
+            .defaultValue(0)
             .build()
     );
 
@@ -496,7 +504,9 @@ public class SignHistorian extends Module {
     private boolean hasNearbySigns() {
         if (mc.player == null || mc.world == null) return false;
         for (BlockPos pos : BlockPos.iterateOutwards(mc.player.getBlockPos(), 5, 5, 5)) {
-            if (mc.world.getBlockEntity(pos) instanceof SignBlockEntity) return true;
+            if (mc.world.getBlockEntity(pos) instanceof SignBlockEntity sbe) {
+                if (sbe.getFrontText().hasText(mc.player) || sbe.getBackText().hasText(mc.player)) return true;
+            }
         }
         return false;
     }
@@ -622,8 +632,6 @@ public class SignHistorian extends Module {
                         +" | §3§lColor§7§l: "+ghost.getText(true).getColor().name()
                         +" | §f§lGlow Ink§7§l: "+ghost.getText(true).isGlowing()
                 ));
-                event.cancel();
-                return;
             }
         }
     }
@@ -703,11 +711,17 @@ public class SignHistorian extends Module {
             }
         } else if (griefPrevention.get()) {
             approachingCreepers.removeIf(Entity::isRemoved);
-            approachingCreepers.removeIf(creeper -> !creeper.getBlockPos().isWithinDistance(mc.player.getBlockPos(), 15));
+            approachingCreepers.removeIf(creeper -> !creeper.getBlockPos().isWithinDistance(mc.player.getBlockPos(), 12));
+            approachingCreepers.removeIf(creep -> creep.getBlockPos().isWithinDistance(trackedCreepers.get(creep.getId()), 2));
 
             if (!approachingCreepers.isEmpty() && hasNearbySigns()) {
                 if (pingTicks == 0) {
                     mc.player.playSound(SoundEvents.ENTITY_PHANTOM_HURT, alarmVolume.get().floatValue(), 1f);
+                    if (chatNotification.get()) {
+                        mc.player.sendMessage(Text.of(
+                            "§8<"+ StardustUtil.rCC()+"✨§8> [§5SignHistorian§8] §c§lNEARBY SIGNS IN DANGER OF MOB GRIEFING§7§l."
+                        ));
+                    }
                 }
                 ++pingTicks;
                 if (pingTicks >= 50) pingTicks = 0;
@@ -721,7 +735,7 @@ public class SignHistorian extends Module {
                         BlockPos newPos = creeper.getBlockPos();
                         BlockPos lastPos = trackedCreepers.get(id);
                         if (!pPos.isWithinDistance(newPos, 15)) continue;
-                        if (newPos.isWithinDistance(lastPos, 1)) {
+                        if (newPos.isWithinDistance(lastPos, 2)) {
                             approachingCreepers.remove(creeper);
                             continue;
                         }
@@ -852,7 +866,7 @@ public class SignHistorian extends Module {
         }
 
         approachingCreepers.removeIf(Entity::isRemoved);
-        approachingCreepers.removeIf(creeper -> !creeper.getBlockPos().isWithinDistance(mc.player.getBlockPos(), 15));
+        approachingCreepers.removeIf(creeper -> !creeper.getBlockPos().isWithinDistance(mc.player.getBlockPos(), 12));
         if (griefPrevention.get() && !approachingCreepers.isEmpty() && hasNearbySigns()) {
             SettingColor dangerColor = new SettingColor(255, 0, 25, 255);
             for (CreeperEntity creeper : approachingCreepers) {
