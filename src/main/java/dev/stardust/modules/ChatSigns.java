@@ -341,26 +341,28 @@ public class ChatSigns extends Module {
         boolean couldBeOld = false;
         RegistryKey<World> dimension = mc.world.getRegistryKey();
         if (dimension != World.NETHER || !ignoreNether.get()) {
-            WoodType woodType = WoodType.BAMBOO;
-            Block block = sign.getCachedState().getBlock();
-            if (block instanceof SignBlock signBlock) woodType = signBlock.getWoodType();
-            else if (block instanceof WallSignBlock wallSignBlock) woodType = wallSignBlock.getWoodType();
+            if (!String.join(" ", lines).contains("**Pre-1.19 Sign restored by 0xTas' SignHistorian**")) {
+                WoodType woodType = WoodType.BAMBOO;
+                Block block = sign.getCachedState().getBlock();
+                if (block instanceof SignBlock signBlock) woodType = signBlock.getWoodType();
+                else if (block instanceof WallSignBlock wallSignBlock) woodType = wallSignBlock.getWoodType();
 
-            if (woodType == WoodType.OAK) {
-                NbtCompound metadata = sign.toInitialChunkDataNbt();
-                if (!metadata.toString().contains("{\"extra\":[{\"") && !lines.isEmpty()) {
-                    String testString = String.join(" ", lines);
-                    Matcher fullYearsMatcher = fullYearsPattern.matcher(testString);
+                if (woodType == WoodType.OAK) {
+                    NbtCompound metadata = sign.toInitialChunkDataNbt();
+                    if (!metadata.toString().contains("{\"extra\":[{\"") && !lines.isEmpty()) {
+                        String testString = String.join(" ", lines);
+                        Matcher fullYearsMatcher = fullYearsPattern.matcher(testString);
 
-                    if (!fullYearsMatcher.find()) {
-                        boolean invalidDate = false;
-                        Matcher dateMatcher = fullDatesPattern.matcher(testString);
-                        while (dateMatcher.find()) {
-                            String dateStr = dateMatcher.group();
-                            LocalDate date = parseDate(dateStr);
-                            if (date != null && date.getYear() > 2015) invalidDate = true;
+                        if (!fullYearsMatcher.find()) {
+                            boolean invalidDate = false;
+                            Matcher dateMatcher = fullDatesPattern.matcher(testString);
+                            while (dateMatcher.find()) {
+                                String dateStr = dateMatcher.group();
+                                LocalDate date = parseDate(dateStr);
+                                if (date != null && date.getYear() > 2015) invalidDate = true;
+                            }
+                            if (!invalidDate) couldBeOld = !inNewChunk(chunk, mc, dimension);
                         }
-                        if (!invalidDate) couldBeOld = !inNewChunk(chunk, mc, dimension);
                     }
                 }
             }
