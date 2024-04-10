@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 import dev.stardust.Stardust;
 import net.minecraft.text.Text;
+import dev.stardust.modules.AntiToS;
 import dev.stardust.util.StardustUtil;
 import dev.stardust.modules.BookTools;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,7 +32,7 @@ public abstract class BookScreenMixin extends Screen {
     @Shadow
     private BookScreen.Contents contents;
 
-    // See BookTools.java
+    // See BookTools.java && AntiToS.java
     protected BookScreenMixin(Text title) { super(title); }
 
 
@@ -49,7 +50,6 @@ public abstract class BookScreenMixin extends Screen {
             return;
         }
 
-        Stardust.LOG.debug("[Stardust] Deobfuscated book contents.");
         if (contents instanceof BookScreen.WrittenBookContents) {
             List<String> pages = ((WrittenBookContentsAccessor) contents).getPages();
             List<String> deobfuscatedPages = new java.util.ArrayList<>(List.of());
@@ -92,10 +92,20 @@ public abstract class BookScreenMixin extends Screen {
     private void mixinInit(CallbackInfo ci) {
         if (!(this.contents instanceof BookScreen.WrittenBookContents)) return;
 
-        BookTools bookTools = Modules.get().get(BookTools.class);
-        if (bookTools.skipDeobfuscation()) return;
-
         List<String> pages = ((WrittenBookContentsAccessor) this.contents).getPages();
+        AntiToS antiToS = Modules.get().get(AntiToS.class);
+        BookTools bookTools = Modules.get().get(BookTools.class);
+
+        if (antiToS.isActive() && antiToS.booksSetting.get()) {
+            List<String> filtered = new ArrayList<>();
+            for (String page : pages) {
+                if (antiToS.containsBlacklistedText(page)) {
+                    filtered.add(antiToS.censorText(page));
+                } else filtered.add(page);
+            }
+            ((WrittenBookContentsAccessor) this.contents).setPages(filtered);
+            this.cachedPageIndex = -1;
+        } else if (bookTools.skipDeobfuscation()) return;
 
         this.deobfuscateButton = this.addDrawableChild(
             ButtonWidget.builder(
@@ -107,7 +117,7 @@ public abstract class BookScreenMixin extends Screen {
 
         this.deobfuscateButton.visible = pages.get(this.pageIndex).contains("§k");
         if (pages.stream().anyMatch(page -> page.contains("§k"))) {
-            this.obfuscatedPages = pages;
+            this.obfuscatedPages = ((WrittenBookContentsAccessor) this.contents).getPages();
         }
     }
 
@@ -120,7 +130,6 @@ public abstract class BookScreenMixin extends Screen {
         if (bookTools.skipDeobfuscation()) return;
 
         List<String> pages = ((WrittenBookContentsAccessor) contents).getPages();
-
         this.deobfuscateButton.visible = pages.get(this.pageIndex).contains("§k");
     }
 }
