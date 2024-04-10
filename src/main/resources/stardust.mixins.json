@@ -3,6 +3,7 @@
   "package": "dev.stardust.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
+    "ChatHudMixin",
     "BookScreenMixin",
     "DrawContextMixin",
     "SoundSystemMixin",
@@ -22,6 +23,7 @@
     "ElytraSoundInstanceMixin",
     "WrittenBookContentsAccessor",
     "AbstractSignEditScreenMixin",
+    "SignBlockEntityRendererMixin",
     "AbstractSignEditScreenAccessor",
     "ClientPlayerInteractionManagerMixin"
   ],
