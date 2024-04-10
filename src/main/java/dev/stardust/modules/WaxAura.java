@@ -200,7 +200,7 @@ public class WaxAura extends Module {
     private void getSignsToESP() {
         for (BlockEntity be : Utils.blockEntities()) {
             if (be instanceof SignBlockEntity sbe && !sbe.isWaxed() && !isSignEmpty(sbe)) {
-                if (!containsBlacklistedText(sbe) || !contentBlacklist.get()) signsToESP.add(sbe.getPos());
+                if (!contentBlacklist.get() || !containsBlacklistedText(sbe)) signsToESP.add(sbe.getPos());
             }
         }
     }
@@ -209,7 +209,7 @@ public class WaxAura extends Module {
         if (mc.player == null || mc.world == null || mc.currentScreen != null) return;
         for (BlockPos pos : BlockPos.iterateOutwards(mc.player.getBlockPos(), 5, 5, 5)) {
             if (mc.world.getBlockEntity(pos) instanceof SignBlockEntity sbe && !sbe.isWaxed() && !isSignEmpty(sbe)) {
-                if (!containsBlacklistedText(sbe) || !contentBlacklist.get()) signsToWax.add(sbe);
+                if (!contentBlacklist.get() || !containsBlacklistedText(sbe)) signsToWax.add(sbe);
             }
         }
     }

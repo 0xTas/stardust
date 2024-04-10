@@ -228,8 +228,8 @@ public class SignHistorian extends Module {
             .build()
     );
 
-    int dyeSlot = -1;
     private int timer = 0;
+    private int dyeSlot = -1;
     private int pingTicks = 0;
     private int gracePeriod = 0;
     private int rotationPriority = 69420;
@@ -593,6 +593,7 @@ public class SignHistorian extends Module {
         signsToGlowInk.clear();
         trackedCreepers.clear();
         lastTargetedSign = null;
+        rotationPriority = 69420;
         didDisableWaxAura = false;
         approachingCreepers.clear();
         signsBrokenByPlayer.clear();
