@@ -14,6 +14,7 @@ It provides a handful of modules for enhancing your experience on old server.<br
 - **SignHistorian** - *Record and restore broken or modified signs that you previously visited.* Since 1.19, creepers have been a real problem for sign boards everywhere. Now even if they blow that shit up, all is not lost.
 - **AxolotlTools** - *Variant ESP, auto-collector & auto-breeder for axolotls.* Can also catch buckets of tropical fish, with or without a farm setup. I used this to get blue axolotls on 2b2t because interacting with them normally pisses me off.
 - **AutoDoors** - *Automatically interacts with doors.* Includes an insufferable door spammer mode as well (complete with client-side mute option).
+- **AntiToS** - *Censors player-generated text on render, like signs, books, and chat, according to a customizable content blacklist.*
 - **AutoDrawDistance** - *Automatically adjusts your render distance to maintain an FPS target.* Some biomes/areas can drop my fps by half, so I found this somewhat useful at times.
 - **AutoDyeShulkers** - *Automatically dye shulker boxes a desired color in crafting grids.*
 - **LoreLocator** - *Slot highlighter for rare, unique, and anomalous items.* Capable of highlighting renamed items, items with illegal enchants, negative durability values, and more.
