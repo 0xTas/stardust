@@ -263,7 +263,6 @@ public class RocketMan extends Module {
     private int timer = 0;
     private int ticksBusy = 0;
     private int ticksSinceUsed = 0;
-    private int tridentHoldTicks = 0;
     private int ticksSinceWarned = 0;
     private int ticksSinceNotified = 0;
     private int tridentThrowGracePeriod = 0;
@@ -289,7 +288,7 @@ public class RocketMan extends Module {
 
     private void useTrident() {
         chargingTrident = true;
-        mc.options.useKey.setPressed(true);
+        mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND);
     }
 
     private void useFireworkRocket() {
@@ -454,11 +453,9 @@ public class RocketMan extends Module {
         return muteElytra.get() && mc.player.isFallFlying();
     }
 
-
     @Override
     public void onActivate() {
         timer = 0;
-        tridentHoldTicks = 0;
         if (mc.player == null) return;
         boolean isWearingElytra = mc.player.getEquippedStack(EquipmentSlot.CHEST).getItem() == Items.ELYTRA;
 
@@ -507,10 +504,8 @@ public class RocketMan extends Module {
     @Override
     public void onDeactivate() {
         if (chargingTrident) {
-            tridentHoldTicks = 0;
             chargingTrident = false;
-            mc.options.useKey.setPressed(false);
-            if (mc.currentScreen != null) mc.interactionManager.stopUsingItem(mc.player);
+            mc.interactionManager.stopUsingItem(mc.player);
         }
     }
 
@@ -519,27 +514,8 @@ public class RocketMan extends Module {
         if (mc.player == null || mc.interactionManager == null) return;
 
         if (chargingTrident) {
-            if (!mc.player.isFallFlying()) {
-                tridentHoldTicks = 0;
-                chargingTrident = false;
-                mc.options.useKey.setPressed(false);
-                if (mc.currentScreen != null) mc.interactionManager.stopUsingItem(mc.player);
-            } else {
-                ++tridentHoldTicks;
-                if (tridentHoldTicks > 10) {
-                    tridentHoldTicks = 0;
-                    chargingTrident = false;
-                    mc.options.useKey.setPressed(false);
-                    if (mc.currentScreen != null) mc.interactionManager.stopUsingItem(mc.player);
-                } else {
-                    ++timer;
-                    ++ticksSinceWarned;
-                    ++ticksSinceNotified;
-                    mc.options.useKey.setPressed(true);
-                    if (!mc.player.isUsingItem()) Utils.rightClick();
-                    return;
-                }
-            }
+            chargingTrident = false;
+            mc.interactionManager.stopUsingItem(mc.player);
         }
 
         Item activeItem = mc.player.getActiveItem().getItem();
@@ -605,7 +581,6 @@ public class RocketMan extends Module {
     @EventHandler
     private void onReceivePacket(PacketEvent.Receive event) {
         if (!(event.packet instanceof PlaySoundS2CPacket packet)) return;
-
         if (packet.getSound().value() == SoundEvents.ENTITY_FIREWORK_ROCKET_LAUNCH) {
             if (muteRockets.get()) event.cancel();
         }
@@ -620,14 +595,5 @@ public class RocketMan extends Module {
         if (usageMode.get().equals("Auto Use")) {
             timer = usageTickRate.get();
         } else timer = usageCooldown.get();
-
-        tridentHoldTicks = 0;
-        if (usageMode.get().equals("Auto Use")) {
-            ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §c§oVelocity was reset by server§7§o.. §a§oResetting cooldown in response§7§o!"),
-                "rocketmanTridentReset".hashCode()
-            );
-        }
-        useTrident();
     }
 }
