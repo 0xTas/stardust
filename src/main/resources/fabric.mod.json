@@ -21,7 +21,8 @@
     "stardust.mixins.json"
   ],
   "custom": {
-    "meteor-client:color": "147,233,190"
+    "meteor-client:color": "147,233,190",
+    "meteor-client:commit": "${commit}"
   },
   "depends": {
     "java": ">=17",

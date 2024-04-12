@@ -30,8 +30,15 @@ dependencies {
 }
 
 processResources {
+    def propertyMap = [
+        "version": project.version,
+        "mc_version": project.minecraft_version,
+        "commit": project.findProperty("commit") ?: ""
+    ]
+
+    inputs.properties(propertyMap)
     filesMatching("fabric.mod.json") {
-        expand "version": project.version, "mc_version": project.minecraft_version
+        expand(propertyMap)
     }
 }
 
