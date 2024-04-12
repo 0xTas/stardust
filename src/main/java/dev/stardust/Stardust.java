@@ -92,7 +92,7 @@ public class Stardust extends MeteorAddon {
     @Override
     public String getWebsite() { return "https://github.com/0xTas/stardust"; }
     @Override
-    public GithubRepo getRepo() { return new GithubRepo("0xTas", "Stardust"); }
+    public GithubRepo getRepo() { return new GithubRepo("0xTas", "Stardust", "main"); }
     @Override
     public String getCommit() {
         CustomValue commit = FabricLoader.getInstance()
