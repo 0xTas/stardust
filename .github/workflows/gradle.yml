@@ -5,7 +5,7 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "1.20.4" ]
     paths-ignore:
       - '*.md'
 
