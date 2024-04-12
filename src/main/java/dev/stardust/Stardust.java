@@ -5,6 +5,9 @@ import dev.stardust.modules.*;
 import dev.stardust.commands.*;
 import com.mojang.logging.LogUtils;
 import dev.stardust.util.StardustUtil;
+import net.fabricmc.loader.api.FabricLoader;
+import meteordevelopment.meteorclient.MeteorClient;
+import net.fabricmc.loader.api.metadata.CustomValue;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.commands.Commands;
@@ -47,7 +50,6 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new StashBrander());
         Modules.get().add(new SignatureSign());
         Modules.get().add(new SignHistorian());
-        Modules.get().add(new UpdateNotifier());
         Modules.get().add(new AutoDyeShulkers());
         Modules.get().add(new AutoDrawDistance());
 
@@ -90,5 +92,15 @@ public class Stardust extends MeteorAddon {
     @Override
     public String getWebsite() { return "https://github.com/0xTas/stardust"; }
     @Override
-    public GithubRepo getRepo() { return new GithubRepo("0xTas", "Stardust"); }
+    public GithubRepo getRepo() { return new GithubRepo("0xTas", "Stardust", "1.20.4"); }
+    @Override
+    public String getCommit() {
+        CustomValue commit = FabricLoader.getInstance()
+            .getModContainer("stardust")
+            .orElseThrow()
+            .getMetadata()
+            .getCustomValue(MeteorClient.MOD_ID + ":commit");
+
+        return commit == null ? null : commit.getAsString();
+    }
 }
