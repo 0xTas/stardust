@@ -18,14 +18,18 @@ public class TridentBoostMixin {
     // See RocketMan.java
     @Inject(method = "getMultiplier", at = @At("RETURN"), cancellable = true)
     private void configureMultiplier(CallbackInfoReturnable<Double> cir) {
-        RocketMan rm = Modules.get().get(RocketMan.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
+        RocketMan rm = modules.get(RocketMan.class);
         if (!rm.isActive() || !rm.tridentBoost.get()) return;
         cir.setReturnValue(1.069);
     }
 
     @Inject(method = "allowOutOfWater", at = @At("RETURN"), cancellable = true)
     private void doAllowOutOfWater(CallbackInfoReturnable<Boolean> cir) {
-        RocketMan rm = Modules.get().get(RocketMan.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
+        RocketMan rm = modules.get(RocketMan.class);
         if (!rm.isActive() || !rm.tridentBoost.get()) return;
         cir.setReturnValue(true);
     }

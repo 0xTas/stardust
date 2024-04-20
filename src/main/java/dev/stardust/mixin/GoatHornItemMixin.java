@@ -22,7 +22,9 @@ public class GoatHornItemMixin extends Item {
 
     @Inject(method = "playSound", at = @At("HEAD"), cancellable = true)
     private static void mixinPlaySound(CallbackInfo ci) {
-        Honker honker = Modules.get().get(Honker.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
+        Honker honker = modules.get(Honker.class);
         if (honker.shouldMuteHorns()) ci.cancel();
     }
 }

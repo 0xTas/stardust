@@ -25,7 +25,9 @@ public abstract class ElytraSoundInstanceMixin extends MovingSoundInstance {
     // See RocketMan.java
     @Inject(method = "tick", at = @At("HEAD"))
     private void mixinTick(CallbackInfo ci) {
-        RocketMan rocketMan = Modules.get().get(RocketMan.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
+        RocketMan rocketMan = modules.get(RocketMan.class);
         if (rocketMan.isActive() && rocketMan.shouldMuteElytra()) this.setDone();
     }
 }

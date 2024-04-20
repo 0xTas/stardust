@@ -17,7 +17,9 @@ public class MusicTrackerMixin {
     // See MusicTweaks.java
     @Inject(method = "tick", at = @At("TAIL"))
     private void mixinTick(CallbackInfo ci) {
-        MusicTweaks tweaks = Modules.get().get(MusicTweaks.class);
+        Modules modules = Modules.get();
+        if (modules == null ) return;
+        MusicTweaks tweaks = modules.get(MusicTweaks.class);
 
         if (tweaks == null || !tweaks.isActive()) return;
         boolean currentlyPlaying = ((MusicTrackerAccessor) this).getCurrent() != null;

@@ -18,7 +18,9 @@ public class ClientPlayerInteractionManagerMixin {
     // See RocketMan.java
     @Inject(method = "stopUsingItem", at = @At("HEAD"), cancellable = true)
     private void preventTridentUseResetOnScreenChange(CallbackInfo ci) {
-        RocketMan rm = Modules.get().get(RocketMan.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
+        RocketMan rm = modules.get(RocketMan.class);
         if (!rm.isActive() || !rm.tridentBoost.get() || !rm.chargingTrident) return;
         ci.cancel();
     }

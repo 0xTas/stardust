@@ -29,7 +29,9 @@ public abstract class WeightedSoundSetMixin implements SoundContainer<Sound> {
     // See MusicTweaks.java
     @Inject(method = "getSound(Lnet/minecraft/util/math/random/Random;)Lnet/minecraft/client/sound/Sound;", at = @At("HEAD"), cancellable = true)
     private void mixinGetSound(net.minecraft.util.math.random.Random random, CallbackInfoReturnable<Sound> cir) {
-        MusicTweaks tweaks = Modules.get().get(MusicTweaks.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
+        MusicTweaks tweaks = modules.get(MusicTweaks.class);
         if (tweaks == null || !tweaks.isActive()) return;
 
         boolean overwrite = false;

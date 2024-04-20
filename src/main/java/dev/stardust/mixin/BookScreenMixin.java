@@ -2,7 +2,6 @@ package dev.stardust.mixin;
 
 import java.util.List;
 import java.util.ArrayList;
-import dev.stardust.Stardust;
 import net.minecraft.text.Text;
 import dev.stardust.modules.AntiToS;
 import dev.stardust.util.StardustUtil;
@@ -72,7 +71,6 @@ public abstract class BookScreenMixin extends Screen {
 
     @Unique
     private void reobfuscateBook(ButtonWidget btn) {
-        Stardust.LOG.debug("[Stardust] Reobfuscated book contents.");
         if (contents instanceof BookScreen.WrittenBookContents) {
             btn.setAlpha(1f);
             btn.setTooltip(Tooltip.of(Text.of("§8Reveal this tome's secrets..")));
@@ -92,10 +90,12 @@ public abstract class BookScreenMixin extends Screen {
     private void mixinInit(CallbackInfo ci) {
         if (!(this.contents instanceof BookScreen.WrittenBookContents)) return;
 
-        List<String> pages = ((WrittenBookContentsAccessor) this.contents).getPages();
-        AntiToS antiToS = Modules.get().get(AntiToS.class);
-        BookTools bookTools = Modules.get().get(BookTools.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
 
+        List<String> pages = ((WrittenBookContentsAccessor) this.contents).getPages();
+        AntiToS antiToS = modules.get(AntiToS.class);
+        BookTools bookTools = modules.get(BookTools.class);
         if (antiToS.isActive() && antiToS.booksSetting.get()) {
             List<String> filtered = new ArrayList<>();
             for (String page : pages) {

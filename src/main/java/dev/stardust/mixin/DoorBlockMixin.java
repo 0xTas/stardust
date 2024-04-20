@@ -22,8 +22,11 @@ public class DoorBlockMixin extends Block {
     // See AutoDoors.java
     @Inject(method = "playOpenCloseSound", at = @At("HEAD"), cancellable = true)
     private void mixinPlayOpenCloseSound(CallbackInfo ci) {
-        AutoDoors autoDoors = Modules.get().get(AutoDoors.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
+        AutoDoors autoDoors = modules.get(AutoDoors.class);
 
+        if (autoDoors == null) return;
         if (autoDoors.shouldMute()) ci.cancel();
     }
 }

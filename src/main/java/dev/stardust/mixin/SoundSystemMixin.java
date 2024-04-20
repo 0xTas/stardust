@@ -34,8 +34,9 @@ public class SoundSystemMixin {
     // See MusicTweaks.java
     @Inject(method = "tick()V", at = @At("TAIL"))
     private void mixinTick(CallbackInfo ci) {
-        MusicTweaks tweaks = Modules.get().get(MusicTweaks.class);
-        if (tweaks == null) return;
+        Modules modules = Modules.get();
+        if (modules == null ) return;
+        MusicTweaks tweaks = modules.get(MusicTweaks.class);
 
         boolean playing = false;
         @Nullable String songID = null;

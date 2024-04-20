@@ -23,7 +23,9 @@ public abstract class SignBlockEntityRendererMixin implements BlockEntityRendere
     // See AntiToS.java
     @ModifyVariable(method = "renderText", at = @At("HEAD"), argsOnly = true)
     private SignText modifyRenderedText(SignText signText) {
-        AntiToS antiToS = Modules.get().get(AntiToS.class);
+        Modules modules = Modules.get();
+        if (modules == null ) return signText;
+        AntiToS antiToS = modules.get(AntiToS.class);
         if (!antiToS.isActive() || !antiToS.signsSetting.get()) return signText;
 
         String testText = Arrays.stream(signText.getMessages(false))

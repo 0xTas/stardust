@@ -24,7 +24,9 @@ public abstract class DrawContextMixin {
     // See LoreLocator.java
     @Inject(method = "drawItemInSlot(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V", at = @At(value = "HEAD"))
     private void highlightNamedItems(TextRenderer textRenderer, ItemStack stack, int x, int y, @Nullable String countOverride, CallbackInfo ci) {
-        LoreLocator ll = Modules.get().get(LoreLocator.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
+        LoreLocator ll = modules.get(LoreLocator.class);
         if (!ll.isActive() || !ll.shouldHighlightSlot(stack)) return;
         this.fill(x, y, x + 16, y + 16, ll.color.get().getPacked());
     }
