@@ -22,7 +22,7 @@
   ],
   "custom": {
     "meteor-client:color": "147,233,190",
-    "meteor-client:commit": "942ed0248b5d39d0d9fd1a25cf1de5f76818a45d"
+    "meteor-client:commit": "${commit}"
   },
   "depends": {
     "java": ">=17",
