@@ -22,7 +22,9 @@ public class ChatHudMixin {
         argsOnly = true
     )
     private Text censorChatMessage(Text message) {
-        AntiToS antiToS = Modules.get().get(AntiToS.class);
+        Modules modules = Modules.get();
+        if (modules == null) return message;
+        AntiToS antiToS = modules.get(AntiToS.class);
         if (!antiToS.isActive() || !antiToS.chatSetting.get()) return message;
         return (antiToS.containsBlacklistedText(message.getString()) ? Text.of(antiToS.censorText(message.getString())) : message);
     }

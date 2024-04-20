@@ -93,7 +93,9 @@ public abstract class BookEditScreenMixin extends Screen {
 
     @Inject(method = "init", at = @At("TAIL"))
     private void mixinInit(CallbackInfo ci) {
-        BookTools bookTools = Modules.get().get(BookTools.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
+        BookTools bookTools = modules.get(BookTools.class);
         if (bookTools.skipFormatting()) return;
 
         int offset = 0;
@@ -188,7 +190,9 @@ public abstract class BookEditScreenMixin extends Screen {
 
     @Inject(method = "updateButtons", at = @At("TAIL"))
     private void mixinUpdateButtons(CallbackInfo ci) {
-        BookTools bookTools = Modules.get().get(BookTools.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
+        BookTools bookTools = modules.get(BookTools.class);
         if (bookTools.skipFormatting()) return;
 
         for (ButtonWidget btn : this.buttons) {

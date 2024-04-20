@@ -21,7 +21,9 @@ public class ClientPlayerEntityMixin {
     // See RocketMan.java
     @Inject(method = "playSound(Lnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FF)V", at = @At("HEAD"), cancellable = true)
     private void mixinPlaySound(SoundEvent sound, SoundCategory category, float volume, float pitch, CallbackInfo ci) {
-        RocketMan rocketMan = Modules.get().get(RocketMan.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
+        RocketMan rocketMan = modules.get(RocketMan.class);
         if (rocketMan.isActive() && sound == SoundEvents.ITEM_ELYTRA_FLYING) {
             if (rocketMan.shouldMuteElytra()) ci.cancel();
         }

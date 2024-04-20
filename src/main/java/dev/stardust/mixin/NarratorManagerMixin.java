@@ -18,7 +18,9 @@ public class NarratorManagerMixin {
     // See SoundSystemMixin.java
     @Inject(method = "narrate(Lnet/minecraft/text/Text;)V", at = @At("HEAD"), cancellable = true)
     private void mixinNarrate(Text text, CallbackInfo ci) {
-        MusicTweaks tweaks = Modules.get().get(MusicTweaks.class);
+        Modules modules = Modules.get();
+        if (modules == null ) return;
+        MusicTweaks tweaks = modules.get(MusicTweaks.class);
 
         if (tweaks == null || !tweaks.isActive()) return;
         if (text.getString().startsWith("Now Playing: ") || text.getString().contains("§2§oNow Playing§r§7: ")) ci.cancel();

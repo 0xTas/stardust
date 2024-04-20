@@ -22,7 +22,9 @@ public abstract class WorldMixin implements WorldAccess, AutoCloseable {
     // See StashBrander.java
     @Inject(method = "playSoundAtBlockCenter", at = @At("HEAD"), cancellable = true)
     private void mixinPlaySoundAtBlockCenter(BlockPos pos, SoundEvent sound, SoundCategory category, float volume, float pitch, boolean useDistance, CallbackInfo ci) {
-        StashBrander brander = Modules.get().get(StashBrander.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
+        StashBrander brander = modules.get(StashBrander.class);
         if (!brander.isActive() || !brander.shouldMute()) return;
         if (sound == SoundEvents.BLOCK_ANVIL_USE || sound == SoundEvents.BLOCK_ANVIL_BREAK) ci.cancel();
     }

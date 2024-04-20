@@ -45,8 +45,11 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
     @Inject(method = "init", at = @At("TAIL"))
     public void stardustMixinInit(CallbackInfo ci) {
         if (this.client == null) return;
-        SignHistorian signHistorian = Modules.get().get(SignHistorian.class);
-        SignatureSign signatureSign = Modules.get().get(SignatureSign.class);
+        Modules modules = Modules.get();
+
+        if (modules == null) return;
+        SignHistorian signHistorian = modules.get(SignHistorian.class);
+        SignatureSign signatureSign = modules.get(SignatureSign.class);
         if (!signatureSign.isActive() && !signHistorian.isActive()) return;
 
         SignText restoration = signHistorian.getRestoration(this.blockEntity);

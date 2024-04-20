@@ -27,7 +27,9 @@ public abstract class TridentItemMixin extends Item {
     // See RocketMan.java
     @Inject(method = "onStoppedUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/TridentItem;getMaxUseTime(Lnet/minecraft/item/ItemStack;)I", shift = At.Shift.AFTER))
     private void bypassTridentChargeTime(ItemStack stack, World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci, @Local(ordinal = 0)LocalIntRef i) {
-        RocketMan rm = Modules.get().get(RocketMan.class);
+        Modules modules = Modules.get();
+        if (modules == null) return;
+        RocketMan rm = modules.get(RocketMan.class);
         if (!rm.isActive() || !rm.tridentBoost.get()) return;
         i.set(69420);
     }

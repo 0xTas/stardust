@@ -27,7 +27,9 @@ public class MinecraftClientMixin {
         long currentTime = System.nanoTime();
         float deltaTime = (currentTime - lastFrameTime) / 10000000f;
 
-        RocketMan rocketMan = Modules.get().get(RocketMan.class);
+        Modules modules = Modules.get();
+        if (modules == null ) return;
+        RocketMan rocketMan = modules.get(RocketMan.class);
         if (!rocketMan.isActive() || !rocketMan.shouldTickRotation()) return;
 
         MinecraftClient mc = rocketMan.getClientInstance();
@@ -102,7 +104,9 @@ public class MinecraftClientMixin {
     // See MusicTweaks.java
     @Inject(method = "getMusicType", at = @At("HEAD"), cancellable = true)
     public void mixinGetMusicType(CallbackInfoReturnable<MusicSound> cir) {
-        MusicTweaks tweaks = Modules.get().get(MusicTweaks.class);
+        Modules modules = Modules.get();
+        if (modules == null ) return;
+        MusicTweaks tweaks = modules.get(MusicTweaks.class);
 
         if (tweaks == null || !tweaks.isActive()) return;
         MusicSound type = tweaks.getType();
