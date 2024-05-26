@@ -14,7 +14,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.enchantment.Enchantments;
 import io.netty.util.internal.ThreadLocalRandom;
 
-
 /**
  * @author Tas [@0xTas] <root@0xTas.dev>
  **/
@@ -75,13 +74,14 @@ public class StardustUtil {
 
     /** Random Color-Code */
     public static String rCC() {
+        String color = "§7";
         TextColor[] colors = TextColor.values();
-        int luckyIndex = ThreadLocalRandom.current().nextInt(colors.length);
-
-        String color = colors[luckyIndex].label;
 
         // Omit gray, light_gray, and black from accent colors.
-        if (color.equals("§0") || color.equals("§8") || color.equals("§7")) color = "§e";
+        while (color.equals("§0") || color.equals("§8") || color.equals("§7")) {
+            int luckyIndex = ThreadLocalRandom.current().nextInt(colors.length);
+            color = colors[luckyIndex].label;
+        }
 
         return color;
     }
@@ -126,7 +126,6 @@ public class StardustUtil {
     private static final ItemStack[] menuIcons = {
         Items.CAKE.getDefaultStack(),
         Items.BEDROCK.getDefaultStack(),
-        Items.BARRIER.getDefaultStack(),
         Items.GOAT_HORN.getDefaultStack(),
         Items.DRAGON_EGG.getDefaultStack(),
         Items.FILLED_MAP.getDefaultStack(),
@@ -188,8 +187,14 @@ public class StardustUtil {
             g.addEnchantment(Enchantments.MENDING, 1);
         }
 
+        ItemStack cgiElytra = new ItemStack(Items.ELYTRA);
+        cgiElytra.addEnchantment(Enchantments.MENDING, 420);
+
+        ItemStack ripTridentFly = new ItemStack(Items.TRIDENT);
+        ripTridentFly.addEnchantment(Enchantments.RIPTIDE, 3);
+
         return new ItemStack[] {
-            enchantedPick, sword32k, illegalBow, bindingPumpkin,
+            enchantedPick, sword32k, illegalBow, bindingPumpkin, cgiElytra, ripTridentFly,
             enchantedGlass[ThreadLocalRandom.current().nextInt(enchantedGlass.length)]
         };
     }
