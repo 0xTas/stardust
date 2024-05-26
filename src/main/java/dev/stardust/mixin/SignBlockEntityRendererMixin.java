@@ -13,7 +13,6 @@ import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.SignBlockEntityRenderer;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
@@ -26,7 +25,7 @@ public abstract class SignBlockEntityRendererMixin implements BlockEntityRendere
         Modules modules = Modules.get();
         if (modules == null ) return signText;
         AntiToS antiToS = modules.get(AntiToS.class);
-        if (!antiToS.isActive() || !antiToS.signsSetting.get()) return signText;
+        if (!antiToS.isActive()) return signText;
 
         String testText = Arrays.stream(signText.getMessages(false))
             .map(Text::getString)
