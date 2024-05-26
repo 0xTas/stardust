@@ -19,7 +19,6 @@ import net.minecraft.client.gui.screen.ingame.BookScreen;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-
 /**
  * @author Tas [@0xTas] <root@0xTas.dev>
  **/
@@ -96,7 +95,7 @@ public abstract class BookScreenMixin extends Screen {
         List<String> pages = ((WrittenBookContentsAccessor) this.contents).getPages();
         AntiToS antiToS = modules.get(AntiToS.class);
         BookTools bookTools = modules.get(BookTools.class);
-        if (antiToS.isActive() && antiToS.booksSetting.get()) {
+        if (antiToS.isActive()) {
             List<String> filtered = new ArrayList<>();
             for (String page : pages) {
                 if (antiToS.containsBlacklistedText(page)) {

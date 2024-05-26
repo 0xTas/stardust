@@ -14,7 +14,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
@@ -30,27 +29,15 @@ public class AntiToS extends Module {
         Censor, Replace
     }
 
-    public final Setting<Boolean> chatSetting = sgSources.add(
-        new BoolSetting.Builder()
-            .name("Chat Messages")
-            .description("Censor text in chat if it matches the content blacklist.")
-            .defaultValue(true)
-            .build()
-    );
+    public enum ChatMode {
+        Censor, Remove
+    }
 
-    public final Setting<Boolean> booksSetting = sgSources.add(
-        new BoolSetting.Builder()
-            .name("Book Text")
-            .description("Censor text in books if it matches the content blacklist.")
-            .defaultValue(true)
-            .build()
-    );
-
-    public final Setting<Boolean> signsSetting = sgSources.add(
-        new BoolSetting.Builder()
-            .name("Sign Text")
-            .description("Filter sign text according to the content blacklist.")
-            .defaultValue(true)
+    public final Setting<ChatMode> chatMode = sgSources.add(
+        new EnumSetting.Builder<ChatMode>()
+            .name("Sign Mode")
+            .description("Censor or completely replace SignText that matches the filter.")
+            .defaultValue(ChatMode.Censor)
             .build()
     );
     private final Setting<SignMode> signMode = sgSources.add(
@@ -58,35 +45,34 @@ public class AntiToS extends Module {
             .name("Sign Mode")
             .description("Censor or completely replace SignText that matches the filter.")
             .defaultValue(SignMode.Censor)
-            .visible(signsSetting::get)
             .build()
     );
     private final Setting<String> familyFriendlyLine1 = sgSources.add(
         new StringSetting.Builder()
             .name("Replacement Line 1")
             .defaultValue("Original text")
-            .visible(() -> signsSetting.get() && signMode.get() == SignMode.Replace)
+            .visible(() -> signMode.get() == SignMode.Replace)
             .build()
     );
     private final Setting<String> familyFriendlyLine2 = sgSources.add(
         new StringSetting.Builder()
             .name("Replacement Line 2")
             .defaultValue("was replaced by")
-            .visible(() -> signsSetting.get() && signMode.get() == SignMode.Replace)
+            .visible(() -> signMode.get() == SignMode.Replace)
             .build()
     );
     private final Setting<String> familyFriendlyLine3 = sgSources.add(
         new StringSetting.Builder()
             .name("Replacement Line 3")
             .defaultValue("Stardust AntiToS")
-            .visible(() -> signsSetting.get() && signMode.get() == SignMode.Replace)
+            .visible(() -> signMode.get() == SignMode.Replace)
             .build()
     );
     private final Setting<String> familyFriendlyLine4 = sgSources.add(
         new StringSetting.Builder()
             .name("Replacement Line 4")
             .defaultValue("plz no ban ☺")
-            .visible(() -> signsSetting.get() && signMode.get() == SignMode.Replace)
+            .visible(() -> signMode.get() == SignMode.Replace)
             .build()
     );
     private final Setting<DyeColor> familyFriendlyColor = sgSources.add(
@@ -94,7 +80,7 @@ public class AntiToS extends Module {
             .name("Replacement Color")
             .description("Render replacement SignText with the selected dye color.")
             .defaultValue(DyeColor.RED)
-            .visible(() -> signsSetting.get() && signMode.get() == SignMode.Replace)
+            .visible(() -> signMode.get() == SignMode.Replace)
             .build()
     );
     private final Setting<Boolean> familyFriendlyGlowing = sgSources.add(
@@ -102,7 +88,7 @@ public class AntiToS extends Module {
             .name("Replacement Glowing")
             .description("Render replacement SignText with glowing text.")
             .defaultValue(true)
-            .visible(() -> signsSetting.get() && signMode.get() == SignMode.Replace)
+            .visible(() -> signMode.get() == SignMode.Replace)
             .build()
     );
 
@@ -141,7 +127,11 @@ public class AntiToS extends Module {
     }
 
     // See ChatHudMixin.java
+    // && ItemStackMixin.java
+    // && InGameHudMixin.java
     // && BookScreenMixin.java
+    // && TextRendererMixin.java
+    // && EntityRendererMixin.java
     // && SignBlockEntityRendererMixin.java
     public boolean containsBlacklistedText(String text) {
         return blacklisted.stream().anyMatch(line -> text.trim().toLowerCase().contains(line.trim().toLowerCase()));
