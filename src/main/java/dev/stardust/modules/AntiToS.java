@@ -35,8 +35,8 @@ public class AntiToS extends Module {
 
     public final Setting<ChatMode> chatMode = sgSources.add(
         new EnumSetting.Builder<ChatMode>()
-            .name("Sign Mode")
-            .description("Censor or completely replace SignText that matches the filter.")
+            .name("Chat Mode")
+            .description("Censor or completely replace text in chat that matches the filter.")
             .defaultValue(ChatMode.Censor)
             .build()
     );
