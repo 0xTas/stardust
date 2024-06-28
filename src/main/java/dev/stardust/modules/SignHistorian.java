@@ -60,7 +60,6 @@ import meteordevelopment.meteorclient.utils.render.WireframeEntityRenderer;
 import meteordevelopment.meteorclient.events.entity.player.InteractBlockEvent;
 import meteordevelopment.meteorclient.systems.modules.render.blockesp.ESPBlockData;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
@@ -264,7 +263,8 @@ public class SignHistorian extends Module {
         Path historianFolder = FabricLoader.getInstance().getGameDir().resolve("meteor-client/sign-historian");
 
         try {
-            if (!historianFolder.toFile().mkdirs()) Stardust.LOG.warn("");
+            //noinspection ResultOfMethodCallIgnored
+            historianFolder.toFile().mkdirs();
             ServerInfo server = mc.getNetworkHandler().getServerInfo();
             if (server == null) return;
 
@@ -282,7 +282,7 @@ public class SignHistorian extends Module {
                 readSignsFromFile(signsFile);
             }
         } catch (Exception err) {
-            Stardust.LOG.error("[Stardust] "+err);
+            Stardust.LOG.error(err.toString());
         }
     }
 
@@ -292,7 +292,7 @@ public class SignHistorian extends Module {
             for (String sign : entries) {
                 try {
                     String[] parts = sign.split(" -\\|- ");
-                    if (parts.length != 2) return;
+                    if (parts.length != 2) continue;
                     NbtCompound reconstructed = StringNbtReader.parse(parts[0].trim());
                     NbtCompound stateReconstructed = StringNbtReader.parse(parts[1].trim());
                     BlockPos bPos = BlockEntity.posFromNbt(reconstructed);
@@ -300,7 +300,7 @@ public class SignHistorian extends Module {
                     DataResult<BlockState> result = BlockState.CODEC.parse(NbtOps.INSTANCE, stateReconstructed);
                     BlockState state = result.result().orElse(null);
 
-                    if (state == null) return;
+                    if (state == null) continue;
                     BlockEntity be = BlockEntity.createFromNbt(bPos, state, reconstructed);
 
                     if (be instanceof SignBlockEntity sbeReconstructed) {
@@ -309,11 +309,11 @@ public class SignHistorian extends Module {
                         }
                     }
                 } catch (Exception err) {
-                    Stardust.LOG.error("[Stardust] Failed to parse SignBlockEntity Nbt: "+err);
+                    Stardust.LOG.error("Failed to parse SignBlockEntity Nbt: "+err);
                 }
             }
         }catch (Exception e) {
-            Stardust.LOG.error("[Stardust] "+e);
+            Stardust.LOG.error(e.toString());
         }
     }
 
@@ -433,7 +433,7 @@ public class SignHistorian extends Module {
             // Signs placed in 1.8 - 1.12 (the majority of them) are "technically" irreplaceable due to metadata differences.
             // You might say that they're the *new* old signs. Either way you can tell that they've been (re)placed after 1.19.
             // To compensate for this, I'll hide a SignHistorian watermark in the NBT data which should clear up any confusion :]
-            if (sbe.createNbt().toString().contains("{\"extra\":[{\"") && n == 3) {
+            if (sbe.createNbt().toString().contains("{\"extra\":[") && n == 3) {
                 StringBuilder sb = new StringBuilder();
                 int lineLen = mc.textRenderer.getWidth(sbe.getFrontText().getMessage(n, false).getString());
                 int spaceLeftHalved = (90 - lineLen) / 2; // center original text
@@ -677,13 +677,11 @@ public class SignHistorian extends Module {
         } else lastTargetedSign = targeted;
         if (mc.currentScreen instanceof AbstractSignEditScreen) return;
 
-        if (timer == -1) {
-            if (dyeSlot != -1) {
-                if (dyeSlot < 9) InvUtils.swapBack();
-                else InvUtils.move().from(mc.player.getInventory().selectedSlot).to(dyeSlot);
-                dyeSlot = -1;
-                timer = 3;
-            }
+        if (timer == -1 && dyeSlot != -1) {
+            if (dyeSlot < 9) InvUtils.swapBack();
+            else InvUtils.move().from(mc.player.getInventory().selectedSlot).to(dyeSlot);
+            dyeSlot = -1;
+            timer = 3;
         }
 
         WaxAura waxAura = Modules.get().get(WaxAura.class);
