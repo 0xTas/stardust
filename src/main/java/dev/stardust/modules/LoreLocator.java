@@ -22,7 +22,6 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
@@ -118,7 +117,7 @@ public class LoreLocator extends Module {
     public final Setting<SettingColor> color = settings.getDefaultGroup().add(
         new ColorSetting.Builder()
             .name("Highlight Color")
-            .defaultValue(new SettingColor(69, 200, 255, 169))
+            .defaultValue(new SettingColor(138, 71, 221, 69))
             .build()
     );
 
@@ -206,6 +205,7 @@ public class LoreLocator extends Module {
 
             boolean hasMending = false;
             boolean hasInfinity = false;
+            boolean hasProtection = false;
             HashMap<Enchantment, Integer> dupes = new HashMap<>();
             for (int n = 0; n < nbt.size(); n++) {
                 if (hasMending && hasInfinity) break;
@@ -214,6 +214,11 @@ public class LoreLocator extends Module {
                 if (enchant == null) return true;
                 if (enchant == Enchantments.MENDING) hasMending = true;
                 if (enchant == Enchantments.INFINITY) hasInfinity = true;
+                if (enchant == Enchantments.PROTECTION || enchant == Enchantments.PROJECTILE_PROTECTION
+                    || enchant == Enchantments.BLAST_PROTECTION || enchant == Enchantments.FIRE_PROTECTION) {
+                    if (!hasProtection) hasProtection = true;
+                    else return true;
+                }
 
                 if (dupes.containsKey(enchant)) {
                     dupes.put(enchant, dupes.get(enchant) + 1);
