@@ -28,10 +28,10 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.mixininterface.IChatHud;
-import net.minecraft.network.packet.c2s.play.PlayPongC2SPacket;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.network.packet.c2s.common.CommonPongC2SPacket;
 import meteordevelopment.meteorclient.events.meteor.MouseScrollEvent;
 import meteordevelopment.meteorclient.systems.modules.render.Freecam;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
@@ -453,7 +453,7 @@ public class RocketMan extends Module {
     public @Nullable Long extensionStartTime = null;
     public @Nullable BlockPos extensionStartPos = null;
     public @Nullable FireworkRocketEntity currentRocket = null;
-    private final ArrayList<PlayPongC2SPacket> pongQueue = new ArrayList<>();
+    private final ArrayList<CommonPongC2SPacket> pongQueue = new ArrayList<>();
 
     private void useFireworkRocket(String caller) {
         if (mc.player == null) return;
@@ -522,7 +522,7 @@ public class RocketMan extends Module {
         }
 
         if (extendRockets.get() && !pongQueue.isEmpty()) {
-            for (PlayPongC2SPacket pong : pongQueue) {
+            for (CommonPongC2SPacket pong : pongQueue) {
                 mc.getNetworkHandler().sendPacket(pong);
             }
             pongQueue.clear();
@@ -882,7 +882,7 @@ public class RocketMan extends Module {
     @EventHandler
     private void onSendPacket(PacketEvent.Send event) {
         if (mc.player == null || !mc.player.isFallFlying()) return;
-        if (extendRockets.get() && durationBoosted && event.packet instanceof PlayPongC2SPacket packet) {
+        if (extendRockets.get() && durationBoosted && event.packet instanceof CommonPongC2SPacket packet) {
             event.cancel();
             pongQueue.add(packet);
         }

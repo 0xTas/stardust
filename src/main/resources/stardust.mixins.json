@@ -29,7 +29,7 @@
     "WrittenBookContentsAccessor",
     "AbstractSignEditScreenMixin",
     "SignBlockEntityRendererMixin",
-    "AbstractSignEditScreenAccessor",
+    "AbstractSignEditScreenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
