@@ -17,7 +17,6 @@ import meteordevelopment.meteorclient.systems.modules.Modules;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-
 /**
  * @author Tas [@0xTas] <root@0xTas.dev>
  **/
@@ -96,6 +95,7 @@ public abstract class BookEditScreenMixin extends Screen {
         Modules modules = Modules.get();
         if (modules == null) return;
         BookTools bookTools = modules.get(BookTools.class);
+
         if (bookTools.skipFormatting()) return;
 
         int offset = 0;
@@ -153,12 +153,12 @@ public abstract class BookEditScreenMixin extends Screen {
         this.buttons.add(
             this.addDrawableChild(
                 ButtonWidget.builder(
-                    Text.of("🌈"),
-                    this::onClickRainbowButton
-                )
-                .dimensions(odd ? this.width / 2 - 100 : this.width / 2 - 112, 47+offset, 22, 10)
-                .tooltip(Tooltip.of(Text.of(uCC()+"R"+uCC()+"a"+uCC()+"i"+uCC()+"n"+uCC()+"b"+uCC()+"o"+uCC()+"w "+uCC()+"M"+uCC()+"o"+uCC()+"d"+uCC()+"e"+" §4Off")))
-                .build()
+                        Text.of("🌈"),
+                        this::onClickRainbowButton
+                    )
+                    .dimensions(odd ? this.width / 2 - 100 : this.width / 2 - 112, 47+offset, 22, 10)
+                    .tooltip(Tooltip.of(Text.of(uCC()+"R"+uCC()+"a"+uCC()+"i"+uCC()+"n"+uCC()+"b"+uCC()+"o"+uCC()+"w "+uCC()+"M"+uCC()+"o"+uCC()+"d"+uCC()+"e"+" §4Off")))
+                    .build()
             )
         );
     }
@@ -177,8 +177,7 @@ public abstract class BookEditScreenMixin extends Screen {
 
     @Inject(method = "finalizeBook", at = @At("HEAD"))
     private void mixinFinalizeBook(CallbackInfo ci) {
-        if (!this.dirty) return;
-        if (this.didFormatPage) {
+        if (this.dirty && this.didFormatPage) {
             ((BookEditScreenAccessor) this).getCurrentPageSelectionManager().insert("§r");
         }
     }
@@ -197,6 +196,10 @@ public abstract class BookEditScreenMixin extends Screen {
 
         for (ButtonWidget btn : this.buttons) {
             btn.visible = !signing || bookTools.shouldFormatTitles();
+        }
+
+        if (this.signing && !bookTools.autoTitles.get().trim().isEmpty()) {
+            ((BookEditScreenAccessor) this).getBookTitleSelectionManager().insert(bookTools.autoTitles.get());
         }
     }
 }
