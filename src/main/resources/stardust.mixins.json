@@ -30,18 +30,21 @@
     "AbstractSignEditScreenMixin",
     "SignBlockEntityRendererMixin",
     "AbstractSignEditScreenAccessor",
-    "ClientPlayerInteractionManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
     "WorldMixin",
+    "EntityMixin",
     "ItemStackMixin",
     "DoorBlockMixin",
-    "TridentItemMixin",
+    "PlayerEntityMixin",
     "GoatHornItemMixin",
-    "TridentBoostMixin",
-    "AnvilScreenHandlerAccessor"
+    "LivingEntityMixin",
+    "FireworkRocketEntityMixin",
+    "AnvilScreenHandlerAccessor",
+    "PlayerMoveC2SPacketAccessor",
+    "FireworkRocketEntityAccessor"
   ]
 }
