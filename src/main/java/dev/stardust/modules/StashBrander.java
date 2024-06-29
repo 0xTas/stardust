@@ -17,7 +17,6 @@ import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
@@ -108,6 +107,44 @@ public class StashBrander extends Module {
     // See WorldMixin.java
     public boolean shouldMute() { return muteAnvils.get(); }
 
+    private boolean hasValidItems() {
+        if (mc.player == null) return false;
+        for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+            ItemStack stack = mc.player.getInventory().getStack(n);
+            if ((blacklistMode.get() && !itemList.get().contains(stack.getItem()))
+                || (!blacklistMode.get() && itemList.get().contains(stack.getItem())))
+            {
+                if (itemName.get().isBlank() && stack.hasCustomName()) return true;
+                else if (!stack.getName().getString().equals(itemName.get())) return true;
+            }
+        }
+        return false;
+    }
+
+    private void noXP() {
+        if (!notified) {
+            mc.player.sendMessage(
+                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNot enough experience§8§o...")
+            );
+            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
+        }
+        notified = true;
+        if (closeOnDone.get()) mc.player.closeHandledScreen();
+        if (disableOnDone.get()) this.toggle();
+    }
+
+    private void finished() {
+        if (!notified) {
+            mc.player.sendMessage(
+                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNo more items to rename§8§o.")
+            );
+            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
+        }
+        notified = true;
+        if (closeOnDone.get()) mc.player.closeHandledScreen();
+        if (disableOnDone.get()) this.toggle();
+    }
+
     @Override
     public void onDeactivate() {
         notified = false;
@@ -127,72 +164,39 @@ public class StashBrander extends Module {
         ItemStack input2 = anvil.getSlot(AnvilScreenHandler.INPUT_2_ID).getStack();
         ItemStack output = anvil.getSlot(AnvilScreenHandler.OUTPUT_ID).getStack();
 
-        if (input1.isEmpty() && input2.isEmpty()) {
+        if (!hasValidItems()) finished();
+        else if (input1.isEmpty() && input2.isEmpty()) {
             for (int n = ANVIL_OFFSET; n < mc.player.getInventory().main.size() + ANVIL_OFFSET; n++) {
                 ItemStack stack = anvil.getSlot(n).getStack();
                 if (stack.hasCustomName() && !renameNamed.get()) continue;
                 else if (stack.getName().getString().equals(itemName.get())) continue;
+                else if (itemName.get().isBlank() && !stack.hasCustomName()) continue;
 
                 if ((blacklistMode.get() && !itemList.get().contains(stack.getItem()))
                     || (!blacklistMode.get() && itemList.get().contains(stack.getItem())))
                 {
                     InvUtils.shiftClick().slotId(n);
                     ((AnvilScreenAccessor) anvilScreen).getNameField().setText(itemName.get());
-
                     ItemStack check = anvil.getSlot(AnvilScreenHandler.OUTPUT_ID).getStack();
-                    if (itemList.get().contains(check.getItem()) && check.getName().getString().equals(itemName.get())) {
-                        int cost = ((AnvilScreenHandlerAccessor) anvil).getLevelCost().get();
-                        if (mc.player.experienceLevel >= cost) {
-                            InvUtils.shiftClick().slotId(AnvilScreenHandler.OUTPUT_ID);
-                        } else {
-                            if (!notified) {
-                                mc.player.sendMessage(
-                                    Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNot enough experience§8§o...")
-                                );
-                                if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
-                            }
-                            notified = true;
-                            if (closeOnDone.get()) mc.player.closeHandledScreen();
-                            if (disableOnDone.get()) this.toggle();
+                    if (itemList.get().contains(check.getItem())) {
+                        if (check.getName().getString().equals(itemName.get()) || (itemName.get().isBlank() && stack.hasCustomName())) {
+                            int cost = ((AnvilScreenHandlerAccessor) anvil).getLevelCost().get();
+                            if (mc.player.experienceLevel >= cost) {
+                                InvUtils.shiftClick().slotId(AnvilScreenHandler.OUTPUT_ID);
+                            } else noXP();
+
+                            return;
                         }
-                        if (n == 38) {
-                            if (!notified) {
-                                mc.player.sendMessage(
-                                    Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNo more items to rename§8§o.")
-                                );
-                                if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
-                            }
-                            notified = true;
-                            if (closeOnDone.get()) mc.player.closeHandledScreen();
-                            if (disableOnDone.get()) this.toggle();
-                        }
-                        return;
                     }
                 }
             }
-            if (!notified) {
-                mc.player.sendMessage(
-                    Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNo more items to rename§8§o.")
-                );
-                if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
-            }
-            notified = true;
-            if (closeOnDone.get()) mc.player.closeHandledScreen();
-            if (disableOnDone.get()) this.toggle();
-        } else if (!output.isEmpty() && itemList.get().contains(output.getItem()) && output.getName().getString().equals(itemName.get())) {
-            int cost = ((AnvilScreenHandlerAccessor) anvil).getLevelCost().get();
-            if (mc.player.experienceLevel >= cost) {
-                InvUtils.shiftClick().slotId(AnvilScreenHandler.OUTPUT_ID);
-            } else {
-                if (!notified) {
-                    mc.player.sendMessage(
-                        Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNot enough experience§8§o...")
-                    );
-                    if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
-                }
-                notified = true;
-                if (closeOnDone.get()) mc.player.closeHandledScreen();
-                if (disableOnDone.get()) this.toggle();
+            finished();
+        } else if (!output.isEmpty() && itemList.get().contains(output.getItem())) {
+            if (output.getName().getString().equals(itemName.get()) || (itemName.get().isBlank() && input1.hasCustomName())) {
+                int cost = ((AnvilScreenHandlerAccessor) anvil).getLevelCost().get();
+                if (mc.player.experienceLevel >= cost) {
+                    InvUtils.shiftClick().slotId(AnvilScreenHandler.OUTPUT_ID);
+                } else noXP();
             }
         } else if (!input2.isEmpty()) {
             InvUtils.shiftClick().slotId(AnvilScreenHandler.INPUT_2_ID);
