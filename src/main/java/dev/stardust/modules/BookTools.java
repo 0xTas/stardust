@@ -4,8 +4,8 @@ import dev.stardust.Stardust;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
+import meteordevelopment.meteorclient.settings.StringSetting;
 import meteordevelopment.meteorclient.systems.modules.Module;
-
 
 /**
  * @author Tas [@0xTas] <root@0xTas.dev>
@@ -30,6 +30,14 @@ public class BookTools extends Module {
             .description("*Doesn't work on servers like 2b2t.")
             .visible(doFormatting::get)
             .defaultValue(false)
+            .build()
+    );
+
+    public final Setting<String> autoTitles = sgFormat.add(
+        new StringSetting.Builder()
+            .name("Auto Title") // See BookEditScreenMixin.java
+            .description("Automatically inserts this book title (if not empty) when signing books (for use with unicode chars).")
+            .defaultValue("")
             .build()
     );
 
