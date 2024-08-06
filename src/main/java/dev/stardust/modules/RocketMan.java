@@ -122,11 +122,19 @@ public class RocketMan extends Module {
             .build()
     );
 
+    private final Setting<Double> rocketSpeedThreshold = sgBoosts.add(
+        new DoubleSetting.Builder()
+            .name("Acceleration Backoff Threshold")
+            .description("Backs down on acceleration when you've slowed down enough since using your last rocket (to prevent rubberbanding.)")
+            .min(0).max(2).defaultValue(.69)
+            .build()
+    );
+
     public final Setting<Boolean> extendRockets = sgBoosts.add(
         new BoolSetting.Builder()
             .name("Boost Rocket Duration")
             .description("Extend the duration of your rocket's boost effect.")
-            .defaultValue(true)
+            .defaultValue(false)
             .build()
     );
 
@@ -211,6 +219,14 @@ public class RocketMan extends Module {
             .name("Modifier Key")
             .description("Require a modifier key to be held down alongside your hover keybind.")
             .defaultValue(KeyModifiers.Ctrl)
+            .build()
+    );
+
+    public final Setting<Boolean> forceRocketUsage = sgHover.add(
+        new BoolSetting.Builder()
+            .name("Force Rocket Usage")
+            .description("Force rocket usage when hovering.")
+            .defaultValue(true)
             .build()
     );
 
@@ -419,13 +435,6 @@ public class RocketMan extends Module {
             .description("Print various debug messages to your chat (useful for configuring & debugging the module.)")
             .defaultValue(false)
             .visible(() -> false) // toggle via settings command only
-            .build()
-    );
-
-    private final Setting<Double> rocketSpeedThreshold = sgScroll.add(
-        new DoubleSetting.Builder()
-            .name("Rocket Accel Threshold (Debug)")
-            .min(0).max(2).defaultValue(.85)
             .build()
     );
 
@@ -852,7 +861,7 @@ public class RocketMan extends Module {
             ++durabilityCheckTicks;
             if (hoverTimer == 2 && (!hasActiveRocket || durationBoosted)) {
                 useFireworkRocket("hover initiate");
-            } else if (!hasActiveRocket) useFireworkRocket("hover maintain");
+            } else if (!hasActiveRocket && forceRocketUsage.get()) useFireworkRocket("hover maintain");
             return;
         } else hoverTimer = 0;
 
