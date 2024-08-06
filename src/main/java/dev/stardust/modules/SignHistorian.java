@@ -338,7 +338,7 @@ public class SignHistorian extends Module {
             ServerInfo server = mc.getNetworkHandler().getServerInfo();
             if (server == null) return;
 
-            String address = server.address;
+            String address = server.address.replace(":", "_");
             String dimKey;
             if (currentDim != null) dimKey = currentDim.getValue().toString().replace("minecraft:", "");
             else dimKey = mc.world.getRegistryKey().getValue().toString().replace("minecraft:", "");
