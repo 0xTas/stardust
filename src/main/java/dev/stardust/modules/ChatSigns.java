@@ -22,6 +22,7 @@ import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.nbt.NbtCompound;
 import dev.stardust.util.StardustUtil;
+import net.minecraft.world.biome.Biome;
 import dev.stardust.util.StardustUtil.*;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -29,6 +30,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.registry.RegistryKey;
 import java.time.format.DateTimeFormatter;
+import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.util.shape.VoxelShape;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
@@ -45,6 +47,7 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import meteordevelopment.meteorclient.utils.render.RenderUtils;
+import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.events.world.ChunkDataEvent;
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
@@ -238,6 +241,22 @@ public class ChatSigns extends Module {
             .build()
     );
 
+    private final Setting<Boolean> signBoardAutoLog = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("SignBoard AutoLog")
+            .description("Disconnect from the server when you render a cluster of signs.")
+            .defaultValue(false)
+            .build()
+    );
+
+    private final Setting<Integer> signBoardAutoLogAmount = settings.getDefaultGroup().add(
+        new IntSetting.Builder()
+            .name("SignBoard AutoLog Amount")
+            .description("The amount of signs to trigger a disconnect.")
+            .range(1, 1200).sliderRange(1, 120).defaultValue(5)
+            .build()
+    );
+
     private final Setting<Boolean> signBlacklist = blacklistGroup.add(
         new BoolSetting.Builder()
             .name("SignText Blacklist")
@@ -283,6 +302,7 @@ public class ChatSigns extends Module {
 
     private int timer = 0;
     private int chatTimer = 0;
+    private int clusterAmount = 0;
     @Nullable private BlockPos lastFocusedSign = null;
     private final HashSet<BlockPos> posSet = new HashSet<>();
     private final HashSet<BlockPos> oldSet = new HashSet<>();
@@ -485,6 +505,13 @@ public class ChatSigns extends Module {
             }
             chunkCache.put(chunkPos, (newBlocks >= 33));
             return newBlocks >= 33;
+        } else if (dimension == World.END) {
+            RegistryKey<Biome> biome = mc.world
+                .getBiome(new BlockPos(chunkPos.getCenterX(), 64, chunkPos.getCenterZ()))
+                .getKey().orElse(BiomeKeys.GROVE);
+            boolean bl = !(biome == BiomeKeys.THE_END || biome == BiomeKeys.PLAINS);
+            chunkCache.put(chunkPos, bl);
+            return bl;
         }
 
         chunkCache.put(chunkPos, true);
@@ -495,6 +522,7 @@ public class ChatSigns extends Module {
         if (mc.world == null || signs.isEmpty()) return;
 
         signs.forEach(sign -> {
+            ++clusterAmount;
             String textOnSign = Arrays.stream(sign.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" ")).trim();
             if (signMessages.containsKey(textOnSign) && ignoreDuplicates.get()) return;
 
@@ -643,6 +671,7 @@ public class ChatSigns extends Module {
     public void onDeactivate() {
         timer = 0;
         chatTimer = 0;
+        clusterAmount = 0;
         posSet.clear();
         oldSet.clear();
         jobQueue.clear();
@@ -675,6 +704,13 @@ public class ChatSigns extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
+        if (signBoardAutoLog.get() && clusterAmount >= signBoardAutoLogAmount.get()) {
+            mc.getNetworkHandler().onDisconnect(
+                new DisconnectS2CPacket(Text.literal("§8[§a§oChatSigns§8] §7Disconnected you because you rendered a cluster of §a§o"+ clusterAmount + " §7signs§a!"))
+            );
+            toggle();
+        }
+
         if (chatMode.get() == ChatMode.ESP) return;
         if (mc.world == null || mc.player == null) return;
         if (timer >= 65535) timer = 0;
@@ -684,6 +720,7 @@ public class ChatSigns extends Module {
         ++chatTimer;
         if (timer % 5 == 0) {
             timer = 0;
+            clusterAmount = 0;
             BlockPos targetedSign = getTargetedSign();
             if (targetedSign == null) {
                 lastFocusedSign = null;
