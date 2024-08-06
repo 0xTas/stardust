@@ -1,5 +1,6 @@
 package dev.stardust.modules;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import dev.stardust.Stardust;
 import net.minecraft.screen.*;
@@ -114,6 +115,14 @@ public class LoreLocator extends Module {
             .build()
     );
 
+    private final Setting<Boolean> splitQueries = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Split Queries")
+            .description("Split search queries into multiple items separated by commas. Disable to treat commas literally in the search instead.")
+            .defaultValue(true)
+            .build()
+    );
+
     public final Setting<SettingColor> color = settings.getDefaultGroup().add(
         new ColorSetting.Builder()
             .name("Highlight Color")
@@ -161,13 +170,25 @@ public class LoreLocator extends Module {
             NbtCompound metadata = stack.getNbt();
             String query = metadataSearch.get().toLowerCase();
 
-            if (metadata != null) {
-                if (metadata.toString().toLowerCase().contains(query)) return true;
-                else if (metadata.toString().toLowerCase().contains(query.replace(" ", "_"))) return true;
-            }
+            if (splitQueries.get() && query.contains(",")) {
+                String[] queries = query.split(",");
 
-            if (stack.getName().getString().toLowerCase().contains(query)) return true;
-            else if (stack.getItem().getDefaultStack().getName().getString().toLowerCase().contains(query)) return true;
+                if (metadata != null && Arrays.stream(queries).anyMatch(q -> metadata.toString().toLowerCase().contains(q.trim())
+                    || metadata.toString().toLowerCase().contains(q.trim().replace(" ", "_")))) {
+                    return true;
+                } else if (Arrays.stream(queries).anyMatch(q -> stack.getName().getString().toLowerCase().contains(q.trim())
+                    || stack.getItem().getDefaultStack().getName().getString().toLowerCase().contains(q.trim()))) {
+                    return true;
+                }
+            } else {
+                if (metadata != null) {
+                    if (metadata.toString().toLowerCase().contains(query.trim())) return true;
+                    else if (metadata.toString().toLowerCase().contains(query.trim().replace(" ", "_"))) return true;
+                }
+
+                if (stack.getName().getString().toLowerCase().contains(query.trim())) return true;
+                else if (stack.getItem().getDefaultStack().getName().getString().toLowerCase().contains(query.trim())) return true;
+            }
         }
 
         if (!renamedShulks.get() && stack.hasCustomName()) {
