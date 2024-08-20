@@ -101,6 +101,16 @@ public class StashBrander extends Module {
             .build()
     );
 
+    private final Setting<Integer> tickRate = settings.getDefaultGroup().add(
+        new IntSetting.Builder()
+            .name("Tick Rate")
+            .min(0).max(1000)
+            .sliderRange(0, 100)
+            .defaultValue(0)
+            .build()
+    );
+
+    private int timer = 0;
     private boolean notified = false;
     private static final int ANVIL_OFFSET = 3;
 
@@ -147,6 +157,7 @@ public class StashBrander extends Module {
 
     @Override
     public void onDeactivate() {
+        timer = 0;
         notified = false;
     }
 
@@ -159,6 +170,13 @@ public class StashBrander extends Module {
         }
         if (!(mc.currentScreen instanceof AnvilScreen anvilScreen)) return;
         if (!(mc.player.currentScreenHandler instanceof AnvilScreenHandler anvil)) return;
+
+        if (timer < tickRate.get()) {
+            timer++;
+            return;
+        } else {
+            timer = 0;
+        }
 
         ItemStack input1 = anvil.getSlot(AnvilScreenHandler.INPUT_1_ID).getStack();
         ItemStack input2 = anvil.getSlot(AnvilScreenHandler.INPUT_2_ID).getStack();
