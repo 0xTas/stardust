@@ -800,6 +800,7 @@ public class SignHistorian extends Module {
     @EventHandler
     private void onRender3D(Render3DEvent event) {
         if (mc.world == null || mc.player == null) return;
+        if (mc.getNetworkHandler().getPlayerList().size() <= 1) return; // ignore queue
 
         ESPBlockData mESP = modifiedSettings.get();
         ESPBlockData dESP = destroyedSettings.get();
