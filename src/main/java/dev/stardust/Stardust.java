@@ -17,7 +17,6 @@ import meteordevelopment.meteorclient.systems.config.Config;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.Category;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/

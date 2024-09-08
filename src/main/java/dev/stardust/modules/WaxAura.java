@@ -37,7 +37,6 @@ import meteordevelopment.meteorclient.events.render.Render3DEvent;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.meteorclient.systems.modules.render.blockesp.ESPBlockData;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
@@ -273,13 +272,12 @@ public class WaxAura extends Module {
     private void onTick(TickEvent.Pre event) {
         if (mc.player == null || mc.interactionManager == null) return;
 
+        getSignsToESP();
         if (standingStill.get()) {
             Vec3d vel = mc.player.getVelocity();
             if (vel.length() >= 0.08d) return;
         }
-
         if (timer % 2 == 0) getSignsToWax();
-        else getSignsToESP();
 
         ++timer;
         ItemStack active = mc.player.getActiveItem();
@@ -395,7 +393,7 @@ public class WaxAura extends Module {
                         esp.tracerColor
                     );
                 } catch (Exception err) {
-                    err.printStackTrace();
+                    Stardust.LOG.error(err.toString());
                 }
             }
         }
