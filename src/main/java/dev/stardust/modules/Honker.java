@@ -3,17 +3,17 @@ package dev.stardust.modules;
 import java.util.Collection;
 import dev.stardust.Stardust;
 import net.minecraft.util.Hand;
-import net.minecraft.item.Item;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.item.Instrument;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.item.GoatHornItem;
 import net.minecraft.sound.SoundEvents;
 import meteordevelopment.orbit.EventHandler;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.component.DataComponentTypes;
 import meteordevelopment.meteorclient.utils.Utils;
 import net.minecraft.client.network.PlayerListEntry;
 import meteordevelopment.meteorclient.settings.Setting;
@@ -26,7 +26,6 @@ import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.events.entity.EntityAddedEvent;
 import meteordevelopment.meteorclient.settings.ProvidedStringSetting;
 import net.minecraft.network.packet.s2c.play.PlaySoundFromEntityS2CPacket;
-
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -125,15 +124,13 @@ public class Honker extends Module {
             for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
                 ItemStack stack = mc.player.getInventory().getStack(n);
                 if (!(stack.getItem() instanceof GoatHornItem)) continue;
-
-                NbtCompound metadata = stack.getNbt();
-                if (metadata == null || !metadata.contains("instrument", NbtElement.STRING_TYPE)) continue;
-
-                String id = metadata.getString("instrument");
+                if (!stack.contains(DataComponentTypes.INSTRUMENT)) continue;
+                RegistryEntry<Instrument> instrument = stack.get(DataComponentTypes.INSTRUMENT);
+                String id = instrument.value().soundEvent().value().getId().toUnderscoreSeparatedString();
                 if (id == null) continue;
 
                 hornIndex = n;
-                if (id.equals(desiredCallId)) break;
+                if (id.equals("minecraft:"+desiredCallId)) break;
             }
 
             if (hornIndex != -1) {
@@ -203,8 +200,8 @@ public class Honker extends Module {
         }
 
         if (!playerNearby && !hornSpamAlone.get()) return;
-        Item activeItem = mc.player.getActiveItem().getItem();
-        if (activeItem.isFood() || Utils.isThrowable(activeItem) && mc.player.getItemUseTime() > 0) return;
+        ItemStack activeItem = mc.player.getActiveItem();
+        if (activeItem.contains(DataComponentTypes.FOOD) || Utils.isThrowable(activeItem.getItem()) && mc.player.getItemUseTime() > 0) return;
 
         ++ticksSinceUsedHorn;
         if (ticksSinceUsedHorn > 150) {
