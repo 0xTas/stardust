@@ -17,6 +17,7 @@ import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import meteordevelopment.orbit.EventPriority;
 import meteordevelopment.meteorclient.settings.*;
+import net.minecraft.component.DataComponentTypes;
 import meteordevelopment.meteorclient.utils.Utils;
 import dev.stardust.mixin.PlayerMoveC2SPacketAccessor;
 import dev.stardust.mixin.FireworkRocketEntityAccessor;
@@ -814,13 +815,13 @@ public class RocketMan extends Module {
             setbackCounter = 0;
         }
 
-        Item activeItem = mc.player.getActiveItem().getItem();
-        if ((activeItem.isFood() || Utils.isThrowable(activeItem)) && mc.player.getItemUseTime() > 0) {
+        ItemStack activeItem = mc.player.getActiveItem();
+        if ((activeItem.contains(DataComponentTypes.FOOD) || Utils.isThrowable(activeItem.getItem())) && mc.player.getItemUseTime() > 0) {
             if (!isHovering || (isHovering && hasActiveRocket)) {
                 ++ticksBusy;
                 return;
             }
-        }else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isFallFlying() && activeItem == Items.TRIDENT) {
+        }else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isFallFlying() && activeItem.getItem() == Items.TRIDENT) {
             ++tridentThrowGracePeriod;
             if (tridentThrowGracePeriod >= 20) {
                 ticksBusy = 0;
@@ -828,7 +829,7 @@ public class RocketMan extends Module {
                 tridentThrowGracePeriod = 0;
                 return;
             }
-        } else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isFallFlying() && activeItem != Items.TRIDENT) {
+        } else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isFallFlying() && activeItem.getItem() != Items.TRIDENT) {
             useFireworkRocket("combat assist miscellaneous");
             ticksBusy = 0;
             return;
