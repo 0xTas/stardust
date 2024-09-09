@@ -21,7 +21,6 @@ import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.events.game.GameJoinedEvent;
 import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
@@ -402,6 +401,69 @@ public class MusicTweaks extends Module {
             .defaultValue(true)
             .build()
     );
+    private final Setting<Boolean> deeper = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Deeper")
+            .description("deeper.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> eldUnknown = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Eld Unknown")
+            .description("eld_unknown.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> endless = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Endless")
+            .description("endless.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> featherfall = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Aaron Cherof / Featherfall")
+            .description("featherfall.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> komorebi = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Kumi Tanioka / komorebi")
+            .description("komorebi.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> pokopoko = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Kumi Tanioka / pokopoko")
+            .description("pokopoko.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> puzzlebox = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Aaron Cherof / Puzzlebox")
+            .description("puzzlebox.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> watcher = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Aaron Cherof / Watcher")
+            .description("watcher.ogg")
+            .defaultValue(true)
+            .build()
+    );
+    private final Setting<Boolean> yakusoku = sgOverworldSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Kumi Tanioka / yakusoku")
+            .description("yakusoku.ogg")
+            .defaultValue(true)
+            .build()
+    );
     private final Setting<Boolean> biomeFest = sgCreativeSoundtrack.add(
         new BoolSetting.Builder()
             .name("C418 / Biome Fest")
@@ -774,6 +836,15 @@ public class MusicTweaks extends Module {
             case "otherside.ogg" -> songName = "Lena Raine - Otherside";
             case "pigstep.ogg" -> songName = "Lena Raine - Pigstep";
             case "relic.ogg" -> songName = "Aaron Cherof - Relic";
+            case "deeper.ogg" -> songName = "Lena Raine - Deeper";
+            case "eld_unknown.ogg" -> songName = "Lena Raine - Eld Unknown";
+            case "endless.ogg" -> songName = "Lena Raine - Endless";
+            case "featherfall.ogg" -> songName = "Aaron Cherof - Featherfall";
+            case "puzzlebox.ogg" -> songName = "Aaron Cherof - Puzzlebox";
+            case "watcher.ogg" -> songName = "Aaron Cherof - Watcher";
+            case "komorebi.ogg" -> songName = "Kumi Tanioka - komorebi";
+            case "pokopoko.ogg" -> songName = "Kumi Tanioka - pokopoko";
+            case "yakusoku.ogg" -> songName = "Kumi Tanioka - yakusoku";
             default -> songName = "Unknown Track";
         }
 
@@ -850,6 +921,15 @@ public class MusicTweaks extends Module {
         if (recordOtherside.get()) ids.add("minecraft:records/otherside");
         if (recordPigstep.get()) ids.add("minecraft:records/pigstep");
         if (recordRelic.get()) ids.add("minecraft:records/relic");
+        if (deeper.get())  ids.add("minecraft:music/game/deeper");
+        if (eldUnknown.get()) ids.add("minecraft:music/game/eld_unknown");
+        if (endless.get()) ids.add("minecraft:music/game/endless");
+        if (featherfall.get()) ids.add("minecraft:music/game/featherfall");
+        if (komorebi.get()) ids.add("minecraft:music/game/komorebi");
+        if (pokopoko.get()) ids.add("minecraft:music/game/pokopoko");
+        if (puzzlebox.get()) ids.add("minecraft:music/game/puzzlebox");
+        if (watcher.get()) ids.add("minecraft:music/game/watcher");
+        if (yakusoku.get()) ids.add("minecraft:music/game/yakusoku");
 
         // Prevent duplicates
         if (currentSong != null && ids.size() > 1) {
@@ -972,7 +1052,7 @@ public class MusicTweaks extends Module {
         }
 
         if (mc.world != null) {
-            lastDim = mc.world.getDimensionKey().toString();
+            lastDim = mc.world.getDimensionEntry().getIdAsString();
         }
     }
 
@@ -981,7 +1061,7 @@ public class MusicTweaks extends Module {
         if (mc.world == null) return;
         if (!(event.packet instanceof PlayerRespawnS2CPacket)) return;
 
-        String dimensionType = mc.world.getDimensionKey().toString();
+        String dimensionType = mc.world.getDimensionEntry().getIdAsString();
         if (lastDim != null) {
             if (!dimensionType.equals(lastDim)) {
                 MusicSound type = getType();

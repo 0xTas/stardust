@@ -6,7 +6,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import net.minecraft.client.sound.Channel;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-
 @Mixin(Channel.SourceManager.class)
 public interface SourceManagerAccessor {
     @Accessor("source")
