@@ -26,6 +26,7 @@ import net.minecraft.block.entity.BlockEntity;
 import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.block.entity.SignBlockEntity;
 import meteordevelopment.meteorclient.utils.Utils;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.block.entity.HangingSignBlockEntity;
 import meteordevelopment.meteorclient.renderer.ShapeMode;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
@@ -281,7 +282,7 @@ public class WaxAura extends Module {
 
         ++timer;
         ItemStack active = mc.player.getActiveItem();
-        if ((active.isFood() || Utils.isThrowable(active.getItem())) && mc.player.getItemUseTime() > 0) return;
+        if ((active.contains(DataComponentTypes.FOOD) || Utils.isThrowable(active.getItem())) && mc.player.getItemUseTime() > 0) return;
         if (timer >= tickRate.get()) {
             timer = 0;
             if (currentSign != null) waxSign(currentSign);
