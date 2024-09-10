@@ -11,6 +11,7 @@ import meteordevelopment.orbit.EventHandler;
 import dev.stardust.mixin.AnvilScreenAccessor;
 import net.minecraft.screen.AnvilScreenHandler;
 import meteordevelopment.meteorclient.settings.*;
+import net.minecraft.component.DataComponentTypes;
 import dev.stardust.mixin.AnvilScreenHandlerAccessor;
 import net.minecraft.client.gui.screen.ingame.AnvilScreen;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
@@ -124,7 +125,7 @@ public class StashBrander extends Module {
             if ((blacklistMode.get() && !itemList.get().contains(stack.getItem()))
                 || (!blacklistMode.get() && itemList.get().contains(stack.getItem())))
             {
-                if (itemName.get().isBlank() && stack.hasCustomName()) return true;
+                if (itemName.get().isBlank() && stack.contains(DataComponentTypes.CUSTOM_NAME)) return true;
                 else if (!stack.getName().getString().equals(itemName.get())) return true;
             }
         }
@@ -186,9 +187,9 @@ public class StashBrander extends Module {
         else if (input1.isEmpty() && input2.isEmpty()) {
             for (int n = ANVIL_OFFSET; n < mc.player.getInventory().main.size() + ANVIL_OFFSET; n++) {
                 ItemStack stack = anvil.getSlot(n).getStack();
-                if (stack.hasCustomName() && !renameNamed.get()) continue;
+                if (stack.contains(DataComponentTypes.CUSTOM_NAME) && !renameNamed.get()) continue;
                 else if (stack.getName().getString().equals(itemName.get())) continue;
-                else if (itemName.get().isBlank() && !stack.hasCustomName()) continue;
+                else if (itemName.get().isBlank() && !stack.contains(DataComponentTypes.CUSTOM_NAME)) continue;
 
                 if ((blacklistMode.get() && !itemList.get().contains(stack.getItem()))
                     || (!blacklistMode.get() && itemList.get().contains(stack.getItem())))
@@ -197,7 +198,7 @@ public class StashBrander extends Module {
                     ((AnvilScreenAccessor) anvilScreen).getNameField().setText(itemName.get());
                     ItemStack check = anvil.getSlot(AnvilScreenHandler.OUTPUT_ID).getStack();
                     if (itemList.get().contains(check.getItem())) {
-                        if (check.getName().getString().equals(itemName.get()) || (itemName.get().isBlank() && stack.hasCustomName())) {
+                        if (check.getName().getString().equals(itemName.get()) || (itemName.get().isBlank() && stack.contains(DataComponentTypes.CUSTOM_NAME))) {
                             int cost = ((AnvilScreenHandlerAccessor) anvil).getLevelCost().get();
                             if (mc.player.experienceLevel >= cost) {
                                 InvUtils.shiftClick().slotId(AnvilScreenHandler.OUTPUT_ID);
@@ -210,7 +211,7 @@ public class StashBrander extends Module {
             }
             finished();
         } else if (!output.isEmpty() && itemList.get().contains(output.getItem())) {
-            if (output.getName().getString().equals(itemName.get()) || (itemName.get().isBlank() && input1.hasCustomName())) {
+            if (output.getName().getString().equals(itemName.get()) || (itemName.get().isBlank() && input1.contains(DataComponentTypes.CUSTOM_NAME))) {
                 int cost = ((AnvilScreenHandlerAccessor) anvil).getLevelCost().get();
                 if (mc.player.experienceLevel >= cost) {
                     InvUtils.shiftClick().slotId(AnvilScreenHandler.OUTPUT_ID);
