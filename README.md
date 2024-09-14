@@ -1,4 +1,4 @@
-# Stardust
+# Stardust ✨
 
 Stardust is an addon for [Meteor Client](https://meteorclient.com) designed for use on the
 anarchy Minecraft server [2b2t](https://2b2t.org).<br>
@@ -35,13 +35,14 @@ Ever since 2b2t updated to 1.19, the NBT tag artifact that separates pre-1.8 fro
 This means that false positives are now *unavoidable*, but should be limited to oak signs placed in old (pre-1.8) chunks that do not contain dates >2015.<br>
 Use your best judgement to further identify false positives or fakes.
 <br>
----
+
 ### Installation
 
 1. Ensure that [Fabric](https://fabricmc.net) for Minecraft version 1.21.1 is installed.
 2. Download the [latest release](https://github.com/0xTas/stardust/releases/latest), or build the addon from source with `./gradlew build`.
 3. Drop the .jar file in your `.minecraft/mods` folder, along with Meteor Client (v0.5.8 for 1.21.1)
 4. Run your Fabric installation.
+<br>
 
 ### Building & Contributing
 
@@ -55,7 +56,7 @@ Use your best judgement to further identify false positives or fakes.
 >Issues and pull requests are welcome if you would like to submit them.<br>
 If needed, you can get in touch with me through the [Meteor Client Discord Server](https://discord.com/invite/bBGQZvd).
 <br>
----
+
 ### Credits
 - [**Meteor Development**](https://github.com/MeteorDevelopment) *for [Meteor Client](https://meteorclient.com).*
 - [**rfresh**](https://github.com/rfresh2) *for the [2b2t statistics api](https://api.2b2t.vc).*
