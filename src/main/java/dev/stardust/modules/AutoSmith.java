@@ -265,7 +265,7 @@ public class AutoSmith extends Module {
             || (stack.getItem() instanceof ToolItem tool && tool.getMaterial() == ToolMaterials.DIAMOND);
     }
 
-    private boolean isValidEquipmentForTrimming(ItemStack stack) { // TODO: add 1.21 trims
+    private boolean isValidEquipmentForTrimming(ItemStack stack) {
         if (stack.getItem() instanceof ArmorItem armor) {
             boolean correctMaterial = false;
             RegistryEntry<ArmorMaterial> armorMaterial = armor.getMaterial();

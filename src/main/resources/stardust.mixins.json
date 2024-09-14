@@ -26,7 +26,7 @@
     "SplashTextRendererMixin",
     "ClientPlayerEntityMixin",
     "ElytraSoundInstanceMixin",
-    "WrittenBookContentsAccessor",
+    "BookScreenContentsAccessor",
     "AbstractSignEditScreenMixin",
     "SignBlockEntityRendererMixin",
     "AbstractSignEditScreenAccessor"
