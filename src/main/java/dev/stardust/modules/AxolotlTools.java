@@ -15,6 +15,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.entity.LivingEntity;
+import org.jetbrains.annotations.NotNull;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -22,6 +23,7 @@ import net.minecraft.entity.ai.TargetPredicate;
 import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.entity.passive.AxolotlEntity;
 import meteordevelopment.meteorclient.utils.Utils;
+import net.minecraft.component.DataComponentTypes;
 import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.entity.passive.TropicalFishEntity;
 import meteordevelopment.meteorclient.renderer.ShapeMode;
@@ -35,7 +37,6 @@ import meteordevelopment.meteorclient.utils.render.RenderUtils;
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.meteorclient.utils.render.WireframeEntityRenderer;
-
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -314,6 +315,22 @@ public class AxolotlTools extends Module {
         return null;
     }
 
+    private @NotNull TargetPredicate getTargetPredicate() {
+        TargetPredicate predicate = TargetPredicate.createNonAttackable();
+        Predicate<LivingEntity> targetTest = ax -> interactVariants.contains(((AxolotlEntity) ax).getVariant().toString());
+
+        targetTest = targetTest
+            .and(ax -> (axolotlMode.get() == AxolotlMode.Catch
+                && (catchBabies.get() ? !onlyCatchBabies.get() || ax.isBaby() : !ax.isBaby())));
+
+        targetTest = targetTest
+            .or(ax -> (axolotlMode.get() == AxolotlMode.Breed
+                && (feedBabies.get() ? !onlyFeedBabies.get() || ax.isBaby() : !ax.isBaby())));
+
+        predicate.setPredicate(targetTest);
+        return predicate;
+    }
+
     private <T extends LivingEntity> boolean tryInteractMobFull(T entity, Item bucketType) {
         if (mc.interactionManager == null) return true;
         if (mc.player == null || mc.world == null) return true;
@@ -405,7 +422,7 @@ public class AxolotlTools extends Module {
         if (axolotlMode.get() == AxolotlMode.None && !catchFish.get()) return;
 
         ItemStack current = mc.player.getInventory().getMainHandStack();
-        if ((current.isFood() || Utils.isThrowable(current.getItem())) && mc.player.getItemUseTime() > 0) {
+        if ((current.contains(DataComponentTypes.FOOD) || Utils.isThrowable(current.getItem())) && mc.player.getItemUseTime() > 0) {
             ++timer;
             return;
         }
@@ -445,18 +462,7 @@ public class AxolotlTools extends Module {
                             .filter(ax -> ax.getBlockPos().isWithinDistance(mc.player.getBlockPos(), 3))
                             .toList();
 
-                        TargetPredicate predicate = TargetPredicate.createNonAttackable();
-                        Predicate<LivingEntity> targetTest = ax -> interactVariants.contains(((AxolotlEntity) ax).getVariant().toString());
-
-                        targetTest = targetTest
-                            .and(ax -> (axolotlMode.get() == AxolotlMode.Catch
-                                && (catchBabies.get() ? !onlyCatchBabies.get() || ax.isBaby() : !ax.isBaby())));
-
-                        targetTest = targetTest
-                            .or(ax -> (axolotlMode.get() == AxolotlMode.Breed
-                                && (feedBabies.get() ? !onlyFeedBabies.get() || ax.isBaby() : !ax.isBaby())));
-
-                        predicate.setPredicate(targetTest);
+                        TargetPredicate predicate = getTargetPredicate();
                         AxolotlEntity target = mc.world.getClosestEntity(
                             axolotls, predicate, mc.player,
                             mc.player.getX(), mc.player.getY(), mc.player.getZ()
@@ -538,7 +544,7 @@ public class AxolotlTools extends Module {
                             Entity camera = mc.cameraEntity;
 
                             if (camera == null) return;
-                            HitResult result = camera.raycast(3, mc.getTickDelta(), true);
+                            HitResult result = camera.raycast(3, 0, true);
                             if (result.getType() == HitResult.Type.BLOCK) {
                                 BlockHitResult hit = (BlockHitResult) result;
                                 if (mc.world.getFluidState(hit.getBlockPos()).getFluid() == Fluids.WATER) {
