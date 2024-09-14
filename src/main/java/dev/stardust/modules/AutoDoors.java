@@ -121,6 +121,14 @@ public class AutoDoors extends Module {
             .build()
     );
 
+    private final Setting<Boolean> useFenceGates = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Fence Gates")
+            .description("Interact with fence gates.")
+            .defaultValue(false)
+            .build()
+    );
+
     private int tickCounter = 0;
     private int ticksSinceInteracted = 0;
     private Vec3d lastBlock = new Vec3d(0.0, 0.0, 0.0);
@@ -342,17 +350,30 @@ public class AutoDoors extends Module {
         if (useTrapdoors.get() && doorInFront instanceof TrapdoorBlock && autoOpen.get()) {
             try {
                 if (!frontState.get(TrapdoorBlock.OPEN)) {
-                    this.interactDoor(frontPos, movementDirection);
+                    interactDoor(frontPos, movementDirection);
                     return;
                 }
             } catch (IllegalArgumentException ignored) {} // skill issue insurance
         } else if (useTrapdoors.get() && mc.world.getBlockState(frontPos.down()).getBlock() instanceof TrapdoorBlock && autoOpen.get()) {
             try {
                 if (!mc.world.getBlockState(frontPos.down()).get(TrapdoorBlock.OPEN)) {
-                    this.interactDoor(frontPos.down(), Direction.DOWN);
+                    interactDoor(frontPos.down(), Direction.DOWN);
                     return;
                 }
             } catch (IllegalArgumentException ignored) {}
+        }
+        Block doorAboveFront = mc.world.getBlockState(frontPos.up()).getBlock();
+        Block doorAboveBack = mc.world.getBlockState(behindPos.up()).getBlock();
+        if (useFenceGates.get() && doorInFront instanceof FenceGateBlock || doorAboveFront instanceof FenceGateBlock && autoOpen.get()) {
+            try {
+                if (!frontState.get(FenceGateBlock.OPEN)) {
+                    interactDoor(frontPos, movementDirection);
+                    if (doorAboveFront instanceof FenceGateBlock && !mc.world.getBlockState(frontPos.up()).get(FenceGateBlock.OPEN)) {
+                        interactDoor(frontPos.up(), movementDirection);
+                    }
+                    return;
+                }
+            }catch (IllegalArgumentException ignored) {}
         }
         if (doorInFront instanceof DoorBlock frontDoor && autoOpen.get()) {
             if (useIronDoors.get() && frontDoor == Blocks.IRON_DOOR) {
@@ -399,6 +420,17 @@ public class AutoDoors extends Module {
             try {
                 if (mc.world.getBlockState(behindPos.down()).get(TrapdoorBlock.OPEN)) {
                     this.interactDoor(behindPos.down(), Direction.DOWN);
+                    return;
+                }
+            } catch (IllegalArgumentException ignored) {}
+        }
+        if (useFenceGates.get() && doorBehind instanceof FenceGateBlock || doorAboveBack instanceof FenceGateBlock) {
+            try {
+                if (behindState.get(FenceGateBlock.OPEN)) {
+                    interactDoor(behindPos, movementDirection);
+                    if (doorAboveBack instanceof FenceGateBlock && mc.world.getBlockState(behindPos.up()).get(FenceGateBlock.OPEN)) {
+                        interactDoor(behindPos.up(), movementDirection);
+                    }
                     return;
                 }
             } catch (IllegalArgumentException ignored) {}
