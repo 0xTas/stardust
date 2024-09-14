@@ -117,7 +117,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Boolean> showOldSigns  = oldSignGroup.add(
         new BoolSetting.Builder()
-            .name("Show Possibly Old Signs*")
+            .name("Show Old Signs*")
             .description("*will show signs placed before 1.8, AND after 1.19. Use your best judgment to determine what's legit.")
             .defaultValue(false)
             .build()
@@ -125,8 +125,8 @@ public class ChatSigns extends Module {
 
     private final Setting<Boolean> onlyOldSigns = oldSignGroup.add(
         new BoolSetting.Builder()
-            .name("Only Show New/Old Signs")
-            .description("Only display text from signs that are either really old, or brand new.")
+            .name("Only Show Old Signs")
+            .description("Only display text from signs that are either really old, or really new.")
             .defaultValue(false)
             .visible(showOldSigns::get)
             .build()
@@ -322,7 +322,7 @@ public class ChatSigns extends Module {
         int viewDistance = mc.options.getViewDistance().getValue();
 
         double maxRangeBlocks = viewDistance * 16;
-        HitResult trace = mc.getCameraEntity().raycast(maxRangeBlocks, mc.getTickDelta(), false);
+        HitResult trace = mc.getCameraEntity().raycast(maxRangeBlocks, 0F, false);
         if (trace != null) {
             BlockPos pos = ((BlockHitResult) trace).getBlockPos();
             if (mc.world.getBlockEntity(pos) instanceof SignBlockEntity) return pos;
@@ -410,7 +410,7 @@ public class ChatSigns extends Module {
                 else if (block instanceof WallSignBlock wallSignBlock) woodType = wallSignBlock.getWoodType();
 
                 if (woodType == WoodType.OAK) {
-                    NbtCompound metadata = sign.toInitialChunkDataNbt();
+                    NbtCompound metadata = sign.createNbt(mc.world.getRegistryManager());
                     if (!metadata.toString().contains("{\"extra\":[") && !lines.isEmpty()) {
                         String testString = String.join(" ", lines);
                         Matcher fullYearsMatcher = fullYearsPattern.matcher(testString);
