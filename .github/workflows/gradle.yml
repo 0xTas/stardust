@@ -48,6 +48,6 @@ jobs:
           repo_token: '${{ secrets.GITHUB_TOKEN }}'
           automatic_release_tag: snapshot
           prerelease: true
-          title: Dev Build
+          title: 1.21.1 Dev Build
           files: |
             ./build/libs/*.jar
