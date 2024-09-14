@@ -709,6 +709,27 @@ public class MusicTweaks extends Module {
             .defaultValue(false)
             .build()
     );
+    private final Setting<Boolean> recordCreator = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Creator")
+            .description("Music Disc: Creator")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> recordCreatorMusicBox = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Lena Raine / Creator (Music Box)")
+            .description("Music Disc: Creator (Music Box)")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<Boolean> recordPrecipice = sgRecordsSoundtrack.add(
+        new BoolSetting.Builder()
+            .name("Aaron Cherof / Precipice")
+            .description("Music Disc: Precipice")
+            .defaultValue(false)
+            .build()
+    );
     private final Setting<Boolean> mutation = sgMenuSoundtrack.add(
         new BoolSetting.Builder()
             .name("C418 / Mutation")
@@ -845,6 +866,9 @@ public class MusicTweaks extends Module {
             case "komorebi.ogg" -> songName = "Kumi Tanioka - komorebi";
             case "pokopoko.ogg" -> songName = "Kumi Tanioka - pokopoko";
             case "yakusoku.ogg" -> songName = "Kumi Tanioka - yakusoku";
+            case "creator.ogg" -> songName = "Lena Raine - Creator";
+            case "creator_music_box.ogg" -> songName = "Lena Raine - Creator (Music Box)";
+            case "precipice.ogg" -> songName = "Aaron Cherof - Precipice";
             default -> songName = "Unknown Track";
         }
 
@@ -930,6 +954,9 @@ public class MusicTweaks extends Module {
         if (puzzlebox.get()) ids.add("minecraft:music/game/puzzlebox");
         if (watcher.get()) ids.add("minecraft:music/game/watcher");
         if (yakusoku.get()) ids.add("minecraft:music/game/yakusoku");
+        if (recordCreator.get()) ids.add("minecraft:records/creator");
+        if (recordPrecipice.get()) ids.add("minecraft:records/precipice");
+        if (recordCreatorMusicBox.get()) ids.add("minecraft:records/creator_music_box");
 
         // Prevent duplicates
         if (currentSong != null && ids.size() > 1) {
