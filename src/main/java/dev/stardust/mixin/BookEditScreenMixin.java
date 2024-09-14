@@ -163,7 +163,7 @@ public abstract class BookEditScreenMixin extends Screen {
         );
     }
 
-    @Inject(method = "charTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/SelectionManager;insert(Ljava/lang/String;)V", shift = At.Shift.BEFORE))
+    @Inject(method = "charTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/SelectionManager;insert(Ljava/lang/String;)V"))
     private void mixinCharTyped(char chr, int modifiers, CallbackInfoReturnable<Boolean> cir) {
         if (!rainbowMode || signing) return;
         didFormatPage = true;

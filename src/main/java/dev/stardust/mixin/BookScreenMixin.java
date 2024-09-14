@@ -39,7 +39,7 @@ public abstract class BookScreenMixin extends Screen {
     @Unique
     private ButtonWidget deobfuscateButton;
     @Unique
-    private List<String> obfuscatedPages = new ArrayList<>();
+    private List<Text> obfuscatedPages = new ArrayList<>();
 
     @Unique
     private void deobfuscateBook(ButtonWidget btn) {
@@ -48,14 +48,14 @@ public abstract class BookScreenMixin extends Screen {
             return;
         }
 
-        if (contents instanceof BookScreen.WrittenBookContents) {
-            List<String> pages = ((WrittenBookContentsAccessor) contents).getPages();
-            List<String> deobfuscatedPages = new java.util.ArrayList<>(List.of());
-            for (String page : pages) {
-                deobfuscatedPages.add(page.replace("§k", ""));
+        if (contents instanceof BookScreen.Contents) {
+            List<Text> pages = ((BookScreenContentsAccessor)(Object) contents).getPages();
+            List<Text> deobfuscatedPages = new java.util.ArrayList<>(List.of());
+            for (Text page : pages) {
+                deobfuscatedPages.add(Text.literal(page.getString().replace("§k", "")));
             }
 
-            ((WrittenBookContentsAccessor) contents).setPages(deobfuscatedPages);
+            ((BookScreenContentsAccessor)(Object) contents).setPages(deobfuscatedPages);
 
             btn.setAlpha(0.5f);
             btn.setTooltip(Tooltip.of(Text.of("§8Restore this tome's secrets..")));
@@ -70,13 +70,13 @@ public abstract class BookScreenMixin extends Screen {
 
     @Unique
     private void reobfuscateBook(ButtonWidget btn) {
-        if (contents instanceof BookScreen.WrittenBookContents) {
+        if (contents instanceof BookScreen.Contents) {
             btn.setAlpha(1f);
             btn.setTooltip(Tooltip.of(Text.of("§8Reveal this tome's secrets..")));
             btn.setMessage(Text.of("§0<§b§o✨§r§0> "+StardustUtil.rCC()+"§oDeobfuscate "+"§0<§a§o✨§r§0> "));
 
-            ((WrittenBookContentsAccessor) contents).setPages(this.obfuscatedPages);
-            if (!this.obfuscatedPages.get(this.cachedPageIndex).contains("§k")) {
+            ((BookScreenContentsAccessor)(Object) contents).setPages(this.obfuscatedPages);
+            if (!this.obfuscatedPages.get(this.cachedPageIndex).getString().contains("§k")) {
                 btn.visible = false;
             }
 
@@ -87,22 +87,22 @@ public abstract class BookScreenMixin extends Screen {
 
     @Inject(method = "init", at = @At("HEAD"))
     private void mixinInit(CallbackInfo ci) {
-        if (!(this.contents instanceof BookScreen.WrittenBookContents)) return;
+        if (!(this.contents instanceof BookScreen.Contents)) return;
 
         Modules modules = Modules.get();
         if (modules == null) return;
 
-        List<String> pages = ((WrittenBookContentsAccessor) this.contents).getPages();
+        List<Text> pages = ((BookScreenContentsAccessor)(Object) this.contents).getPages();
         AntiToS antiToS = modules.get(AntiToS.class);
         BookTools bookTools = modules.get(BookTools.class);
         if (antiToS.isActive()) {
-            List<String> filtered = new ArrayList<>();
-            for (String page : pages) {
-                if (antiToS.containsBlacklistedText(page)) {
-                    filtered.add(antiToS.censorText(page));
+            List<Text> filtered = new ArrayList<>();
+            for (Text page : pages) {
+                if (antiToS.containsBlacklistedText(page.getString())) {
+                    filtered.add(Text.literal(antiToS.censorText(page.getString())));
                 } else filtered.add(page);
             }
-            ((WrittenBookContentsAccessor) this.contents).setPages(filtered);
+            ((BookScreenContentsAccessor)(Object) this.contents).setPages(filtered);
             this.cachedPageIndex = -1;
         } else if (bookTools.skipDeobfuscation()) return;
 
@@ -114,21 +114,21 @@ public abstract class BookScreenMixin extends Screen {
                 .tooltip(Tooltip.of(Text.of("§8Reveal this tome's secrets..")))
                 .build());
 
-        this.deobfuscateButton.visible = pages.get(this.pageIndex).contains("§k");
-        if (pages.stream().anyMatch(page -> page.contains("§k"))) {
-            this.obfuscatedPages = ((WrittenBookContentsAccessor) this.contents).getPages();
+        this.deobfuscateButton.visible = pages.get(this.pageIndex).getString().contains("§k");
+        if (pages.stream().anyMatch(page -> page.getString().contains("§k"))) {
+            this.obfuscatedPages = ((BookScreenContentsAccessor)(Object) this.contents).getPages();
         }
     }
 
     @Inject(method = "updatePageButtons", at = @At("TAIL"))
     private void mixinUpdatePageButtons(CallbackInfo ci) {
         if (this.deobfuscated) return;
-        if (!(this.contents instanceof BookScreen.WrittenBookContents)) return;
+        if (!(this.contents instanceof BookScreen.Contents)) return;
 
         BookTools bookTools = Modules.get().get(BookTools.class);
         if (bookTools.skipDeobfuscation()) return;
 
-        List<String> pages = ((WrittenBookContentsAccessor) contents).getPages();
-        this.deobfuscateButton.visible = pages.get(this.pageIndex).contains("§k");
+        List<Text> pages = ((BookScreenContentsAccessor)(Object) contents).getPages();
+        this.deobfuscateButton.visible = pages.get(this.pageIndex).getString().contains("§k");
     }
 }

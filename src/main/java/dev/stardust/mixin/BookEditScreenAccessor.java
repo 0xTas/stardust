@@ -5,7 +5,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import net.minecraft.client.util.SelectionManager;
 import net.minecraft.client.gui.screen.ingame.BookEditScreen;
 
-
 @Mixin(BookEditScreen.class)
 public interface BookEditScreenAccessor {
     @Accessor
