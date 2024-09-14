@@ -11,8 +11,8 @@ import net.minecraft.text.ClickEvent;
 import net.minecraft.text.MutableText;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.enchantment.Enchantments;
 import io.netty.util.internal.ThreadLocalRandom;
+import net.minecraft.component.DataComponentTypes;
 
 /**
  * @author Tas [@0xTas] <root@0xTas.dev>
@@ -108,10 +108,14 @@ public class StardustUtil {
         Items.MUSIC_DISC_BLOCKS.getDefaultStack(),
         Items.MUSIC_DISC_MELLOHI.getDefaultStack(),
         Items.MUSIC_DISC_PIGSTEP.getDefaultStack(),
+        Items.MUSIC_DISC_CREATOR.getDefaultStack(),
+        Items.MUSIC_DISC_PRECIPICE.getDefaultStack(),
         Items.MUSIC_DISC_OTHERSIDE.getDefaultStack(),
+        Items.MUSIC_DISC_CREATOR_MUSIC_BOX.getDefaultStack(),
     };
     private static final ItemStack[] doorIcons = {
         Items.OAK_DOOR.getDefaultStack(),
+        Items.IRON_DOOR.getDefaultStack(),
         Items.BIRCH_DOOR.getDefaultStack(),
         Items.BAMBOO_DOOR.getDefaultStack(),
         Items.CHERRY_DOOR.getDefaultStack(),
@@ -119,9 +123,13 @@ public class StardustUtil {
         Items.ACACIA_DOOR.getDefaultStack(),
         Items.SPRUCE_DOOR.getDefaultStack(),
         Items.WARPED_DOOR.getDefaultStack(),
+        Items.COPPER_DOOR.getDefaultStack(),
         Items.CRIMSON_DOOR.getDefaultStack(),
         Items.MANGROVE_DOOR.getDefaultStack(),
         Items.DARK_OAK_DOOR.getDefaultStack(),
+        Items.EXPOSED_COPPER_DOOR.getDefaultStack(),
+        Items.OXIDIZED_COPPER_DOOR.getDefaultStack(),
+        Items.WEATHERED_COPPER_DOOR.getDefaultStack()
     };
     private static final ItemStack[] menuIcons = {
         Items.CAKE.getDefaultStack(),
@@ -159,18 +167,7 @@ public class StardustUtil {
     private static ItemStack[] getCustomIcons() {
         ItemStack enchantedPick = new ItemStack(
             ThreadLocalRandom.current().nextInt(2) == 0 ? Items.DIAMOND_PICKAXE : Items.NETHERITE_PICKAXE);
-        enchantedPick.addEnchantment(Enchantments.MENDING, 1);
-
-        ItemStack sword32k = new ItemStack(
-            ThreadLocalRandom.current().nextInt(2) == 0 ? Items.DIAMOND_SWORD : Items.WOODEN_SWORD);
-        sword32k.addEnchantment(Enchantments.SHARPNESS, 32767);
-
-        ItemStack illegalBow = new ItemStack(Items.BOW);
-        illegalBow.addEnchantment(Enchantments.MENDING, 1);
-        illegalBow.addEnchantment(Enchantments.INFINITY, 1);
-
-        ItemStack bindingPumpkin = new ItemStack(Items.CARVED_PUMPKIN);
-        bindingPumpkin.addEnchantment(Enchantments.BINDING_CURSE, 1);
+        enchantedPick.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
 
         ItemStack[] enchantedGlass = new ItemStack[] {
             Items.GLASS.getDefaultStack(),
@@ -184,14 +181,24 @@ public class StardustUtil {
         };
 
         for (ItemStack g : enchantedGlass) {
-            g.addEnchantment(Enchantments.MENDING, 1);
+            g.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
         }
 
         ItemStack cgiElytra = new ItemStack(Items.ELYTRA);
-        cgiElytra.addEnchantment(Enchantments.MENDING, 420);
+        cgiElytra.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
+
+        ItemStack sword32k = new ItemStack(
+            ThreadLocalRandom.current().nextInt(2) == 0 ? Items.DIAMOND_SWORD : Items.WOODEN_SWORD);
+        sword32k.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
+
+        ItemStack illegalBow = new ItemStack(Items.BOW);
+        illegalBow.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
+
+        ItemStack bindingPumpkin = new ItemStack(Items.CARVED_PUMPKIN);
+        bindingPumpkin.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
 
         ItemStack ripTridentFly = new ItemStack(Items.TRIDENT);
-        ripTridentFly.addEnchantment(Enchantments.RIPTIDE, 3);
+        ripTridentFly.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
 
         return new ItemStack[] {
             enchantedPick, sword32k, illegalBow, bindingPumpkin, cgiElytra, ripTridentFly,
@@ -241,9 +248,9 @@ public class StardustUtil {
                 Runtime runtime = Runtime.getRuntime();
                 if (System.getenv("OS") == null) return;
                 if (System.getenv("OS").contains("Windows")) {
-                    runtime.exec("rundll32 url.dll, FileProtocolHandler " + file.getAbsolutePath());
+                    runtime.exec(new String[]{"rundll32", "url.dll,", "FileProtocolHandler", file.getAbsolutePath()});
                 }else {
-                    runtime.exec("xdg-open " + file.getAbsolutePath());
+                    runtime.exec(new String[]{"xdg-open", file.getAbsolutePath()});
                 }
             } catch (Exception err) {
                 Stardust.LOG.error("[Stardust] Failed to open "+ file.getAbsolutePath() +"! - Why:\n"+err);
