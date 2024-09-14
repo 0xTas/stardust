@@ -9,19 +9,19 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.item.ItemStack;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.recipe.CraftingRecipe;
 import meteordevelopment.orbit.EventHandler;
 import io.netty.util.internal.ThreadLocalRandom;
 import net.minecraft.screen.PlayerScreenHandler;
 import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.inventory.RecipeInputInventory;
+import net.minecraft.recipe.input.CraftingRecipeInput;
 import net.minecraft.screen.AbstractRecipeScreenHandler;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import net.minecraft.client.gui.screen.ingame.CraftingScreen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -133,7 +133,7 @@ public class AutoDyeShulkers extends Module {
         return  slot;
     }
 
-    private <T extends AbstractRecipeScreenHandler<RecipeInputInventory>> int getItemSlot(Item wanted, T cs, int invStart, int invEnd) {
+    private <T extends AbstractRecipeScreenHandler<CraftingRecipeInput, CraftingRecipe>> int getItemSlot(Item wanted, T cs, int invStart, int invEnd) {
         for (int n = invStart; n < invEnd; n++) {
             ItemStack stack = cs.getSlot(n).getStack();
             if (wanted == Items.SHULKER_BOX) {
@@ -144,7 +144,7 @@ public class AutoDyeShulkers extends Module {
         return -1;
     }
 
-    private <T extends AbstractRecipeScreenHandler<RecipeInputInventory>> void dyeShulker(T cs, int inputEnd, int invStart, int invEnd) {
+    private <T extends AbstractRecipeScreenHandler<CraftingRecipeInput, CraftingRecipe>> void dyeShulker(T cs, int inputEnd, int invStart, int invEnd) {
         ItemStack output = cs.getSlot(0).getStack();
 
         if (isColoredShulker(output.getItem())) {

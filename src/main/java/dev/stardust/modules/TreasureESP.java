@@ -23,7 +23,6 @@ import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.meteorclient.events.entity.player.InteractBlockEvent;
 import meteordevelopment.meteorclient.systems.modules.render.blockesp.ESPBlockData;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/

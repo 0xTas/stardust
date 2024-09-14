@@ -16,10 +16,8 @@ import dev.stardust.util.commands.ApiHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import meteordevelopment.meteorclient.commands.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
-
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>

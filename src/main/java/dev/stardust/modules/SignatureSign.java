@@ -32,7 +32,6 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.player.Rotations;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
