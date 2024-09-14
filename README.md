@@ -30,10 +30,11 @@ It contains original modules to enhance your experience on old server, with a fo
 - **WaxAura** - *Automatically waxes signs within your reach.* On 2b2t, sign editing has been disabled "for now™". This module makes it easy to wax as many signs as possible before it gets enabled.
 - **ChatSigns** - *Read nearby signs in your chat.* Can also highlight and ESP potentially old signs placed before version 1.8* (January 2015 on 2b2t.)
 
-*OldSigns: <br>
+>*OldSigns: <br>
 Ever since 2b2t updated to 1.19, the NBT tag artifact that separates pre-1.8 from post-1.8 signs is missing on newly-placed signs.<br>
 This means that false positives are now *unavoidable*, but should be limited to oak signs placed in old (pre-1.8) chunks that do not contain dates >2015.<br>
 Use your best judgement to further identify false positives or fakes.
+<br>
 ---
 ### Installation
 
@@ -51,8 +52,9 @@ Use your best judgement to further identify false positives or fakes.
 5. Select the appropriate sources Jar from the list (usually named something like `net.minecraft:minecraft-merged-...-sources.jar`) and hit `Ok`.
 6. Now you can contribute or modify code with those mappings as a reference (ctrl+click to view the source for any class.)
 
-Issues and pull requests are welcome if you would like to submit them.<br>
+>Issues and pull requests are welcome if you would like to submit them.<br>
 If needed, you can get in touch with me through the [Meteor Client Discord Server](https://discord.com/invite/bBGQZvd).
+<br>
 ---
 ### Credits
 - [**Meteor Development**](https://github.com/MeteorDevelopment) *for [Meteor Client](https://meteorclient.com).*
