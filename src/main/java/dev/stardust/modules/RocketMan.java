@@ -49,7 +49,7 @@ public class RocketMan extends Module {
 
     public enum KeyModifiers { Alt, Ctrl, Shift, None }
     public enum HoverMode { Off, Hold, Toggle, Creative }
-    public enum RocketMode { OnForwardKey, Static, Dynamic }
+    public enum RocketMode { OnForwardKey, Static, Dynamic, Speed }
 
     private final SettingGroup sgRockets = settings.createGroup("Rocket Usage");
     private final SettingGroup sgBoosts = settings.createGroup("Rocket Boosts");
@@ -70,8 +70,17 @@ public class RocketMan extends Module {
         new IntSetting.Builder()
             .name("Rocket Usage Cooldown")
             .description("How often (in ticks) to allow using firework rockets.")
-            .range(1, 1200).sliderRange(2, 100).defaultValue(50)
-            .visible(() -> usageMode.get().equals(RocketMode.OnForwardKey))
+            .range(1, 10000).sliderRange(2, 100).defaultValue(40)
+            .visible(() -> usageMode.get().equals(RocketMode.OnForwardKey) || usageMode.get().equals(RocketMode.Speed))
+            .build()
+    );
+
+    private final Setting<Double> usageSpeed = sgRockets.add(
+        new DoubleSetting.Builder()
+            .name("Minimum Speed Threshold (b/s)")
+            .description("Will use a rocket when your speed falls below this threshold.")
+            .range(1, 1000).sliderRange(2, 100).defaultValue(37)
+            .visible(() -> usageMode.get().equals(RocketMode.Speed))
             .build()
     );
 
@@ -79,8 +88,17 @@ public class RocketMan extends Module {
         new IntSetting.Builder()
             .name("Rocket Usage-Rate")
             .description("How often (in ticks) to use firework rockets.")
-            .range(1, 1200).sliderRange(2, 420).defaultValue(100)
+            .range(1, 10000).sliderRange(2, 420).defaultValue(100)
             .visible(() -> usageMode.get().equals(RocketMode.Static))
+            .build()
+    );
+
+    public final Setting<Boolean> yLevelLock = sgRockets.add(
+        new BoolSetting.Builder()
+            .name("Y Level Lock")
+            .description("Lock Your Y level while flying (requires Dynamic mode.)")
+            .defaultValue(false)
+            .visible(() -> usageMode.get().equals(RocketMode.Dynamic))
             .build()
     );
 
@@ -228,15 +246,6 @@ public class RocketMan extends Module {
             .name("Force Rocket Usage")
             .description("Force rocket usage when hovering.")
             .defaultValue(true)
-            .build()
-    );
-
-    public final Setting<Boolean> yLevelLock = sgControl.add(
-        new BoolSetting.Builder()
-            .name("Y Level Lock")
-            .description("Lock Your Y level while flying (requires Dynamic mode.)")
-            .defaultValue(false)
-            .visible(() -> keyboardControl.get() && usageMode.get() == RocketMode.Dynamic)
             .build()
     );
 
@@ -468,7 +477,7 @@ public class RocketMan extends Module {
     private void useFireworkRocket(String caller) {
         if (mc.player == null) return;
         if (mc.interactionManager == null) return;
-        if (debug.get()) mc.player.sendMessage(Text.literal("§7Caller: "+StardustUtil.rCC()+caller));
+        if (debug.get() && chatFeedback) mc.player.sendMessage(Text.literal("§7Caller: "+StardustUtil.rCC()+caller));
 
         boolean foundRocket = false;
         for (int n = 0; n < 9; n++) {
@@ -512,7 +521,7 @@ public class RocketMan extends Module {
     }
 
     public void discardCurrentRocket(String source) {
-        if (!source.trim().isEmpty() && debug.get()) {
+        if (!source.trim().isEmpty() && debug.get() && chatFeedback) {
             mc.player.sendMessage(
                 Text.literal("§7Discarding current rocket! Why: "
                     +StardustUtil.rCC()+source+" §7| Packets: "
@@ -631,13 +640,13 @@ public class RocketMan extends Module {
 
     // See EntityMixin.java && LivingEntityMixin.java && PlayerEntityMixin.java
     public boolean shouldLockYLevel() {
-        return yLevelLock.isVisible() && yLevelLock.get();
+        return usageMode.get().equals(RocketMode.Dynamic) && yLevelLock.get();
     }
 
     // See PlayerEntityMixin.java
     public void setIsHovering(boolean hovering) {
         isHovering = hovering;
-        if (hoverModeFeedback.get()) {
+        if (hoverModeFeedback.get() && chatFeedback) {
             ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
                 Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§7Hover Mode "+ (hovering ? "§2§oEnabled§7§o." : "§4§oDisabled§7.")),
                 "hover mode feedback".hashCode()
@@ -738,6 +747,7 @@ public class RocketMan extends Module {
                 );
             }
         } else if (takeoff.get() && mc.player.isFallFlying()) {
+            justUsed = true;
             takingOff = true;
             useFireworkRocket("on activate");
         }
@@ -770,7 +780,7 @@ public class RocketMan extends Module {
                 String formatted = duration.substring(0, Math.min(5, duration.length()));
                 if (formatted.length() <= 4) formatted = formatted+"0";
 
-                if (debug.get() || durationFeedback.get()) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                if (debug.get() || durationFeedback.get() && chatFeedback) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
                     Text.literal("§7Duration Boost: §e§o"+formatted+" §7§oseconds."),
                     "rocketDurationUpdate".hashCode()
                 );
@@ -785,13 +795,13 @@ public class RocketMan extends Module {
                 }
             }
         } catch (Exception err) {
-            Stardust.LOG.error("extensionStartPos should not have been null, but it was! Why:\n"+err);
+            Stardust.LOG.error("[RocketMan] extensionStartPos should not have been null, but it was! Why:\n"+err);
         }
 
 
         ++setbackTimer;
         if (needReset) {
-            if (antiLagBackFeedback.get() || debug.get()) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+            if (antiLagBackFeedback.get() || debug.get() && chatFeedback) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
                 Text.literal("§8§o["+rcc+"§oAntiLagBack...§8§o]"),
                 "LagBackReset".hashCode()
             );
@@ -846,6 +856,7 @@ public class RocketMan extends Module {
             if (!hoverMode.get().equals(HoverMode.Toggle)) isHovering = false;
             return;
         }else if (!takingOff && takeoff.get() && mc.player.isFallFlying()) {
+            justUsed = true;
             takingOff = true;
             useFireworkRocket("takeoff assist");
             return;
@@ -871,16 +882,31 @@ public class RocketMan extends Module {
         ++rocketStockTicks;
         ++durabilityCheckTicks;
         if (ticksFlying > 10) firstRocket = false;
-        if (usageMode.get().equals(RocketMode.Dynamic) && !hasActiveRocket) useFireworkRocket("dynamic usage");
-        else if (usageMode.get().equals(RocketMode.Static)) {
-            if (timer >= usageTickRate.get()) {
-                timer = 0;
-                useFireworkRocket("static usage");
+        switch (usageMode.get()) {
+            case Speed -> {
+                double blocksPerSecond = Utils.getPlayerSpeed().length();
+                if (blocksPerSecond <= usageSpeed.get() && !justUsed && !hasActiveRocket) {
+                    justUsed = true;
+                    useFireworkRocket("speed threshold usage");
+                }
             }
-        }else if (usageMode.get().equals(RocketMode.OnForwardKey) && mc.player.input.pressingForward && !justUsed) {
-            justUsed = true;
-            useFireworkRocket("forward key usage");
-        } else if (justUsed) {
+            case Static -> {
+                if (timer >= usageTickRate.get()) {
+                    timer = 0;
+                    useFireworkRocket("static usage");
+                }
+            }
+            case Dynamic -> {
+                if (!hasActiveRocket) useFireworkRocket("dynamic usage");
+            }
+            case OnForwardKey -> {
+                if (mc.player.input.pressingForward && !justUsed) {
+                    justUsed = true;
+                    useFireworkRocket("forward key usage");
+                }
+            }
+        }
+        if (justUsed) {
             ++ticksSinceUsed;
             if (ticksSinceUsed >= usageCooldown.get()) {
                 justUsed = false;
@@ -958,7 +984,7 @@ public class RocketMan extends Module {
                 double speed = verticalSpeed.get();
                 double newSpeed = speed + (event.value * verticalScrollSensitivity.get());
                 verticalSpeed.set(newSpeed);
-                if (scrollSpeedFeedback.get()) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                if (scrollSpeedFeedback.get() && chatFeedback) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
                     Text.literal("§8<§5§o✨§r§8> §7Vertical Speed: §3"+String.valueOf(newSpeed).substring(0, Math.min(5, String.valueOf(newSpeed).length()))),
                     "verticalSpeedScroll".hashCode()
                 );
@@ -968,7 +994,7 @@ public class RocketMan extends Module {
                 double speed = speedSetting.get();
                 double newSpeed = speed + (event.value * maxSpeedScrollSensitivity.get());
                 speedSetting.set(newSpeed);
-                if (scrollSpeedFeedback.get()) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                if (scrollSpeedFeedback.get() && chatFeedback) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
                     Text.literal("§8<§5§o✨§r§8> §7Max Speed: §3"+String.valueOf(newSpeed).substring(0, Math.min(5, String.valueOf(newSpeed).length()))),
                     "maxSpeedScroll".hashCode()
                 );
@@ -980,7 +1006,7 @@ public class RocketMan extends Module {
                 double speed = horizontalSpeed.get();
                 double newSpeed = speed + (event.value * horizontalScrollSensitivity.get());
                 horizontalSpeed.set(newSpeed);
-                if (scrollSpeedFeedback.get()) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                if (scrollSpeedFeedback.get() && chatFeedback) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
                     Text.literal("§8<§3§o✨§r§8> §7Horizontal Speed: §5"+String.valueOf(newSpeed).substring(0, Math.min(5, String.valueOf(newSpeed).length()))),
                     "horizontalSpeedScroll".hashCode()
                 );
@@ -990,7 +1016,7 @@ public class RocketMan extends Module {
                 double speed = accelerationSetting.get();
                 double newSpeed = speed + (event.value * accelerationScrollSensitivity.get());
                 accelerationSetting.set(newSpeed);
-                if (scrollSpeedFeedback.get()) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                if (scrollSpeedFeedback.get() && chatFeedback) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
                     Text.literal("§8<§3§o✨§r§8> §7Acceleration: §5"+String.valueOf(newSpeed).substring(0, Math.min(5, String.valueOf(newSpeed).length()))),
                     "accelerationScroll".hashCode()
                 );
