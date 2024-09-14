@@ -301,7 +301,7 @@ public class SignHistorian extends Module {
                     BlockState state = result.result().orElse(null);
 
                     if (state == null) continue;
-                    BlockEntity be = BlockEntity.createFromNbt(bPos, state, reconstructed);
+                    BlockEntity be = BlockEntity.createFromNbt(bPos, state, reconstructed, mc.world.getRegistryManager());
 
                     if (be instanceof SignBlockEntity sbeReconstructed) {
                         if (!serverSigns.containsKey(bPos)) {
@@ -331,7 +331,7 @@ public class SignHistorian extends Module {
 
         try {
             NbtCompound stateNbt = NbtHelper.fromBlockState(state);
-            NbtCompound metadata = sign.createNbtWithIdentifyingData();
+            NbtCompound metadata = sign.createNbtWithIdentifyingData(mc.world.getRegistryManager());
 
             //noinspection ResultOfMethodCallIgnored
             historianFolder.toFile().mkdirs();
@@ -409,7 +409,7 @@ public class SignHistorian extends Module {
     private BlockPos getTargetedSign() {
         ClientPlayerEntity player = mc.player;
         if (player == null || mc.world == null) return null;
-        HitResult trace = player.raycast(7, mc.getTickDelta(), false);
+        HitResult trace = player.raycast(7,0, false);
         if (trace != null) {
             BlockPos pos = ((BlockHitResult) trace).getBlockPos();
             if (mc.world.getBlockEntity(pos) instanceof SignBlockEntity) return pos;
@@ -433,7 +433,7 @@ public class SignHistorian extends Module {
             // Signs placed in 1.8 - 1.12 (the majority of them) are "technically" irreplaceable due to metadata differences.
             // You might say that they're the *new* old signs. Either way you can tell that they've been (re)placed after 1.19.
             // To compensate for this, I'll hide a SignHistorian watermark in the NBT data which should clear up any confusion :]
-            if (sbe.createNbt().toString().contains("{\"extra\":[") && n == 3) {
+            if (sbe.createNbt(mc.world.getRegistryManager()).toString().contains("{\"extra\":[") && n == 3) {
                 StringBuilder sb = new StringBuilder();
                 int lineLen = mc.textRenderer.getWidth(sbe.getFrontText().getMessage(n, false).getString());
                 int spaceLeftHalved = (90 - lineLen) / 2; // center original text
