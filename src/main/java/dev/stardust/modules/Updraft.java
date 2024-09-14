@@ -55,15 +55,17 @@ public class Updraft extends Module {
     private final Setting<Integer> cooldownSetting = settings.getDefaultGroup().add(
         new IntSetting.Builder()
             .name("Cooldown Ticks")
-            .defaultValue(20)
+            .description("Cooldown between wind charge uses.")
+            .defaultValue(10)
             .range(0, 1000)
-            .sliderRange(20, 500)
+            .sliderRange(10, 500)
             .build()
     );
 
     private final Setting<Double> pitchSpoofSetting = settings.getDefaultGroup().add(
         new DoubleSetting.Builder()
             .name("Pitch Spoof")
+            .description("The angle to look at when throwing a wind charge.")
             .min(-90).max(90)
             .sliderRange(-90, 90)
             .defaultValue(90)
@@ -73,7 +75,8 @@ public class Updraft extends Module {
     private final Setting<Integer> tickDelay = settings.getDefaultGroup().add(
         new IntSetting.Builder()
             .name("Tick Delay")
-            .defaultValue(1)
+            .description("Delay between inventory actions.")
+            .defaultValue(0)
             .range(0, 1000)
             .sliderRange(0, 100)
             .build()
