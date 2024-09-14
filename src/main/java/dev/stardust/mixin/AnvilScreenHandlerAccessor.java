@@ -5,7 +5,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import net.minecraft.screen.AnvilScreenHandler;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-
 @Mixin(AnvilScreenHandler.class)
 public interface AnvilScreenHandlerAccessor {
     @Accessor

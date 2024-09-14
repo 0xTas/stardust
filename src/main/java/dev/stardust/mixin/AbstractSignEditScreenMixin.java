@@ -19,7 +19,6 @@ import meteordevelopment.meteorclient.systems.modules.Modules;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.gui.screen.ingame.AbstractSignEditScreen;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/

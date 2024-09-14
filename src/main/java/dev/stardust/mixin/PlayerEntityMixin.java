@@ -39,6 +39,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
         }
 
         Vec3d hoverVec = Vec3d.ZERO;
+        if (rm.getClientInstance().player == null) return;
         ClientPlayerEntity player = rm.getClientInstance().player;
         if (rm.hoverMode.get().equals(RocketMan.HoverMode.Toggle) || rm.hoverMode.get().equals(RocketMan.HoverMode.Creative)) {
             if (player.input.pressingLeft && player.input.pressingForward) {

@@ -18,7 +18,6 @@ import net.minecraft.client.gui.screen.SplashTextRenderer;
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
@@ -43,7 +42,7 @@ public abstract class TitleScreenMixin extends Screen {
     private void onClick2b2tButton(ButtonWidget btn) {
         if (mc == null) mc = MinecraftClient.getInstance();
         ConnectScreen.connect(mc.currentScreen, mc,
-            ServerAddress.parse(OLD_SERVER.address), OLD_SERVER, true
+            ServerAddress.parse(OLD_SERVER.address), OLD_SERVER, true, null
         );
     }
 

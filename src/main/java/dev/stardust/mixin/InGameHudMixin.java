@@ -26,7 +26,7 @@ public class InGameHudMixin {
     // See AntiToS.java
     @Inject(
         method = "renderHeldItemTooltip",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;hasCustomName()Z", shift = At.Shift.BEFORE)
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;contains(Lnet/minecraft/component/ComponentType;)Z")
     )
     private void censorItemTooltip(DrawContext context, CallbackInfo ci, @Local LocalRef<MutableText> itemName) {
         if (this.currentStack.isEmpty()) return;
@@ -37,7 +37,7 @@ public class InGameHudMixin {
         if (!antiToS.isActive()) return;
 
         if (antiToS.containsBlacklistedText(itemName.get().getString())) {
-            itemName.set(Text.empty().append(antiToS.censorText(itemName.get().getString())).formatted(this.currentStack.getRarity().formatting));
+            itemName.set(Text.empty().append(antiToS.censorText(itemName.get().getString())).formatted(this.currentStack.getRarity().getFormatting()));
         }
     }
 }
