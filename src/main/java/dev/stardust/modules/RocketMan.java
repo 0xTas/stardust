@@ -377,7 +377,7 @@ public class RocketMan extends Module {
         new BoolSetting.Builder()
             .name("AntiLagBack Feedback")
             .description("Display a message in chat indicating when AntiLagBack is preventing you from being stuck in a rubberbanding loop.")
-            .defaultValue(true)
+            .defaultValue(false)
             .build()
     );
 
