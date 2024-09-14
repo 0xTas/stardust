@@ -46,11 +46,13 @@ public class AutoSmith extends Module {
         Eye("minecraft:eye"),
         Vex("minecraft:vex"),
         Rib("minecraft:rib"),
+        Bolt("minecraft:bolt"),
         Wild("minecraft:wild"),
         Dune("minecraft:dune"),
         Host("minecraft:host"),
         Ward("minecraft:ward"),
         Tide("minecraft:tide"),
+        Flow("minecraft:flow"),
         Coast("minecraft:coast"),
         Snout("minecraft:snout"),
         Spire("minecraft:spire"),
@@ -197,6 +199,15 @@ public class AutoSmith extends Module {
             .build()
     );
 
+    // See WorldMixin.java
+    public final Setting<Boolean> muteSmithy = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("Mute Smithing Table")
+            .description("Mute the smithing table sounds.")
+            .defaultValue(false)
+            .build()
+    );
+
     private final Setting<Boolean> closeOnDone = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
             .name("Close Screen")
@@ -227,15 +238,6 @@ public class AutoSmith extends Module {
             .sliderMin(0.0)
             .sliderMax(5.0)
             .defaultValue(1.0)
-            .build()
-    );
-
-    // See WorldMixin.java
-    public final Setting<Boolean> muteSmithy = settings.getDefaultGroup().add(
-        new BoolSetting.Builder()
-            .name("Mute Smithing Table")
-            .description("Mute the smithing table sounds.")
-            .defaultValue(false)
             .build()
     );
 
@@ -322,6 +324,8 @@ public class AutoSmith extends Module {
                     case Tide -> hasTemplate = hasItem(Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Ward -> hasTemplate = hasItem(Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Wild -> hasTemplate = hasItem(Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE);
+                    case Bolt -> hasMaterial = hasItem(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE);
+                    case Flow -> hasMaterial = hasItem(Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Coast -> hasTemplate = hasItem(Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Snout -> hasTemplate = hasItem(Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Spire -> hasTemplate = hasItem(Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE);
@@ -355,6 +359,8 @@ public class AutoSmith extends Module {
                     case Tide -> hasTemplate = hasItem(Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Ward -> hasTemplate = hasItem(Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Wild -> hasTemplate = hasItem(Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE);
+                    case Bolt -> hasMaterial = hasItem(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE);
+                    case Flow -> hasMaterial = hasItem(Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Coast -> hasTemplate = hasItem(Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Snout -> hasTemplate = hasItem(Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Spire -> hasTemplate = hasItem(Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE);
@@ -388,6 +394,8 @@ public class AutoSmith extends Module {
                     case Tide -> hasTemplate = hasItem(Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Ward -> hasTemplate = hasItem(Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Wild -> hasTemplate = hasItem(Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE);
+                    case Bolt -> hasMaterial = hasItem(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE);
+                    case Flow -> hasMaterial = hasItem(Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Coast -> hasTemplate = hasItem(Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Snout -> hasTemplate = hasItem(Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Spire -> hasTemplate = hasItem(Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE);
@@ -421,6 +429,8 @@ public class AutoSmith extends Module {
                     case Tide -> hasTemplate = hasItem(Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Ward -> hasTemplate = hasItem(Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Wild -> hasTemplate = hasItem(Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE);
+                    case Bolt -> hasMaterial = hasItem(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE);
+                    case Flow -> hasMaterial = hasItem(Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Coast -> hasTemplate = hasItem(Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Snout -> hasTemplate = hasItem(Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE);
                     case Spire -> hasTemplate = hasItem(Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE);
@@ -714,6 +724,8 @@ public class AutoSmith extends Module {
                                     case Tide -> neededPattern = Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Ward -> neededPattern = Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Wild -> neededPattern = Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE;
+                                    case Bolt -> neededPattern = Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE;
+                                    case Flow -> neededPattern = Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Coast -> neededPattern = Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Snout -> neededPattern = Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Spire -> neededPattern = Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE;
@@ -734,6 +746,8 @@ public class AutoSmith extends Module {
                                     case Tide -> neededPattern = Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Ward -> neededPattern = Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Wild -> neededPattern = Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE;
+                                    case Bolt -> neededPattern = Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE;
+                                    case Flow -> neededPattern = Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Coast -> neededPattern = Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Snout -> neededPattern = Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Spire -> neededPattern = Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE;
@@ -754,6 +768,8 @@ public class AutoSmith extends Module {
                                     case Tide -> neededPattern = Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Ward -> neededPattern = Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Wild -> neededPattern = Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE;
+                                    case Bolt -> neededPattern = Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE;
+                                    case Flow -> neededPattern = Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Coast -> neededPattern = Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Snout -> neededPattern = Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Spire -> neededPattern = Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE;
@@ -774,6 +790,8 @@ public class AutoSmith extends Module {
                                     case Tide -> neededPattern = Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Ward -> neededPattern = Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Wild -> neededPattern = Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE;
+                                    case Bolt -> neededPattern = Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE;
+                                    case Flow -> neededPattern = Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Coast -> neededPattern = Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Snout -> neededPattern = Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE;
                                     case Spire -> neededPattern = Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE;
