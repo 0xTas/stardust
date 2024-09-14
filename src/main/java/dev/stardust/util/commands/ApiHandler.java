@@ -11,7 +11,6 @@ import dev.stardust.util.StardustUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  *
@@ -45,7 +44,7 @@ public class ApiHandler {
                 .build();
         } catch (URISyntaxException err) {
             sendErrorResponse();
-            err.printStackTrace();
+            Stardust.LOG.error("[ApiHandler] "+err);
             return null;
         }
 
@@ -58,7 +57,7 @@ public class ApiHandler {
         try {
             res = client.sendAsync(req, HttpResponse.BodyHandlers.ofString()).get();
         } catch (Exception err) {
-            err.printStackTrace();
+            Stardust.LOG.error("[ApiHandler] "+err);
         }
 
         if (res == null) {
@@ -72,7 +71,7 @@ public class ApiHandler {
             return "204 Undocumented";
         } else {
             sendErrorResponse();
-            Stardust.LOG.warn("[Stardust] received unexpected response from api.2b2t.vc: "+res);
+            Stardust.LOG.warn("[ApiHandler] received unexpected response from api.2b2t.vc: "+res);
         }
 
         return null;
