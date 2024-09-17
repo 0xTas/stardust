@@ -89,7 +89,6 @@ public class Updraft extends Module {
     private boolean offhand = false;
     private State currentState = State.Idle;
 
-    // See ExplosionMixin.java
     private void useWindCharge() {
         if (mc.interactionManager == null || mc.player == null || mc.player.isFallFlying()) {
             currentState = State.Idle;
