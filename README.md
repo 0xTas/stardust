@@ -7,7 +7,7 @@ It contains original modules to enhance your experience on old server, with a fo
 ### Feature Set
 #### Commands
 
-- **LastSeen2b2t, FirstSeen2b2t, Playtime2b2t** - *Self explanatory commands. Use your meteor prefix.* Credit to [rfresh](https://github.com/rfresh2) for the current best [2b2t stats api](https://api.2b2t.vc).
+- **Stats2b2t, LastSeen2b2t, FirstSeen2b2t, Playtime2b2t** - *Self explanatory commands. Use your meteor prefix.* Credit to [rfresh](https://github.com/rfresh2) for the current best [2b2t stats api](https://api.2b2t.vc).
 - **Panorama** - *Takes a panorama screenshot and automatically assembles it into a resource pack for the main menu screen.* Usage: `.panorama [name]`
 #### Modules
 - **SignatureSign** - *An AutoSign module that's actually good.* Fully customizable template mode, & story mode for long input files over multiple signs.
@@ -22,6 +22,7 @@ It contains original modules to enhance your experience on old server, with a fo
 - **BannerData** - *Right-click banners to display their pattern and color data.* Looks cool, gives you the base color without any fuss. Can also copy the raw nbt to your clipboard.
 - **BookTools** - *Enhancements for working with books.* Adds buttons for inserting color & formatting codes into writable books, and adds a deobfuscation button to written books containing obfuscated/magic text.
 - **StashBrander** - *Automatically rename desired items in bulk when using anvils.*
+- **PagePirate** - *Pirates books from other players* (displays their contents in your chat, and optionally makes a local copy using a book & quill).
 - **TreasureESP** - *An ESP module for buried treasure chests.* Finding buried treasure is the only way of obtaining Hearts of the Sea, and Conduits by extension.
 - **MusicTweaks** - *Lets you tweak various things relating to the background music.* Change the pitch, volume, or cooldown between songs, or even choose and view which soundtracks play during your session. 
 - **RocketMan** - *Makes flying with fireworks much easier (and faster!) \[bring lots of rockets!\]* RocketMan is a versatile and highly-configurable firework efly module with many useful capabilities.
