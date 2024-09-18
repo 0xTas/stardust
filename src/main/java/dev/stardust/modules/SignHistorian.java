@@ -98,6 +98,14 @@ public class SignHistorian extends Module {
             .build()
     );
 
+    private final Setting<Boolean> dynamicColor = sgESP.add(
+        new BoolSetting.Builder()
+            .name("Dynamic Color")
+            .description("Derive ESP side color from the sign's wood type.")
+            .defaultValue(true)
+            .build()
+    );
+
     private final Setting<ESPBlockData> destroyedSettings = sgESP.add(
         new GenericSetting.Builder<ESPBlockData>()
             .name("Destroyed/Missing Signs ESP")
@@ -106,7 +114,7 @@ public class SignHistorian extends Module {
                 new ESPBlockData(
                     ShapeMode.Both,
                     new SettingColor(255, 42, 0, 255),
-                    new SettingColor(255, 42, 0, 44),
+                    new SettingColor(255, 42, 0, 69),
                     true,
                     new SettingColor(255, 42, 0, 137)
                 )
@@ -263,6 +271,7 @@ public class SignHistorian extends Module {
     private final HashSet<SignBlockEntity> signsToGlowInk = new HashSet<>();
     private final HashMap<Integer, Vec3d> trackedGriefers = new HashMap<>();
     private final HashSet<HostileEntity> approachingGriefers = new HashSet<>();
+    private final HashMap<SignBlockEntity, WoodType> woodTypeMap = new HashMap<>();
     private final HashMap<SignBlockEntity, DyeColor> signsToColor = new HashMap<>();
     private final HashMap<Integer, Pair<Boolean, Long>> grieferHadLineOfSight = new HashMap<>();
     private final Map<BlockPos, Pair<SignBlockEntity, BlockState>> serverSigns = new HashMap<>();
@@ -326,6 +335,9 @@ public class SignHistorian extends Module {
 
                     if (be instanceof SignBlockEntity sbeReconstructed) {
                         if (!serverSigns.containsKey(bPos)) {
+                            if (state.getBlock() instanceof AbstractSignBlock signBlock) {
+                                woodTypeMap.put(sbeReconstructed, signBlock.getWoodType());
+                            }
                             serverSigns.put(bPos, new Pair<>(sbeReconstructed, sbeReconstructed.getCachedState()));
                         }
                     }
@@ -424,6 +436,34 @@ public class SignHistorian extends Module {
         }
 
         return new Vec3d(offsetX, offsetY, offsetZ);
+    }
+
+    private SettingColor colorFromWoodType(@Nullable WoodType type) {
+        if (type == null || !dynamicColor.get()) {
+            return dangerESP.get().sideColor;
+        } else if (type == WoodType.OAK) {
+            return new SettingColor(181, 146, 94, dangerESP.get().sideColor.a);
+        } else if (type == WoodType.BIRCH) {
+            return new SettingColor(212, 200, 139, dangerESP.get().sideColor.a);
+        } else if (type == WoodType.SPRUCE) {
+            return new SettingColor(126, 93, 53, dangerESP.get().sideColor.a);
+        } else if (type == WoodType.JUNGLE) {
+            return new SettingColor(181, 133, 98, dangerESP.get().sideColor.a);
+        } else if (type == WoodType.ACACIA) {
+            return new SettingColor(170, 92, 49, dangerESP.get().sideColor.a);
+        } else if (type == WoodType.BAMBOO) {
+            return new SettingColor(133, 124, 53, dangerESP.get().sideColor.a);
+        } else if (type == WoodType.CHERRY) {
+            return new SettingColor(227, 191, 184, dangerESP.get().sideColor.a);
+        } else if (type == WoodType.WARPED) {
+            return new SettingColor(57, 140, 138, dangerESP.get().sideColor.a);
+        } else if (type == WoodType.CRIMSON) {
+            return new SettingColor(124, 57, 85, dangerESP.get().sideColor.a);
+        } else if (type == WoodType.MANGROVE) {
+            return new SettingColor(109, 41, 44, dangerESP.get().sideColor.a);
+        } else if (type == WoodType.DARK_OAK) {
+            return new SettingColor(72, 46, 23, dangerESP.get().sideColor.a);
+        } else return dangerESP.get().sideColor;
     }
 
     @Nullable
@@ -532,67 +572,6 @@ public class SignHistorian extends Module {
         return false;
     }
 
-    private void processSign(@NotNull SignBlockEntity sbe) {
-        if (!sbe.getFrontText().hasText(mc.player) && !sbe.getBackText().hasText(mc.player)) return;
-        else if (contentBlacklist.get() &&  containsBlacklistedText(sbe)) return;
-
-        BlockPos pos = sbe.getPos();
-        if (serverSigns.containsKey(pos)) {
-            if (isSameSign(sbe, serverSigns.get(pos).getLeft())) {
-                modifiedSigns.remove(serverSigns.get(pos).getLeft());
-            } else {
-                modifiedSigns.add(serverSigns.get(pos).getLeft());
-            }
-            destroyedSigns.remove(serverSigns.get(pos).getLeft());
-        } else {
-            serverSigns.put(pos, new Pair<>(sbe, sbe.getCachedState()));
-            if (persistenceSetting.get()) {
-                saveSignToFile(sbe, sbe.getCachedState());
-            }
-        }
-    }
-
-    private void interactSign(SignBlockEntity sbe, Item dye) {
-        if (!Utils.canUpdate() || mc.interactionManager == null) return;
-
-        BlockPos pos = sbe.getPos();
-        Vec3d hitVec = Vec3d.ofCenter(pos);
-        BlockHitResult hit = new BlockHitResult(hitVec, mc.player.getHorizontalFacing().getOpposite(), pos, false);
-
-        ItemStack current = mc.player.getInventory().getMainHandStack();
-        if (current.getItem() != dye) {
-            for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
-                ItemStack stack = mc.player.getInventory().getStack(n);
-                if (stack.getItem() == dye) {
-                    if (current.getItem() instanceof SignItem && current.getCount() > 1) dyeSlot = n;
-                    if (n < 9) InvUtils.swap(n, true);
-                    else InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
-
-                    timer = 3;
-                    return;
-                }
-            }
-        } else {
-            Rotations.rotate(
-                Rotations.getYaw(pos),
-                Rotations.getPitch(pos), rotationPriority,
-                () -> mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, hit)
-            );
-            ++rotationPriority;
-        }
-
-        if (dye == Items.GLOW_INK_SAC) {
-            signsToGlowInk.remove(sbe);
-            if (!signsToWax.contains(sbe) && !signsToColor.containsKey(sbe)) timer = -1;
-        } else if (dye == Items.HONEYCOMB){
-            signsToWax.remove(sbe);
-            if (!signsToColor.containsKey(sbe) && !signsToGlowInk.contains(sbe)) timer = -1;
-        } else {
-            signsToColor.remove(sbe);
-            if (!signsToGlowInk.contains(sbe) && !signsToWax.contains(sbe)) timer = -1;
-        }
-    }
-
     private boolean mobHasLineOfSight(HostileEntity mob) {
         Vec3d mobEyePos = mob.getEyePos();
         Vec3d eyePos = mc.player.getEyePos();
@@ -648,6 +627,70 @@ public class SignHistorian extends Module {
         return false;
     }
 
+    private void processSign(@NotNull SignBlockEntity sbe) {
+        if (!sbe.getFrontText().hasText(mc.player) && !sbe.getBackText().hasText(mc.player)) return;
+        else if (contentBlacklist.get() &&  containsBlacklistedText(sbe)) return;
+
+        BlockPos pos = sbe.getPos();
+        if (serverSigns.containsKey(pos)) {
+            if (isSameSign(sbe, serverSigns.get(pos).getLeft())) {
+                modifiedSigns.remove(serverSigns.get(pos).getLeft());
+            } else {
+                modifiedSigns.add(serverSigns.get(pos).getLeft());
+            }
+            destroyedSigns.remove(serverSigns.get(pos).getLeft());
+        } else {
+            if (sbe.getCachedState().getBlock() instanceof AbstractSignBlock signBlock) {
+                woodTypeMap.put(sbe, signBlock.getWoodType());
+            }
+            serverSigns.put(pos, new Pair<>(sbe, sbe.getCachedState()));
+            if (persistenceSetting.get()) {
+                saveSignToFile(sbe, sbe.getCachedState());
+            }
+        }
+    }
+
+    private void interactSign(SignBlockEntity sbe, Item dye) {
+        if (!Utils.canUpdate() || mc.interactionManager == null) return;
+
+        BlockPos pos = sbe.getPos();
+        Vec3d hitVec = Vec3d.ofCenter(pos);
+        BlockHitResult hit = new BlockHitResult(hitVec, mc.player.getHorizontalFacing().getOpposite(), pos, false);
+
+        ItemStack current = mc.player.getInventory().getMainHandStack();
+        if (current.getItem() != dye) {
+            for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+                ItemStack stack = mc.player.getInventory().getStack(n);
+                if (stack.getItem() == dye) {
+                    if (current.getItem() instanceof SignItem && current.getCount() > 1) dyeSlot = n;
+                    if (n < 9) InvUtils.swap(n, true);
+                    else InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
+
+                    timer = 3;
+                    return;
+                }
+            }
+        } else {
+            Rotations.rotate(
+                Rotations.getYaw(pos),
+                Rotations.getPitch(pos), rotationPriority,
+                () -> mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, hit)
+            );
+            ++rotationPriority;
+        }
+
+        if (dye == Items.GLOW_INK_SAC) {
+            signsToGlowInk.remove(sbe);
+            if (!signsToWax.contains(sbe) && !signsToColor.containsKey(sbe)) timer = -1;
+        } else if (dye == Items.HONEYCOMB){
+            signsToWax.remove(sbe);
+            if (!signsToColor.containsKey(sbe) && !signsToGlowInk.contains(sbe)) timer = -1;
+        } else {
+            signsToColor.remove(sbe);
+            if (!signsToGlowInk.contains(sbe) && !signsToWax.contains(sbe)) timer = -1;
+        }
+    }
+
     @Override
     public void onActivate() {
         if (!Utils.canUpdate()) {
@@ -665,6 +708,7 @@ public class SignHistorian extends Module {
         gracePeriod = 0;
         currentDim = null;
         signsToWax.clear();
+        woodTypeMap.clear();
         serverSigns.clear();
         signsToColor.clear();
         modifiedSigns.clear();
@@ -886,7 +930,7 @@ public class SignHistorian extends Module {
     @EventHandler
     private void onRender3D(Render3DEvent event) {
         if (!Utils.canUpdate()) return;
-        // if (mc.getNetworkHandler().getPlayerList().size() <= 1) return; // ignore queue TODO: disabled for testing, re-enable this before committing
+        if (mc.getNetworkHandler().getPlayerList().size() <= 1) return; // ignore queue
 
         if (espSigns.get()) {
             ESPBlockData mESP = modifiedSettings.get();
@@ -906,10 +950,11 @@ public class SignHistorian extends Module {
                 double z2 = sign.getPos().getZ() + shape.getMax(Direction.Axis.Z);
 
                 if (dESP.sideColor.a > 0 || dESP.lineColor.a > 0) {
+                    WoodType woodType = woodTypeMap.get(sign);
                     event.renderer.box(
                         x1, y1, z1, x2, y2, z2,
-                        dESP.sideColor, dESP.lineColor,
-                        ShapeMode.Both, 0
+                        colorFromWoodType(woodType), dESP.lineColor,
+                        dESP.shapeMode, 0
                     );
                 }
 
@@ -936,10 +981,11 @@ public class SignHistorian extends Module {
                 double z2 = sign.getPos().getZ() + shape.getMax(Direction.Axis.Z);
 
                 if (mESP.sideColor.a > 0 || mESP.lineColor.a > 0) {
+                    WoodType woodType = woodTypeMap.get(sign);
                     event.renderer.box(
                         x1, y1, z1, x2, y2, z2,
-                        mESP.sideColor, mESP.lineColor,
-                        ShapeMode.Both, 0
+                        colorFromWoodType(woodType), mESP.lineColor,
+                        mESP.shapeMode, 0
                     );
                 }
 
