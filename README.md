@@ -15,8 +15,8 @@ It contains original modules to enhance your experience on old server, with a fo
 - **AxolotlTools** - *Variant ESP, auto-collector & auto-breeder for axolotls.* Can also catch buckets of tropical fish, with or without a farm setup. I used this to get blue axolotls on 2b2t because interacting with them normally pisses me off.
 - **AutoDoors** - *Automatically interacts with doors.* Includes an insufferable door spammer mode as well (complete with client-side mute option).
 - **AutoSmith** - *Automatically upgrades gear or trims armor sets when interacting with smithing tables.*
-- **AntiToS** - *Censors player-generated text on render, like signs, books, and chat, according to a customizable content blacklist.*
-- **AutoDrawDistance** - *Automatically adjusts your render distance to maintain an FPS target.* Some biomes/areas can drop my fps by half, so I found this somewhat useful at times.
+- **AntiToS** - *Censors player-generated text on render, like signs, books, chat, and more, according to a customizable content blacklist.*
+- **AutoDrawDistance** - *Automatically adjusts your render distance to maintain an FPS target.* Some biomes/areas can drop my fps by half, so I occasionally find this useful.
 - **AutoDyeShulkers** - *Automatically dye shulker boxes a desired color in crafting grids.*
 - **LoreLocator** - *Slot highlighter for rare, unique, and anomalous items.* Capable of highlighting renamed items, items with illegal enchants, zero durability items, and more.
 - **BannerData** - *Right-click banners to display their pattern and color data.* Looks cool, gives you the base color without any fuss. Can also copy the raw nbt to your clipboard.
@@ -26,13 +26,13 @@ It contains original modules to enhance your experience on old server, with a fo
 - **MusicTweaks** - *Lets you tweak various things relating to the background music.* Change the pitch, volume, or cooldown between songs, or even choose and view which soundtracks play during your session. 
 - **RocketMan** - *Makes flying with fireworks much easier (and faster!) \[bring lots of rockets!\]* RocketMan is a versatile and highly-configurable firework efly module with many useful capabilities.
 - **Honker** - *Automatically uses goat horns when a player enters your render distance.* You can select your preferred horn type, or choose random for a surprise pick from your inventory each time.
-- **Updraft** - *Automatically enhances your jumps with wind charges.* Wind charges seem to be a bit nerfed on Paper compared to vanilla, but maybe someone might still find this fun or useful.
+- **Updraft** - *Automatically enhances your jumps with wind charges.* Wind charges seem to be nerfed on Paper compared to Vanilla, but maybe someone would still find this fun or useful.
 - **WaxAura** - *Automatically waxes signs within your reach.* On 2b2t, sign editing has been disabled "for now™". This module makes it easy to wax as many signs as possible before it gets enabled.
-- **ChatSigns** - *Read nearby signs in your chat.* Can also highlight and ESP potentially old signs placed before version 1.8* (January 2015 on 2b2t.)
+- **ChatSigns** - *Read nearby signs in your chat.* Can also highlight and ESP potentially old signs placed before version 1.8 (January 2015 on 2b2t.)*
 
 >*OldSigns: <br>
 Ever since 2b2t updated to 1.19, the NBT tag artifact that separates pre-1.8 from post-1.8 signs is missing on newly-placed signs.<br>
-This means that false positives are now *unavoidable*, but should be limited to oak signs placed in old (pre-1.8) chunks that do not contain dates >2015.<br>
+This means that false positives are now *unavoidable*, but should be limited to *oak signs placed after 1.19 in old (pre-1.8) chunks that do not contain dates after 2015*.<br>
 Use your best judgement to further identify false positives or fakes.
 <br>
 
