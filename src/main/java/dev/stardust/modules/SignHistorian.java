@@ -29,6 +29,8 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.util.math.Direction;
 import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.world.RaycastContext;
+import net.minecraft.util.math.MathHelper;
 import com.mojang.serialization.DataResult;
 import net.minecraft.block.entity.SignText;
 import net.minecraft.util.shape.VoxelShape;
@@ -38,6 +40,8 @@ import net.minecraft.util.hit.BlockHitResult;
 import meteordevelopment.orbit.EventPriority;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.mob.CreeperEntity;
+import net.minecraft.entity.boss.WitherEntity;
+import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.client.network.ServerInfo;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.utils.Utils;
@@ -49,6 +53,7 @@ import meteordevelopment.meteorclient.utils.player.Rotations;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Modules;
+import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import meteordevelopment.meteorclient.utils.render.RenderUtils;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
@@ -74,6 +79,14 @@ public class SignHistorian extends Module {
     private final SettingGroup sgSigns = settings.createGroup("Signs Settings");
     private final SettingGroup sgBlacklist = settings.createGroup("Content Blacklist");
     private final SettingGroup sgPrevention = settings.createGroup("Grief Prevention");
+
+    private final Setting<Boolean> espSigns = sgESP.add(
+        new BoolSetting.Builder()
+            .name("ESP Signs")
+            .description("Quick toggle for broken/modified ESP.")
+            .defaultValue(true)
+            .build()
+    );
 
     private final Setting<Integer> espRange = sgESP.add(
         new IntSetting.Builder()
@@ -196,8 +209,8 @@ public class SignHistorian extends Module {
 
     private final Setting<Boolean> griefPrevention = sgPrevention.add(
         new BoolSetting.Builder()
-            .name("Creeper Alarm")
-            .description("Attempts to warn you when nearby signs are in danger of an approaching creeper.")
+            .name("Mob-grief Alarm")
+            .description("Warns you when nearby signs are in danger of an approaching creeper or wither.")
             .defaultValue(true)
             .build()
     );
@@ -219,11 +232,18 @@ public class SignHistorian extends Module {
             .build()
     );
 
-    private final Setting<Boolean> creeperTracers = sgPrevention.add(
-        new BoolSetting.Builder()
-            .name("Tracers")
-            .description("Display tracers leading to approaching creepers.")
-            .defaultValue(true)
+    private final Setting<ESPBlockData> dangerESP = sgPrevention.add(
+        new GenericSetting.Builder<ESPBlockData>()
+            .name("Grief Prevention ESP")
+            .defaultValue(
+                new ESPBlockData(
+                    ShapeMode.Both,
+                    new SettingColor(255, 0, 25, 255),
+                    new SettingColor(255, 0, 25, 255),
+                    true,
+                    new SettingColor(255, 0, 25, 255)
+                )
+            )
             .build()
     );
 
@@ -241,9 +261,10 @@ public class SignHistorian extends Module {
     private final Set<SignBlockEntity> destroyedSigns = new HashSet<>();
     private final HashSet<SignBlockEntity> signsToWax = new HashSet<>();
     private final HashSet<SignBlockEntity> signsToGlowInk = new HashSet<>();
-    private final HashMap<Integer, BlockPos> trackedCreepers = new HashMap<>();
-    private final HashSet<CreeperEntity> approachingCreepers = new HashSet<>();
+    private final HashMap<Integer, Vec3d> trackedGriefers = new HashMap<>();
+    private final HashSet<HostileEntity> approachingGriefers = new HashSet<>();
     private final HashMap<SignBlockEntity, DyeColor> signsToColor = new HashMap<>();
+    private final HashMap<Integer, Pair<Boolean, Long>> grieferHadLineOfSight = new HashMap<>();
     private final Map<BlockPos, Pair<SignBlockEntity, BlockState>> serverSigns = new HashMap<>();
 
     private void initBlacklistText() {
@@ -502,8 +523,8 @@ public class SignHistorian extends Module {
     }
 
     private boolean hasNearbySigns() {
-        if (mc.player == null || mc.world == null) return false;
-        for (BlockPos pos : BlockPos.iterateOutwards(mc.player.getBlockPos(), 5, 5, 5)) {
+        if (!Utils.canUpdate()) return false;
+        for (BlockPos pos : BlockPos.iterateOutwards(mc.player.getBlockPos(), 6, 6, 6)) {
             if (mc.world.getBlockEntity(pos) instanceof SignBlockEntity sbe) {
                 if (sbe.getFrontText().hasText(mc.player) || sbe.getBackText().hasText(mc.player)) return true;
             }
@@ -532,7 +553,7 @@ public class SignHistorian extends Module {
     }
 
     private void interactSign(SignBlockEntity sbe, Item dye) {
-        if (mc.player == null || mc.interactionManager == null) return;
+        if (!Utils.canUpdate() || mc.interactionManager == null) return;
 
         BlockPos pos = sbe.getPos();
         Vec3d hitVec = Vec3d.ofCenter(pos);
@@ -572,9 +593,67 @@ public class SignHistorian extends Module {
         }
     }
 
+    private boolean mobHasLineOfSight(HostileEntity mob) {
+        Vec3d mobEyePos = mob.getEyePos();
+        Vec3d eyePos = mc.player.getEyePos();
+        HitResult lineOfSightCheck = mc.world.raycast(
+            new RaycastContext(
+                mobEyePos, eyePos,
+                RaycastContext.ShapeType.COLLIDER,
+                RaycastContext.FluidHandling.WATER, mob
+            )
+        );
+
+        return lineOfSightCheck.getType() != HitResult.Type.BLOCK;
+    }
+
+    private boolean isMobAThreat(HostileEntity mob) {
+        if (!Utils.canUpdate()) return false;
+
+        Vec3d newPos = mob.getPos();
+        Vec3d playerPos = mc.player.getPos();
+        Vec3d lastPos = trackedGriefers.get(mob.getId());
+
+        if (lastPos == null) return false;
+        double newDistance = playerPos.squaredDistanceTo(newPos);
+        double oldDistance = playerPos.squaredDistanceTo(lastPos);
+
+        long now = System.currentTimeMillis();
+        boolean mobHasLoS = mobHasLineOfSight(mob);
+        if (grieferHadLineOfSight.get(mob.getId()) == null) {
+            grieferHadLineOfSight.put(mob.getId(), new Pair<>(mobHasLoS, now));
+        } else {
+            Pair<Boolean, Long> prevLoSCheck = grieferHadLineOfSight.get(mob.getId());
+            if (mobHasLoS || now - prevLoSCheck.getRight() >= 7000) {
+                grieferHadLineOfSight.put(mob.getId(), new Pair<>(mobHasLoS, now));
+            }
+        }
+
+        if (mob instanceof CreeperEntity creeper) {
+            if (newDistance <= MathHelper.square(10)) {
+                return mobHasLoS || (newDistance < oldDistance && grieferHadLineOfSight.get(creeper.getId()).getLeft());
+            } else if (newDistance <= MathHelper.square(20)) {
+                return  (newDistance < oldDistance && mobHasLoS);
+            }
+        } else if (mob instanceof WitherEntity wither) {
+            if (newDistance <= MathHelper.square(16)) {
+                return true;
+            } else if (newDistance <= MathHelper.square(32)) {
+                return mobHasLoS || (newDistance < oldDistance && grieferHadLineOfSight.get(wither.getId()).getLeft());
+            } else if (newDistance <= MathHelper.square(48)) {
+                return (newDistance < oldDistance && mobHasLoS);
+            }
+        }
+
+        return false;
+    }
+
     @Override
     public void onActivate() {
-        if (mc.world == null || mc.player == null) return;
+        if (!Utils.canUpdate()) {
+            toggle();
+            return;
+        }
         if (persistenceSetting.get()) initOrLoadFromSignFile();
         if (contentBlacklist.get() && StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) initBlacklistText();
     }
@@ -591,17 +670,18 @@ public class SignHistorian extends Module {
         modifiedSigns.clear();
         destroyedSigns.clear();
         signsToGlowInk.clear();
-        trackedCreepers.clear();
+        trackedGriefers.clear();
         lastTargetedSign = null;
         rotationPriority = 69420;
         didDisableWaxAura = false;
-        approachingCreepers.clear();
+        approachingGriefers.clear();
         signsBrokenByPlayer.clear();
+        grieferHadLineOfSight.clear();
     }
 
     @EventHandler
     private void onBlockInteract(InteractBlockEvent event) {
-        if (mc.player == null) return;
+        if (!Utils.canUpdate()) return;
         for (SignBlockEntity sbe : modifiedSigns) {
             if (event.result.getBlockPos().isWithinDistance(sbe.getPos(), 1)) {
                 mc.player.sendMessage(Text.of(
@@ -619,7 +699,7 @@ public class SignHistorian extends Module {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onBlockAttack(PacketEvent.Send event) {
-        if (mc.player == null) return;
+        if (!Utils.canUpdate()) return;
         if (!(event.packet instanceof PlayerActionC2SPacket packet)) return;
         if (packet.getAction() != PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) return;
 
@@ -661,8 +741,8 @@ public class SignHistorian extends Module {
         if (mc.world == null) return;
         if (currentDim == null) currentDim = mc.world.getRegistryKey();
         else if (currentDim != mc.world.getRegistryKey()) {
-            currentDim = mc.world.getRegistryKey();
             serverSigns.clear();
+            currentDim = mc.world.getRegistryKey();
             if (persistenceSetting.get()) initOrLoadFromSignFile();
         }
 
@@ -709,54 +789,60 @@ public class SignHistorian extends Module {
                 if (be instanceof SignBlockEntity sbe) processSign(sbe);
             }
         } else if (griefPrevention.get()) {
-            approachingCreepers.removeIf(Entity::isRemoved);
-            approachingCreepers.removeIf(creeper -> !creeper.getBlockPos().isWithinDistance(mc.player.getBlockPos(), 12));
-            approachingCreepers.removeIf(creep -> creep.getBlockPos().isWithinDistance(trackedCreepers.get(creep.getId()), 2));
-
-            if (!approachingCreepers.isEmpty() && hasNearbySigns()) {
-                if (pingTicks == 0) {
-                    mc.player.playSound(SoundEvents.ENTITY_PHANTOM_HURT, alarmVolume.get().floatValue(), 1f);
-                    if (chatNotification.get()) {
-                        mc.player.sendMessage(Text.of(
-                            "§8<"+ StardustUtil.rCC()+"✨§8> [§5SignHistorian§8] §c§lNEARBY SIGNS IN DANGER OF MOB GRIEFING§7§l."
-                        ));
-                    }
-                }
-                ++pingTicks;
-                if (pingTicks >= 50) pingTicks = 0;
-            }
-
-            for (int id : trackedCreepers.keySet()) {
-                if (mc.world.getEntityById(id) instanceof CreeperEntity creeper) {
-                    if (creeper.isRemoved()) trackedCreepers.remove(id);
-                    else if (hasNearbySigns()) {
-                        BlockPos pPos = mc.player.getBlockPos();
-                        BlockPos newPos = creeper.getBlockPos();
-                        BlockPos lastPos = trackedCreepers.get(id);
-                        if (!pPos.isWithinDistance(newPos, 15)) continue;
-                        if (newPos.isWithinDistance(lastPos, 2)) {
-                            approachingCreepers.remove(creeper);
-                            continue;
-                        }
-
-                        double oldDelta = pPos.getSquaredDistance(lastPos);
-                        double newDelta = pPos.getSquaredDistance(newPos);
-                        if (newDelta < oldDelta) approachingCreepers.add(creeper);
-                        else approachingCreepers.remove(creeper);
-                    }
-                }
-            }
-
             for (Entity entity : mc.world.getEntities()) {
-                if (!(entity instanceof CreeperEntity creeper)) continue;
-                if (!trackedCreepers.containsKey(creeper.getId())) trackedCreepers.put(creeper.getId(), creeper.getBlockPos());
+                HostileEntity griefingMob;
+                if (entity instanceof CreeperEntity creeper) {
+                    griefingMob = creeper;
+                } else if (entity instanceof WitherEntity wither) {
+                    griefingMob = wither;
+                } else continue;
+                if (!trackedGriefers.containsKey(griefingMob.getId())) trackedGriefers.put(griefingMob.getId(), griefingMob.getPos());
+            }
+
+            if (!hasNearbySigns()) {
+                approachingGriefers.clear();
+            } else {
+                approachingGriefers.removeIf(Entity::isRemoved);
+                approachingGriefers.removeIf(mob -> !isMobAThreat(mob));
+
+                ++pingTicks;
+                if (!approachingGriefers.isEmpty()) {
+                    if (pingTicks >= 60) {
+                        pingTicks = 0;
+                        mc.player.playSound(SoundEvents.ENTITY_PHANTOM_HURT, alarmVolume.get().floatValue(), 1f);
+                        if (chatNotification.get()) {
+                            ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
+                                Text.literal("§8<"+ StardustUtil.rCC()+"✨§8> [§5SignHistorian§8] §c§lNEARBY SIGNS IN DANGER OF MOB GRIEFING§7§l."),
+                                "MobGriefAlarm".hashCode()
+                            );
+                        }
+                    }
+                }
+
+                List<Integer> toRemove = new ArrayList<>();
+                for (int id : trackedGriefers.keySet()) {
+                    Entity griefingEntity = mc.world.getEntityById(id);
+                    if (griefingEntity == null || griefingEntity.isRemoved() || (!(griefingEntity instanceof CreeperEntity) && !(griefingEntity instanceof WitherEntity))) {
+                        if (griefingEntity != null) grieferHadLineOfSight.remove(griefingEntity.getId());
+                        toRemove.add(id);
+                        continue;
+                    }
+                    HostileEntity griefer = (HostileEntity) griefingEntity;
+
+                    if (isMobAThreat(griefer)) {
+                        approachingGriefers.add(griefer);
+                    }
+                    trackedGriefers.put(id, griefer.getPos());
+                }
+                for (int id : toRemove) {
+                    trackedGriefers.remove(id);
+                }
             }
         }
 
         ++timer;
-        if (timer >= 5) {
+        if (timer > 4) {
             timer = 0;
-
             signsToWax.removeIf(sbe -> !sbe.getPos().isWithinDistance(mc.player.getBlockPos(), 6));
             signsToGlowInk.removeIf(sbe -> !sbe.getPos().isWithinDistance(mc.player.getBlockPos(), 6));
             List<SignBlockEntity> toColor = signsToColor.keySet()
@@ -799,84 +885,87 @@ public class SignHistorian extends Module {
 
     @EventHandler
     private void onRender3D(Render3DEvent event) {
-        if (mc.world == null || mc.player == null) return;
-        if (mc.getNetworkHandler().getPlayerList().size() <= 1) return; // ignore queue
+        if (!Utils.canUpdate()) return;
+        // if (mc.getNetworkHandler().getPlayerList().size() <= 1) return; // ignore queue TODO: disabled for testing, re-enable this before committing
 
-        ESPBlockData mESP = modifiedSettings.get();
-        ESPBlockData dESP = destroyedSettings.get();
-        for (SignBlockEntity sign : destroyedSigns) {
-            if (sign.getCachedState() == null) return;
-            if (contentBlacklist.get() && containsBlacklistedText(sign)) continue;
-            if (ignoreBrokenSetting.get() && signsBrokenByPlayer.contains(sign.getPos())) continue;
-            if (!sign.getPos().isWithinDistance(mc.player.getBlockPos(), espRange.get())) continue;
+        if (espSigns.get()) {
+            ESPBlockData mESP = modifiedSettings.get();
+            ESPBlockData dESP = destroyedSettings.get();
+            for (SignBlockEntity sign : destroyedSigns) {
+                if (sign.getCachedState() == null) return;
+                if (contentBlacklist.get() && containsBlacklistedText(sign)) continue;
+                if (ignoreBrokenSetting.get() && signsBrokenByPlayer.contains(sign.getPos())) continue;
+                if (!sign.getPos().isWithinDistance(mc.player.getBlockPos(), espRange.get())) continue;
 
-            VoxelShape shape = sign.getCachedState().getOutlineShape(mc.world, sign.getPos());
-            double x1 = sign.getPos().getX() + shape.getMin(Direction.Axis.X);
-            double y1 = sign.getPos().getY() + shape.getMin(Direction.Axis.Y);
-            double z1 = sign.getPos().getZ() + shape.getMin(Direction.Axis.Z);
-            double x2 = sign.getPos().getX() + shape.getMax(Direction.Axis.X);
-            double y2 = sign.getPos().getY() + shape.getMax(Direction.Axis.Y);
-            double z2 = sign.getPos().getZ() + shape.getMax(Direction.Axis.Z);
+                VoxelShape shape = sign.getCachedState().getOutlineShape(mc.world, sign.getPos());
+                double x1 = sign.getPos().getX() + shape.getMin(Direction.Axis.X);
+                double y1 = sign.getPos().getY() + shape.getMin(Direction.Axis.Y);
+                double z1 = sign.getPos().getZ() + shape.getMin(Direction.Axis.Z);
+                double x2 = sign.getPos().getX() + shape.getMax(Direction.Axis.X);
+                double y2 = sign.getPos().getY() + shape.getMax(Direction.Axis.Y);
+                double z2 = sign.getPos().getZ() + shape.getMax(Direction.Axis.Z);
 
-            if (dESP.sideColor.a > 0 || dESP.lineColor.a > 0) {
-                event.renderer.box(
-                    x1, y1, z1, x2, y2, z2,
-                    dESP.sideColor, dESP.lineColor,
-                    ShapeMode.Both, 0
-                );
-            }
+                if (dESP.sideColor.a > 0 || dESP.lineColor.a > 0) {
+                    event.renderer.box(
+                        x1, y1, z1, x2, y2, z2,
+                        dESP.sideColor, dESP.lineColor,
+                        ShapeMode.Both, 0
+                    );
+                }
 
-            if (dESP.tracer && dESP.tracerColor.a > 0) {
-                Vec3d offsetVec = getTracerOffset(sign.getPos(), sign.getCachedState());
-                event.renderer.line(
-                    RenderUtils.center.x, RenderUtils.center.y, RenderUtils.center.z,
-                    offsetVec.x, offsetVec.y, offsetVec.z, dESP.tracerColor
-                );
-            }
-        }
-        for (SignBlockEntity sign : modifiedSigns) {
-            if (sign.getCachedState() == null) continue;
-            if (contentBlacklist.get() && containsBlacklistedText(sign)) continue;
-            if (ignoreBrokenSetting.get() && signsBrokenByPlayer.contains(sign.getPos())) continue;
-            if (!sign.getPos().isWithinDistance(mc.player.getBlockPos(), espRange.get())) continue;
-
-            VoxelShape shape = sign.getCachedState().getOutlineShape(mc.world, sign.getPos());
-            double x1 = sign.getPos().getX() + shape.getMin(Direction.Axis.X);
-            double y1 = sign.getPos().getY() + shape.getMin(Direction.Axis.Y);
-            double z1 = sign.getPos().getZ() + shape.getMin(Direction.Axis.Z);
-            double x2 = sign.getPos().getX() + shape.getMax(Direction.Axis.X);
-            double y2 = sign.getPos().getY() + shape.getMax(Direction.Axis.Y);
-            double z2 = sign.getPos().getZ() + shape.getMax(Direction.Axis.Z);
-
-            if (mESP.sideColor.a > 0 || mESP.lineColor.a > 0) {
-                event.renderer.box(
-                    x1, y1, z1, x2, y2, z2,
-                    mESP.sideColor, mESP.lineColor,
-                    ShapeMode.Both, 0
-                );
-            }
-
-            if (mESP.tracer && mESP.tracerColor.a > 0) {
-                Vec3d offsetVec = getTracerOffset(sign.getPos(), sign.getCachedState());
-                event.renderer.line(
-                    RenderUtils.center.x, RenderUtils.center.y, RenderUtils.center.z,
-                    offsetVec.x, offsetVec.y, offsetVec.z, mESP.tracerColor
-                );
-            }
-        }
-
-        approachingCreepers.removeIf(Entity::isRemoved);
-        approachingCreepers.removeIf(creeper -> !creeper.getBlockPos().isWithinDistance(mc.player.getBlockPos(), 12));
-        if (griefPrevention.get() && !approachingCreepers.isEmpty() && hasNearbySigns()) {
-            SettingColor dangerColor = new SettingColor(255, 0, 25, 255);
-            for (CreeperEntity creeper : approachingCreepers) {
-                if (creeperTracers.get()) {
-                    WireframeEntityRenderer.render(event, creeper, 1, dangerColor, dangerColor, ShapeMode.Both);
-
+                if (dESP.tracer && dESP.tracerColor.a > 0) {
+                    Vec3d offsetVec = getTracerOffset(sign.getPos(), sign.getCachedState());
                     event.renderer.line(
                         RenderUtils.center.x, RenderUtils.center.y, RenderUtils.center.z,
-                        creeper.getBoundingBox().getCenter().x, creeper.getBoundingBox().getCenter().y,
-                        creeper.getBoundingBox().getCenter().z, dangerColor
+                        offsetVec.x, offsetVec.y, offsetVec.z, dESP.tracerColor
+                    );
+                }
+            }
+            for (SignBlockEntity sign : modifiedSigns) {
+                if (sign.getCachedState() == null) continue;
+                if (contentBlacklist.get() && containsBlacklistedText(sign)) continue;
+                if (ignoreBrokenSetting.get() && signsBrokenByPlayer.contains(sign.getPos())) continue;
+                if (!sign.getPos().isWithinDistance(mc.player.getBlockPos(), espRange.get())) continue;
+
+                VoxelShape shape = sign.getCachedState().getOutlineShape(mc.world, sign.getPos());
+                double x1 = sign.getPos().getX() + shape.getMin(Direction.Axis.X);
+                double y1 = sign.getPos().getY() + shape.getMin(Direction.Axis.Y);
+                double z1 = sign.getPos().getZ() + shape.getMin(Direction.Axis.Z);
+                double x2 = sign.getPos().getX() + shape.getMax(Direction.Axis.X);
+                double y2 = sign.getPos().getY() + shape.getMax(Direction.Axis.Y);
+                double z2 = sign.getPos().getZ() + shape.getMax(Direction.Axis.Z);
+
+                if (mESP.sideColor.a > 0 || mESP.lineColor.a > 0) {
+                    event.renderer.box(
+                        x1, y1, z1, x2, y2, z2,
+                        mESP.sideColor, mESP.lineColor,
+                        ShapeMode.Both, 0
+                    );
+                }
+
+                if (mESP.tracer && mESP.tracerColor.a > 0) {
+                    Vec3d offsetVec = getTracerOffset(sign.getPos(), sign.getCachedState());
+                    event.renderer.line(
+                        RenderUtils.center.x, RenderUtils.center.y, RenderUtils.center.z,
+                        offsetVec.x, offsetVec.y, offsetVec.z, mESP.tracerColor
+                    );
+                }
+            }
+        }
+
+        if (griefPrevention.get() && !approachingGriefers.isEmpty()) {
+            approachingGriefers.removeIf(Entity::isRemoved);
+            ESPBlockData dangerColor = dangerESP.get();
+            for (HostileEntity griefingMob : approachingGriefers) {
+                WireframeEntityRenderer.render(
+                    event, griefingMob, 1,
+                    dangerColor.sideColor, dangerColor.lineColor, ShapeMode.Both
+                );
+                if (dangerColor.tracer) {
+                    event.renderer.line(
+                        RenderUtils.center.x, RenderUtils.center.y, RenderUtils.center.z,
+                        griefingMob.getBoundingBox().getCenter().x, griefingMob.getBoundingBox().getCenter().y,
+                        griefingMob.getBoundingBox().getCenter().z, dangerColor.tracerColor
                     );
                 }
             }
