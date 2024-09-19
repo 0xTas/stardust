@@ -48,7 +48,7 @@ public class RocketMan extends Module {
 
     public enum KeyModifiers { Alt, Ctrl, Shift, None }
     public enum HoverMode { Off, Hold, Toggle, Creative }
-    public enum RocketMode { OnForwardKey, Static, Dynamic, Speed }
+    public enum RocketMode {OnKey, Static, Dynamic, Speed }
 
     private final SettingGroup sgRockets = settings.createGroup("Rocket Usage");
     private final SettingGroup sgBoosts = settings.createGroup("Rocket Boosts");
@@ -61,7 +61,15 @@ public class RocketMan extends Module {
         new EnumSetting.Builder<RocketMode>()
             .name("Usage Mode")
             .description("Which mode to operate in.")
-            .defaultValue(RocketMode.OnForwardKey)
+            .defaultValue(RocketMode.OnKey)
+            .build()
+    );
+
+    public final Setting<Keybind> usageKey = sgRockets.add(
+        new KeybindSetting.Builder()
+            .name("Rocket Key")
+            .description("The key you want to press to use a rocket.")
+            .defaultValue(Keybind.fromKey(GLFW.GLFW_KEY_W))
             .build()
     );
 
@@ -70,7 +78,7 @@ public class RocketMan extends Module {
             .name("Rocket Usage Cooldown")
             .description("How often (in ticks) to allow using firework rockets.")
             .range(1, 10000).sliderRange(2, 100).defaultValue(40)
-            .visible(() -> usageMode.get().equals(RocketMode.OnForwardKey) || usageMode.get().equals(RocketMode.Speed))
+            .visible(() -> usageMode.get().equals(RocketMode.OnKey) || usageMode.get().equals(RocketMode.Speed))
             .build()
     );
 
@@ -196,7 +204,7 @@ public class RocketMan extends Module {
             .name("Invert Pitch")
             .description("Invert pitch control for W & S keys.")
             .defaultValue(false)
-            .visible(() -> keyboardControl.get() && !usageMode.get().equals(RocketMode.OnForwardKey))
+            .visible(() -> keyboardControl.get() && !usageMode.get().equals(RocketMode.OnKey))
             .build()
     );
 
@@ -685,6 +693,7 @@ public class RocketMan extends Module {
 
     // See FireworkRocketEntityMixin.java
     public double getRocketBoostAcceleration() {
+        if (isHovering) return 0.0;
         double maxSpeed = speedSetting.get();
         double currentBps = Math.round(Utils.getPlayerSpeed().length() * 100) * .01;
         double increment = shouldLockYLevel() ? accelerationSetting.get() * 2 : accelerationSetting.get();
@@ -868,6 +877,7 @@ public class RocketMan extends Module {
             ++timer;
             ++hoverTimer;
             ++ticksFlying;
+            firstRocket = true;
             ++rocketStockTicks;
             ++durabilityCheckTicks;
             if (hoverTimer == 2 && (!hasActiveRocket || durationBoosted)) {
@@ -898,8 +908,8 @@ public class RocketMan extends Module {
             case Dynamic -> {
                 if (!hasActiveRocket) useFireworkRocket("dynamic usage");
             }
-            case OnForwardKey -> {
-                if (mc.player.input.pressingForward && !justUsed) {
+            case OnKey -> {
+                if (usageKey.get().isPressed() && !justUsed) {
                     justUsed = true;
                     useFireworkRocket("forward key usage");
                 }
