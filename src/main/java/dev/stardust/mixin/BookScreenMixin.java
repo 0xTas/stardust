@@ -114,7 +114,11 @@ public abstract class BookScreenMixin extends Screen {
                 .tooltip(Tooltip.of(Text.of("§8Reveal this tome's secrets..")))
                 .build());
 
-        this.deobfuscateButton.visible = pages.get(this.pageIndex).getString().contains("§k");
+        if (!pages.isEmpty()) {
+            this.deobfuscateButton.visible = pages.get(this.pageIndex).getString().contains("§k");
+        } else {
+            this.deobfuscateButton.visible = false;
+        }
         if (pages.stream().anyMatch(page -> page.getString().contains("§k"))) {
             this.obfuscatedPages = ((BookScreenContentsAccessor)(Object) this.contents).getPages();
         }
@@ -129,6 +133,10 @@ public abstract class BookScreenMixin extends Screen {
         if (bookTools.skipDeobfuscation()) return;
 
         List<Text> pages = ((BookScreenContentsAccessor)(Object) contents).getPages();
-        this.deobfuscateButton.visible = pages.get(this.pageIndex).getString().contains("§k");
+        if (!pages.isEmpty()) {
+            this.deobfuscateButton.visible = pages.get(this.pageIndex).getString().contains("§k");
+        } else {
+            this.deobfuscateButton.visible = false;
+        }
     }
 }
