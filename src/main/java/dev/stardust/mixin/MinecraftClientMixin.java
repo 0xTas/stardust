@@ -51,7 +51,7 @@ public class MinecraftClientMixin {
             RocketMan.RocketMode mode = rocketMan.usageMode.get();
 
             switch (mode) {
-                case OnForwardKey -> {
+                case OnKey -> {
                     if (mc.player.input.sneaking) {
                         mc.player.changeLookDirection(0.0f, rocketMan.getPitchSpeed() * deltaTime);
                     } else if (mc.player.input.jumping) {
