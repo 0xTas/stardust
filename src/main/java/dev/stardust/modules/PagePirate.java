@@ -3,37 +3,39 @@ package dev.stardust.modules;
 import java.util.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import net.minecraft.item.*;
 import net.minecraft.text.*;
 import dev.stardust.Stardust;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.util.Hand;
-import net.minecraft.item.Items;
-import net.minecraft.item.ToolItem;
+import net.minecraft.util.math.Box;
 import java.util.stream.Collectors;
 import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.item.WritableBookItem;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.entity.player.PlayerEntity;
+import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.utils.Utils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.util.collection.ArrayListDeque;
+import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
-import meteordevelopment.meteorclient.settings.Setting;
-import meteordevelopment.meteorclient.settings.IntSetting;
-import meteordevelopment.meteorclient.settings.BoolSetting;
-import meteordevelopment.meteorclient.settings.SettingGroup;
+import meteordevelopment.meteorclient.renderer.ShapeMode;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.utils.render.RenderUtils;
 import net.minecraft.component.type.WrittenBookContentComponent;
 import net.minecraft.component.type.WritableBookContentComponent;
 import net.minecraft.network.packet.c2s.play.BookUpdateC2SPacket;
 import meteordevelopment.meteorclient.utils.player.FindItemResult;
+import meteordevelopment.meteorclient.events.render.Render3DEvent;
+import meteordevelopment.meteorclient.utils.render.color.SettingColor;
+import meteordevelopment.meteorclient.systems.modules.render.blockesp.ESPBlockData;
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -43,6 +45,7 @@ public class PagePirate extends Module {
 
     private final SettingGroup sgChat = settings.createGroup("Chat Display");
     private final SettingGroup sgCopy = settings.createGroup("Physical Copy");
+    private final SettingGroup sgESP = settings.createGroup("ESP Settings");
 
     private final Setting<Boolean> chatDisplay = sgChat.add(
         new BoolSetting.Builder()
@@ -52,9 +55,25 @@ public class PagePirate extends Module {
             .build()
     );
 
+    private final Setting<Boolean> displayBooksOnGround = sgChat.add(
+        new BoolSetting.Builder()
+            .name("Display Books on Ground")
+            .description("Display the contents of books laying on the ground in your chat.")
+            .defaultValue(false)
+            .build()
+    );
+
+    private final Setting<Boolean> displayBooksInItemFrames = sgChat.add(
+        new BoolSetting.Builder()
+            .name("Display Books in Item Frames")
+            .description("Display the contents of books in item frames.")
+            .defaultValue(false)
+            .build()
+    );
+
     private final Setting<Boolean> deobfuscatePages = sgChat.add(
         new BoolSetting.Builder()
-            .name("Deobfuscate Contents")
+            .name("Deobfuscate Contents in Chat")
             .defaultValue(true)
             .build()
     );
@@ -75,10 +94,26 @@ public class PagePirate extends Module {
             .build()
     );
 
+    private final Setting<Boolean> writeCoverPage = sgCopy.add(
+        new BoolSetting.Builder()
+            .name("Write Cover Page")
+            .description("Writes a cover page with metadata about the pirated book.")
+            .defaultValue(true)
+            .build()
+    );
+
     private final Setting<Boolean> copyBooksOnGround = sgCopy.add(
         new BoolSetting.Builder()
             .name("Copy Books on Ground")
             .description("Copy books that are laying on the ground as an item.")
+            .defaultValue(false)
+            .build()
+    );
+
+    private final Setting<Boolean> copyBooksInItemFrames = sgCopy.add(
+        new BoolSetting.Builder()
+            .name("Copy Books in Item Frames")
+            .description("Copy the contents of books in item frames.")
             .defaultValue(false)
             .build()
     );
@@ -100,8 +135,41 @@ public class PagePirate extends Module {
             .build()
     );
 
+    private final Setting<Boolean> espItemFrames = sgESP.add(
+        new BoolSetting.Builder()
+            .name("ESP Item Frames")
+            .description("Renders item frames containing written books or book & quills.")
+            .defaultValue(true)
+            .build()
+    );
+
+    private final Setting<Boolean> espBooksOnGround = sgESP.add(
+        new BoolSetting.Builder()
+            .name("ESP Books on Ground")
+            .description("Render books that are laying on the ground as an item.")
+            .defaultValue(true)
+            .build()
+    );
+
+    private final Setting<ESPBlockData> bookESP = sgESP.add(
+        new GenericSetting.Builder<ESPBlockData>()
+            .name("Book Entity ESP")
+            .defaultValue(
+                new ESPBlockData(
+                    ShapeMode.Both,
+                    new SettingColor(69, 42, 242, 255),
+                    new SettingColor(69, 42, 242, 44),
+                    true,
+                    new SettingColor(69, 42, 242, 137)
+                )
+            )
+            .build()
+    );
+
     private int timer = 0;
     private final HashSet<String> seenPages = new HashSet<>();
+    private final HashSet<ItemEntity> booksOnGround = new HashSet<>();
+    private final HashSet<ItemFrameEntity> booksInItemFrames = new HashSet<>();
     private final ArrayListDeque<PirateTask> jobQueue = new ArrayListDeque<>();
     private final HashMap<String, ArrayList<String>> seenBooks = new HashMap<>();
 
@@ -144,6 +212,14 @@ public class PagePirate extends Module {
         }
     }
 
+    private boolean bookAndQuillHasContent(ItemStack book) {
+        if (book.getItem() != Items.WRITABLE_BOOK) return false;
+        WritableBookContentComponent content = book.get(DataComponentTypes.WRITABLE_BOOK_CONTENT);
+        List<String> pages = content.pages().stream().map(page -> page.raw().trim()).toList();
+
+        return pages.stream().anyMatch(page -> !page.isBlank());
+    }
+
     private boolean equipBookAndQuill() {
         FindItemResult result = InvUtils.find(stack -> {
             if (stack.getItem() instanceof WritableBookItem) {
@@ -181,6 +257,11 @@ public class PagePirate extends Module {
         return false;
     }
 
+    private boolean itemFrameHasBook(ItemFrameEntity itemFrame) {
+        ItemStack stack = itemFrame.getHeldItemStack();
+        return stack.getItem() == Items.WRITTEN_BOOK || bookAndQuillHasContent(stack);
+    }
+
     private void handleWrittenBook(ItemStack book, String piratedFrom) {
         if (book.contains(DataComponentTypes.WRITTEN_BOOK_CONTENT)) {
             WrittenBookContentComponent metadata = book.get(DataComponentTypes.WRITTEN_BOOK_CONTENT);
@@ -210,17 +291,52 @@ public class PagePirate extends Module {
                 if (deobfuscatePages.get()) {
                     pageText = pageText.replace("§k", "");
                 }
-                mc.player.sendMessage(
-                    Text.literal(
-                        "§8[§a§oPagePirate§8] §7Author: "
-                            +StardustUtil.rCC()+"§o"+author+" §7Title: "
-                            +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText
-                    )
-                );
+
+                switch (piratedFrom) {
+                    case "on ground" -> {
+                        if (displayBooksOnGround.get()) {
+                            mc.player.sendMessage(
+                                Text.literal(
+                                    "§8[§a§oPagePirate§8] §7Author: "
+                                        +StardustUtil.rCC()+"§o"+author+" §7Title: "
+                                        +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText
+                                )
+                            );
+                        }
+                    }
+                    case "item frame" -> {
+                        if (displayBooksInItemFrames.get()) {
+                            mc.player.sendMessage(
+                                Text.literal(
+                                    "§8[§a§oPagePirate§8] §7Author: "
+                                        +StardustUtil.rCC()+"§o"+author+" §7Title: "
+                                        +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText
+                                )
+                            );
+                        }
+                    }
+                    default -> mc.player.sendMessage(
+                        Text.literal(
+                            "§8[§a§oPagePirate§8] §7Author: "
+                                +StardustUtil.rCC()+"§o"+author+" §7Title: "
+                                +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText
+                        )
+                    );
+                }
             }
             if (localCopy.get()) {
-                if (copyBooksOnGround.get() || !piratedFrom.equals("on ground")) {
-                    jobQueue.addLast(new PirateTask(metadata, piratedFrom, pages));
+                switch (piratedFrom) {
+                    case "on ground" -> {
+                        if (copyBooksOnGround.get()) {
+                            jobQueue.addLast(new PirateTask(metadata, piratedFrom, pages));
+                        }
+                    }
+                    case "item frame" -> {
+                        if (copyBooksInItemFrames.get()) {
+                            jobQueue.addLast(new PirateTask(metadata, piratedFrom, pages));
+                        }
+                    }
+                    default -> jobQueue.addLast(new PirateTask(metadata, piratedFrom, pages));
                 }
             }
         }
@@ -243,16 +359,40 @@ public class PagePirate extends Module {
             if (deobfuscatePages.get()) {
                 pageText = pageText.replace("§k", "");
             }
-            mc.player.sendMessage(
-                Text.literal(
-                    "§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText
-                )
-            );
+
+            switch (piratedFrom) {
+                case "on ground" -> {
+                    if (displayBooksOnGround.get()) {
+                        mc.player.sendMessage(
+                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText)
+                        );
+                    }
+                }
+                case "item frame" -> {
+                    if (displayBooksInItemFrames.get()) {
+                        mc.player.sendMessage(
+                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText)
+                        );
+                    }
+                }
+                default -> mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText));
+            }
         }
         if (localCopy.get()) {
-            if (copyBooksOnGround.get() || !piratedFrom.equals("on ground")) {
-                jobQueue.addLast(new PirateTask(null, piratedFrom, pages));
+            switch (piratedFrom) {
+                case "on ground" -> {
+                    if (copyBooksOnGround.get()) {
+                        jobQueue.addLast(new PirateTask(null, piratedFrom, pages));
+                    }
+                }
+                case "item frame" -> {
+                    if (copyBooksInItemFrames.get()) {
+                        jobQueue.addLast(new PirateTask(null, piratedFrom, pages));
+                    }
+                }
+                default -> jobQueue.addLast(new PirateTask(null, piratedFrom, pages));
             }
+
         }
     }
 
@@ -292,7 +432,7 @@ public class PagePirate extends Module {
                 "§o" + dayOfMonthSuffix(currentDate.getDayOfMonth()) +
                 " §0§oof "+rcc+"§o" + currentDate.getMonth().toString().charAt(0) +
                 currentDate.getMonth().toString().substring(1).toLowerCase() + "§0§o, "+rcc+"§o" + currentDate.getYear() + "§0§o.";
-            piratedPages.add(coverPage);
+            if (writeCoverPage.get()) piratedPages.add(coverPage);
         }
         piratedPages.addAll(filtered);
         int slot = mc.player.getInventory().selectedSlot;
@@ -307,11 +447,17 @@ public class PagePirate extends Module {
         jobQueue.clear();
         seenBooks.clear();
         seenPages.clear();
+        booksOnGround.clear();
+        booksInItemFrames.clear();
     }
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
         if (!Utils.canUpdate()) return;
+        booksInItemFrames.removeIf(frame -> !itemFrameHasBook(frame));
+        booksOnGround.removeIf(book -> book.isRemoved() || book.isRegionUnloaded());
+        booksInItemFrames.removeIf(frame -> frame.isRemoved() || frame.isRegionUnloaded());
+
         for (Entity entity : mc.world.getEntities()) {
             if (entity instanceof PlayerEntity player && !(entity instanceof ClientPlayerEntity)) {
                 String name = player.getGameProfile().getName();
@@ -323,9 +469,27 @@ public class PagePirate extends Module {
                 if (offHand.getItem() == Items.WRITTEN_BOOK) handleWrittenBook(offHand, name);
                 else if (mainHand.getItem() == Items.WRITABLE_BOOK) handleBookAndQuill(offHand, name);
             } else if (entity instanceof ItemEntity item) {
+                if (booksOnGround.contains(item)) continue;
                 String piratedFrom = "on ground";
-                if (item.getStack().getItem() == Items.WRITTEN_BOOK) handleWrittenBook(item.getStack(), piratedFrom);
-                else if (item.getStack().getItem() == Items.WRITABLE_BOOK) handleBookAndQuill(item.getStack(), piratedFrom);
+                if (item.getStack().getItem() == Items.WRITTEN_BOOK) {
+                    booksOnGround.add(item);
+                    handleWrittenBook(item.getStack(), piratedFrom);
+                }
+                else if (bookAndQuillHasContent(item.getStack())) {
+                    booksOnGround.add(item);
+                    handleBookAndQuill(item.getStack(), piratedFrom);
+                }
+            } else if (entity instanceof ItemFrameEntity itemFrame) {
+                if (booksInItemFrames.contains(itemFrame)) continue;
+                ItemStack stack = itemFrame.getHeldItemStack();
+                if (stack.getItem() == Items.WRITTEN_BOOK) {
+                    booksInItemFrames.add(itemFrame);
+                    handleWrittenBook(stack, "item frame");
+                }
+                else if (stack.getItem() == Items.WRITABLE_BOOK) {
+                    booksInItemFrames.add(itemFrame);
+                    handleBookAndQuill(stack, "item frame");
+                }
             }
         }
 
@@ -334,6 +498,68 @@ public class PagePirate extends Module {
             timer = 0;
             PirateTask task = jobQueue.removeFirst();
             makeLocalCopy(task.getData(), task.getPages(), task.getPiratedFrom());
+        }
+    }
+
+    @EventHandler
+    private void onRender3D(Render3DEvent event) {
+        if (!Utils.canUpdate()) return;
+        ESPBlockData esp = bookESP.get();
+        if (espItemFrames.get()) {
+            for (ItemFrameEntity frame : booksInItemFrames) {
+                Box box = frame.getBoundingBox();
+                double x = MathHelper.lerp(event.tickDelta, frame.lastRenderX, frame.getX()) - frame.getX();
+                double y = MathHelper.lerp(event.tickDelta, frame.lastRenderY, frame.getY()) - frame.getY();
+                double z = MathHelper.lerp(event.tickDelta, frame.lastRenderZ, frame.getZ()) - frame.getZ();
+
+                double x1 = x + box.minX;
+                double y1 = y + box.minY;
+                double z1 = z + box.minZ;
+                double x2 = x + box.maxX;
+                double y2 = y + box.maxY;
+                double z2 = z + box.maxZ;
+                if (esp.sideColor.a > 0 || esp.lineColor.a > 0) {
+                    event.renderer.box(
+                        x1, y1, z1, x2, y2, z2,
+                        esp.sideColor, esp.lineColor, esp.shapeMode, 0
+                    );
+                }
+                if (esp.tracer) {
+                    event.renderer.line(
+                        RenderUtils.center.x, RenderUtils.center.y, RenderUtils.center.z,
+                        (x1 + x2) / 2, (y1 + y2) / 2, (z1 + z2) / 2, esp.tracerColor
+                    );
+                }
+            }
+        }
+
+        if (espBooksOnGround.get()) {
+            for (ItemEntity book : booksOnGround) {
+                Box box = book.getBoundingBox();
+                double x = MathHelper.lerp(event.tickDelta, book.lastRenderX, book.getX()) - book.getX();
+                double y = MathHelper.lerp(event.tickDelta, book.lastRenderY, book.getY()) - book.getY();
+                double z = MathHelper.lerp(event.tickDelta, book.lastRenderZ, book.getZ()) - book.getZ();
+
+                double x1 = x + box.minX;
+                double y1 = y + box.minY;
+                double z1 = z + box.minZ;
+                double x2 = x + box.maxX;
+                double y2 = y + box.maxY;
+                double z2 = z + box.maxZ;
+                if (esp.sideColor.a > 0 || esp.lineColor.a > 0) {
+                    event.renderer.box(
+                        x + box.minX, y + box.minY, z + box.minZ,
+                        x + box.maxX, y + box.maxY, z + box.maxZ,
+                        esp.sideColor, esp.lineColor, esp.shapeMode, 0
+                    );
+                }
+                if (esp.tracer) {
+                    event.renderer.line(
+                        RenderUtils.center.x, RenderUtils.center.y, RenderUtils.center.z,
+                        (x1 + x2) / 2, (y1 + y2) / 2, (z1 + z2) / 2, esp.tracerColor
+                    );
+                }
+            }
         }
     }
 
