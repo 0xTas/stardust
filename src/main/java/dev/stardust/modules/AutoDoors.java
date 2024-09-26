@@ -364,7 +364,7 @@ public class AutoDoors extends Module {
         }
         Block doorAboveFront = mc.world.getBlockState(frontPos.up()).getBlock();
         Block doorAboveBack = mc.world.getBlockState(behindPos.up()).getBlock();
-        if (useFenceGates.get() && doorInFront instanceof FenceGateBlock || doorAboveFront instanceof FenceGateBlock && autoOpen.get()) {
+        if (useFenceGates.get() && autoOpen.get() && (doorInFront instanceof FenceGateBlock || doorAboveFront instanceof FenceGateBlock)) {
             try {
                 if (!frontState.get(FenceGateBlock.OPEN)) {
                     interactDoor(frontPos, movementDirection);
@@ -424,7 +424,7 @@ public class AutoDoors extends Module {
                 }
             } catch (IllegalArgumentException ignored) {}
         }
-        if (useFenceGates.get() && doorBehind instanceof FenceGateBlock || doorAboveBack instanceof FenceGateBlock) {
+        if (useFenceGates.get() && (doorBehind instanceof FenceGateBlock || doorAboveBack instanceof FenceGateBlock)) {
             try {
                 if (behindState.get(FenceGateBlock.OPEN)) {
                     interactDoor(behindPos, movementDirection);
