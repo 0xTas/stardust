@@ -2,17 +2,28 @@ package dev.stardust.util;
 
 import java.awt.*;
 import java.io.File;
+import java.time.Instant;
 import dev.stardust.Stardust;
+import net.minecraft.util.Hand;
 import net.minecraft.text.Text;
 import net.minecraft.text.Style;
 import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.MutableText;
+import net.minecraft.network.packet.Packet;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.network.packet.c2s.play.*;
 import io.netty.util.internal.ThreadLocalRandom;
+import meteordevelopment.meteorclient.utils.Utils;
+import dev.stardust.mixin.ClientConnectionAccessor;
+import static meteordevelopment.meteorclient.MeteorClient.mc;
+import meteordevelopment.meteorclient.systems.modules.Modules;
+import net.minecraft.network.encryption.NetworkEncryptionUtils;
+import meteordevelopment.meteorclient.systems.modules.misc.AutoReconnect;
+import meteordevelopment.meteorclient.mixin.ClientPlayNetworkHandlerAccessor;
 
 /**
  * @author Tas [@0xTas] <root@0xTas.dev>
@@ -250,5 +261,39 @@ public class StardustUtil {
                 if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open "+file.getName()+"§7."));
             }
         }
+    }
+
+    public enum IllegalDisconnectMethod {
+        Slot, Chat, Interact, Movement, SequenceBreak
+    }
+
+    public static void illegalDisconnect(boolean disableAutoReconnect, IllegalDisconnectMethod illegalDisconnectMethod) {
+        if (!Utils.canUpdate()) return;
+        if (disableAutoReconnect) disableAutoReconnect();
+
+        Packet<?> illegalPacket = null;
+        switch (illegalDisconnectMethod) {
+            case Slot -> illegalPacket = new UpdateSelectedSlotC2SPacket(-69);
+            case Chat -> illegalPacket = new ChatMessageC2SPacket(
+                "§",
+                Instant.now(),
+                NetworkEncryptionUtils.SecureRandomUtil.nextLong(),
+                null,
+                ((ClientPlayNetworkHandlerAccessor) mc.getNetworkHandler()).getLastSeenMessagesCollector().collect().update()
+            );
+            case Interact -> illegalPacket = PlayerInteractEntityC2SPacket.interact(mc.player, false, Hand.MAIN_HAND);
+            case Movement -> illegalPacket = new PlayerMoveC2SPacket.PositionAndOnGround(Double.NaN, 69, Double.NaN, false);
+            case SequenceBreak -> illegalPacket = new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, -420);
+        }
+        if (illegalPacket != null) ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).invokeSendImmediately(
+            illegalPacket, null
+        );
+    }
+
+    public static void disableAutoReconnect() {
+        Modules mods = Modules.get();
+        if (mods == null) return;
+        AutoReconnect atrc = mods.get(AutoReconnect.class);
+        if (atrc.isActive()) atrc.toggle();
     }
 }
