@@ -51,7 +51,7 @@ public class WaxAura extends Module {
 
     private final Setting<Boolean> hotbarOnly = sgWax.add(
         new BoolSetting.Builder()
-            .name("Hotbar Only")
+            .name("hotbar-only")
             .description("Only use honeycombs if they're already in your hotbar.")
             .defaultValue(false)
             .build()
@@ -59,7 +59,7 @@ public class WaxAura extends Module {
 
     private final Setting<Boolean> swapBack = sgWax.add(
         new BoolSetting.Builder()
-            .name("Swap Back")
+            .name("swap-back")
             .description("Swap honeycombs back to where they came from in your inventory after using.")
             .defaultValue(true)
             .build()
@@ -67,7 +67,7 @@ public class WaxAura extends Module {
 
     private final Setting<Boolean> standingStill = sgWax.add(
         new BoolSetting.Builder()
-            .name("Standing Still")
+            .name("standing-still")
             .description("Wait until you are standing still to wax signs. Prevents rubberbanding with a low tick-rate value.")
             .defaultValue(false)
             .build()
@@ -75,7 +75,7 @@ public class WaxAura extends Module {
 
     private final Setting<Boolean> hangingSigns = sgWax.add(
         new BoolSetting.Builder()
-            .name("Hanging Signs")
+            .name("hanging-signs")
             .description("Wax hanging signs in addition to other types of signs.")
             .defaultValue(true)
             .build()
@@ -83,7 +83,7 @@ public class WaxAura extends Module {
 
     private final Setting<Boolean> contentBlacklist = sgBlacklist.add(
         new BoolSetting.Builder()
-            .name("Content Blacklist")
+            .name("content-blacklist")
             .description("Ignore waxing signs that contain specific words or phrases (line-separated list in waxaura-blacklist.txt)")
             .defaultValue(false)
             .onChanged(it -> {
@@ -102,7 +102,7 @@ public class WaxAura extends Module {
 
     private final Setting<Boolean> openBlacklistFile = sgBlacklist.add(
         new BoolSetting.Builder()
-            .name("Open Blacklist File")
+            .name("open-blacklist-file")
             .description("Open the waxaura-blacklist.txt file.")
             .defaultValue(false)
             .onChanged(it -> {
@@ -116,7 +116,7 @@ public class WaxAura extends Module {
 
     private final Setting<Boolean> espNonWaxed = sgESP.add(
         new BoolSetting.Builder()
-            .name("ESP Non-waxed")
+            .name("ESP-non-waxed")
             .description("Render signs which aren't yet waxed through walls.")
             .defaultValue(false)
             .build()
@@ -124,7 +124,7 @@ public class WaxAura extends Module {
 
     private final Setting<Integer> espRange = sgESP.add(
         new IntSetting.Builder()
-            .name("ESP Range")
+            .name("ESP-range")
             .description("Range in blocks to render unwaxed signs.")
             .range(6, 512)
             .sliderRange(16, 256)
@@ -134,7 +134,7 @@ public class WaxAura extends Module {
 
     private final Setting<ESPBlockData> espSettings = sgESP.add(
         new GenericSetting.Builder<ESPBlockData>()
-            .name("ESP Settings")
+            .name("ESP-settings")
             .defaultValue(
                 new ESPBlockData(
                     ShapeMode.Both,
@@ -149,7 +149,7 @@ public class WaxAura extends Module {
 
     private final Setting<Integer> tickRate = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("Tick Rate")
+            .name("tick-rate")
             .range(2, 200)
             .sliderRange(2, 20)
             .defaultValue(2)

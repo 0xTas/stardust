@@ -31,7 +31,7 @@ public class AutoDrawDistance extends Module {
 
     private final Setting<Integer> fpsTarget = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("FPS Target")
+            .name("FPS-target")
             .description("Best if you cap your FPS to your monitor's refresh rate (or lower) and use that value.")
             .range(30, 240)
             .sliderRange(30, 240)
@@ -41,7 +41,7 @@ public class AutoDrawDistance extends Module {
 
     private final Setting<Integer> minDistance = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("Minimum Render Distance")
+            .name("minimum-render-distance")
             .description("The minimum desired draw distance.")
             .range(2, 8)
             .sliderRange(2, 8)
@@ -51,7 +51,7 @@ public class AutoDrawDistance extends Module {
 
     private final Setting<Integer> maxDistance = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("Maximum Render Distance")
+            .name("maximum-render-distance")
             .description("The maximum desired draw distance.")
             .range(10, 64)
             .sliderRange(10, 32)
@@ -61,7 +61,7 @@ public class AutoDrawDistance extends Module {
 
     private final Setting<Integer> sweetSpotDelay = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("Increase Delay")
+            .name("increase-delay")
             .description("Delay before trying to increase render distance when FPS target is satisfied.")
             .range(20, 1000)
             .sliderRange(100, 1000)
@@ -71,7 +71,7 @@ public class AutoDrawDistance extends Module {
 
     private final Setting<Boolean> verbose = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Debug")
+            .name("debug")
             .description("Output to chat whenever view distance adjustments are made.")
             .defaultValue(false)
             .build()
@@ -79,7 +79,7 @@ public class AutoDrawDistance extends Module {
 
     private final Setting<Boolean> reportFPS = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Report FPS")
+            .name("report-FPS")
             .description("Report average FPS numbers along with debug messages.")
             .defaultValue(false)
             .visible(verbose::get)

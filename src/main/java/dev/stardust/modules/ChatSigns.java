@@ -79,7 +79,7 @@ public class ChatSigns extends Module {
 
     private final Setting<ChatMode> chatMode = modesGroup.add(
         new EnumSetting.Builder<ChatMode>()
-            .name("Chat Mode")
+            .name("chat-mode")
             .description("ESP = nearby only, Targeted = looking at only")
             .defaultValue(ChatMode.Both)
             .build()
@@ -87,7 +87,7 @@ public class ChatSigns extends Module {
 
     private final Setting<RepeatMode> repeatMode = modesGroup.add(
         new EnumSetting.Builder<RepeatMode>()
-            .name("Repeat Mode")
+            .name("repeat-mode")
             .description("How to handle repeating signs you're actively looking at.")
             .defaultValue(RepeatMode.Cooldown)
             .visible(() -> chatMode.get() != ChatMode.ESP)
@@ -96,7 +96,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Integer> repeatSeconds = modesGroup.add(
         new IntSetting.Builder()
-            .name("Repeat Cooldown")
+            .name("repeat-cooldown")
             .description("Value in seconds to wait before repeating looked-at signs.")
             .visible(() -> repeatMode.get() == RepeatMode.Cooldown && repeatMode.isVisible())
             .range(1, 3600)
@@ -107,7 +107,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Integer> chatSpeed = modesGroup.add(
         new IntSetting.Builder()
-            .name("Chat Speed")
+            .name("chat-speed")
             .description("How many ticks to wait before printing the next encountered sign into chat.")
             .range(0, 500)
             .sliderRange(0, 100)
@@ -117,7 +117,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Boolean> showOldSigns  = oldSignGroup.add(
         new BoolSetting.Builder()
-            .name("Show Possibly Old Signs*")
+            .name("show-possibly-old-signs*")
             .description("*will show signs placed before 1.8, AND after 1.19. Use your best judgment to determine what's legit.")
             .defaultValue(false)
             .build()
@@ -125,7 +125,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Boolean> onlyOldSigns = oldSignGroup.add(
         new BoolSetting.Builder()
-            .name("Only Show New/Old Signs")
+            .name("only-show-old-signs")
             .description("Only display text from signs that are either really old, or brand new.")
             .defaultValue(false)
             .visible(showOldSigns::get)
@@ -134,7 +134,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Boolean> ignoreNether = oldSignGroup.add(
         new BoolSetting.Builder()
-            .name("Ignore Nether")
+            .name("ignore-nether")
             .description("Ignore potentially-old signs in the nether (near highways they're all certainly new.)")
             .visible(showOldSigns::get)
             .defaultValue(true)
@@ -143,7 +143,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Boolean> ignoreDuplicates = modesGroup.add(
         new BoolSetting.Builder()
-            .name("Ignore Duplicates")
+            .name("ignore-duplicates")
             .description("Ignore duplicate signs instead of displaying them with a counter.")
             .defaultValue(false)
             .build()
@@ -151,7 +151,7 @@ public class ChatSigns extends Module {
 
     private final Setting<TextColor> signColor = formatGroup.add(
         new EnumSetting.Builder<TextColor>()
-            .name("Sign Color")
+            .name("sign-color")
             .description("The color of displayed sign text.")
             .defaultValue(TextColor.Light_Gray)
             .build()
@@ -159,7 +159,7 @@ public class ChatSigns extends Module {
 
     private final Setting<TextFormat> textFormat = formatGroup.add(
         new EnumSetting.Builder<TextFormat>()
-            .name("Text Formatting")
+            .name("text-formatting")
             .description("Apply formatting to displayed sign text.")
             .defaultValue(TextFormat.Italic)
             .build()
@@ -167,7 +167,7 @@ public class ChatSigns extends Module {
 
     private final Setting<TextColor> oldSignColor = oldSignGroup.add(
         new EnumSetting.Builder<TextColor>()
-            .name("Old Sign Color")
+            .name("old-sign-color")
             .description("Text color for signs that might be old.")
             .defaultValue(TextColor.Yellow)
             .visible(showOldSigns::get)
@@ -176,7 +176,7 @@ public class ChatSigns extends Module {
 
     private final Setting<TextFormat> oldSignFormat = oldSignGroup.add(
         new EnumSetting.Builder<TextFormat>()
-            .name("Old Text Format")
+            .name("old-text-format")
             .description("Apply formatting to text displayed from (maybe) old signs.")
             .defaultValue(TextFormat.Italic)
             .visible(showOldSigns::get)
@@ -184,28 +184,28 @@ public class ChatSigns extends Module {
     );
 
     private final Setting<Boolean> chatFormat = formatGroup.add(new BoolSetting.Builder()
-        .name("Fancy Display")
+        .name("fancy-display")
         .description("Displays each line of the sign on separate lines in chat.")
         .defaultValue(false)
         .build()
     );
 
     private final Setting<Boolean> showCoords = formatGroup.add(new BoolSetting.Builder()
-        .name("Show Coordinates")
+        .name("show-coordinates")
         .description("Display sign coordinates in chat.")
         .defaultValue(false)
         .build()
     );
 
     private final Setting<Boolean> renderOldSigns = oldSignGroup.add(new BoolSetting.Builder()
-        .name("OldSign ESP")
+        .name("oldSign-ESP")
         .description("Render signs which could be old through walls.")
         .defaultValue(false)
         .build()
     );
 
     private final Setting<ESPBlockData> espSettings = oldSignGroup.add(new GenericSetting.Builder<ESPBlockData>()
-        .name("ESP Settings")
+        .name("ESP-settings")
         .defaultValue(
             new ESPBlockData(
                 ShapeMode.Both,
@@ -219,7 +219,7 @@ public class ChatSigns extends Module {
     );
 
     private final Setting<ESPBlockData> clickESPSettings = formatGroup.add(new GenericSetting.Builder<ESPBlockData>()
-        .name("ClickESP Settings")
+        .name("clickESP-settings")
         .description("Click on a chat entry to ESP the sign it belongs to. Click again or toggle the module to disable.")
         .defaultValue(
             new ESPBlockData(
@@ -235,7 +235,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Integer> clickESPTimeout = formatGroup.add(
         new IntSetting.Builder()
-            .name("ClickESP Timeout (Seconds)")
+            .name("clickESP-timeout-(Seconds)")
             .description("Automatic timeout for active ClickESP entries. Set to 0 in order to disable timeout.")
             .range(0, 1200).sliderRange(0, 120).defaultValue(30)
             .build()
@@ -243,7 +243,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Boolean> signBoardAutoLog = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("SignBoard AutoLog")
+            .name("signBoard-autoLog")
             .description("Disconnect from the server when you render a cluster of signs.")
             .defaultValue(false)
             .build()
@@ -251,7 +251,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Integer> signBoardAutoLogAmount = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("SignBoard AutoLog Amount")
+            .name("signBoard-autoLog-amount")
             .description("The amount of signs to trigger a disconnect.")
             .range(1, 1200).sliderRange(1, 120).defaultValue(5)
             .build()
@@ -259,7 +259,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Boolean> signBlacklist = blacklistGroup.add(
         new BoolSetting.Builder()
-            .name("SignText Blacklist")
+            .name("signText-blacklist")
             .description("Ignore signs that contain specific text (line-separated list in chatsigns-blacklist.txt)")
             .defaultValue(false)
             .onChanged(it -> {
@@ -278,7 +278,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Boolean> caseSensitive = blacklistGroup.add(
         new BoolSetting.Builder()
-            .name("Case-sensitive Blacklist")
+            .name("case-sensitive-blacklist")
             .description("Force matches in the blacklist file to be case-sensitive.")
             .defaultValue(false)
             .visible(signBlacklist::get)
@@ -287,7 +287,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Boolean> openBlacklistFile = blacklistGroup.add(
         new BoolSetting.Builder()
-            .name("Open Blacklist File")
+            .name("open-blacklist-file")
             .description("Open the chatsigns-blacklist.txt file.")
             .defaultValue(false)
             .visible(signBlacklist::get)
