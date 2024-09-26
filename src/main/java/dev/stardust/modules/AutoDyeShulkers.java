@@ -31,14 +31,14 @@ public class AutoDyeShulkers extends Module {
 
     private final Setting<DyeColor> dyeColor = settings.getDefaultGroup().add(
         new EnumSetting.Builder<DyeColor>()
-            .name("Color")
+            .name("color")
             .defaultValue(DyeColor.LIGHT_BLUE)
             .build()
     );
 
     private final Setting<Boolean> reDyeColored = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Recolor Colored")
+            .name("recolor-colored")
             .description("Re-color shulker boxes which already have a different dye color applied.")
             .defaultValue(false)
             .build()
@@ -46,7 +46,7 @@ public class AutoDyeShulkers extends Module {
 
     private final Setting<Boolean> closeOnDone = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Close Screen")
+            .name("close-screen")
             .description("Automatically close the crafting table screen when no more shulkers can be dyed.")
             .defaultValue(true)
             .build()
@@ -54,7 +54,7 @@ public class AutoDyeShulkers extends Module {
 
     private final Setting<Boolean> disableOnDone = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Disable on Done")
+            .name("disable-on-done")
             .description("Automatically disable the module when no more shulkers can be dyed.")
             .defaultValue(false)
             .build()
@@ -62,7 +62,7 @@ public class AutoDyeShulkers extends Module {
 
     private final Setting<Boolean> pingOnDone = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Sound Ping")
+            .name("sound-ping")
             .description("Play a sound cue when no more shulkers can be dyed.")
             .defaultValue(true)
             .build()
@@ -70,7 +70,7 @@ public class AutoDyeShulkers extends Module {
 
     private final Setting<Double> pingVolume = settings.getDefaultGroup().add(
         new DoubleSetting.Builder()
-            .name("Ping Volume")
+            .name("ping-volume")
             .sliderMin(0.0)
             .sliderMax(5.0)
             .defaultValue(1.0)
@@ -79,7 +79,7 @@ public class AutoDyeShulkers extends Module {
 
     private final Setting<Integer> tickRate = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("Tick Rate")
+            .name("tick-rate")
             .description("You may need to increase this if the server is lagging.")
             .range(1, 100)
             .sliderRange(2, 20)

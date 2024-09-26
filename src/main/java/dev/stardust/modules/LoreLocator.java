@@ -34,7 +34,7 @@ public class LoreLocator extends Module {
 
     private final Setting<Boolean> illegalEnchants = sgRares.add(
         new BoolSetting.Builder()
-            .name("Illegal Enchants")
+            .name("illegal-enchants")
             .description("Highlight items with illegal enchantments like Mending/Infinity, or stacked Protection.")
             .defaultValue(true)
             .build()
@@ -42,7 +42,7 @@ public class LoreLocator extends Module {
 
     private final Setting<Boolean> onlySilkyShears = sgRares.add(
         new BoolSetting.Builder()
-            .name("Exclusive Silky Shears")
+            .name("exclusive-silky-shears")
             .description("Highlight silk touch shears only if they have no other enchants.")
             .defaultValue(false)
             .visible(illegalEnchants::get)
@@ -51,7 +51,7 @@ public class LoreLocator extends Module {
 
     private final Setting<Boolean> onlyInfinityMending = sgRares.add(
         new BoolSetting.Builder()
-            .name("Exclusive Mending/Infinity")
+            .name("exclusive-mending/Infinity")
             .description("Highlight bows & books that have ONLY mending & infinity applied.")
             .defaultValue(false)
             .visible(illegalEnchants::get)
@@ -60,7 +60,7 @@ public class LoreLocator extends Module {
 
     private final Setting<Boolean> negativeDurability = sgRares.add(
         new BoolSetting.Builder()
-            .name("Negative Durability")
+            .name("negative-durability")
             .description("Highlight items with illegal negative durability values.")
             .defaultValue(true)
             .build()
@@ -68,7 +68,7 @@ public class LoreLocator extends Module {
 
     private final Setting<Boolean> petrifiedSlabs = sgRares.add(
         new BoolSetting.Builder()
-            .name("Alpha Slabs")
+            .name("alpha-slabs")
             .description("Highlight alpha slabs (now petrified oak slabs.)")
             .defaultValue(true)
             .build()
@@ -76,7 +76,7 @@ public class LoreLocator extends Module {
 
     private final Setting<Boolean> fd0 = sgRares.add(
         new BoolSetting.Builder()
-            .name("Flight Duration 0")
+            .name("flight-duration-0")
             .description("Highlight firework rockets with no flight duration value (idk if these still exist.)")
             .defaultValue(true)
             .build()
@@ -84,7 +84,7 @@ public class LoreLocator extends Module {
 
     private final Setting<Boolean> renamedItems = sgUniques.add(
         new BoolSetting.Builder()
-            .name("Renamed Items")
+            .name("renamed-items")
             .description("Highlight renamed items in GUIs.")
             .defaultValue(true)
             .build()
@@ -92,7 +92,7 @@ public class LoreLocator extends Module {
 
     private final Setting<Boolean> renamedShulks = sgUniques.add(
         new BoolSetting.Builder()
-            .name("Renamed Shulkers")
+            .name("renamed-shulkers")
             .description("Highlight renamed shulker boxes, even if they contain no renamed items.")
             .defaultValue(false)
             .visible(renamedItems::get)
@@ -101,7 +101,7 @@ public class LoreLocator extends Module {
 
     private final Setting<Boolean> writtenBooks = sgUniques.add(
         new BoolSetting.Builder()
-            .name("Written Books")
+            .name("written-books")
             .description("Highlight written books.")
             .defaultValue(false)
             .build()
@@ -109,7 +109,7 @@ public class LoreLocator extends Module {
 
     private final Setting<String> metadataSearch = settings.getDefaultGroup().add(
         new StringSetting.Builder()
-            .name("Metadata Search")
+            .name("metadata-search")
             .description("Fuzzy search for item NBT data. Notable usage examples: specific book authors, item names, or enchants.")
             .defaultValue("")
             .build()
@@ -117,7 +117,7 @@ public class LoreLocator extends Module {
 
     private final Setting<Boolean> splitQueries = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Split Queries")
+            .name("split-queries")
             .description("Split search queries into multiple items separated by commas. Disable to treat commas literally in the search instead.")
             .defaultValue(true)
             .build()
@@ -125,14 +125,14 @@ public class LoreLocator extends Module {
 
     public final Setting<SettingColor> color = settings.getDefaultGroup().add(
         new ColorSetting.Builder()
-            .name("Highlight Color")
+            .name("highlight-color")
             .defaultValue(new SettingColor(138, 71, 221, 69))
             .build()
     );
 
     private final Setting<Boolean> ownInventory = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Inventory Highlight")
+            .name("inventory-highlight")
             .description("Highlight items meeting the above criteria on the player inventory screen.")
             .defaultValue(false)
             .build()

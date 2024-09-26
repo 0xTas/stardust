@@ -35,49 +35,49 @@ public class AntiToS extends Module {
 
     public final Setting<ChatMode> chatMode = sgSources.add(
         new EnumSetting.Builder<ChatMode>()
-            .name("Chat Mode")
+            .name("chat-mode")
             .description("Censor or completely replace text in chat that matches the filter.")
             .defaultValue(ChatMode.Censor)
             .build()
     );
     private final Setting<SignMode> signMode = sgSources.add(
         new EnumSetting.Builder<SignMode>()
-            .name("Sign Mode")
+            .name("sign-mode")
             .description("Censor or completely replace SignText that matches the filter.")
             .defaultValue(SignMode.Censor)
             .build()
     );
     private final Setting<String> familyFriendlyLine1 = sgSources.add(
         new StringSetting.Builder()
-            .name("Replacement Line 1")
+            .name("replacement-line-1")
             .defaultValue("Original text")
             .visible(() -> signMode.get() == SignMode.Replace)
             .build()
     );
     private final Setting<String> familyFriendlyLine2 = sgSources.add(
         new StringSetting.Builder()
-            .name("Replacement Line 2")
+            .name("replacement-line-2")
             .defaultValue("was replaced by")
             .visible(() -> signMode.get() == SignMode.Replace)
             .build()
     );
     private final Setting<String> familyFriendlyLine3 = sgSources.add(
         new StringSetting.Builder()
-            .name("Replacement Line 3")
+            .name("replacement-line-3")
             .defaultValue("Stardust AntiToS")
             .visible(() -> signMode.get() == SignMode.Replace)
             .build()
     );
     private final Setting<String> familyFriendlyLine4 = sgSources.add(
         new StringSetting.Builder()
-            .name("Replacement Line 4")
+            .name("replacement-line-4")
             .defaultValue("plz no ban ☺")
             .visible(() -> signMode.get() == SignMode.Replace)
             .build()
     );
     private final Setting<DyeColor> familyFriendlyColor = sgSources.add(
         new EnumSetting.Builder<DyeColor>()
-            .name("Replacement Color")
+            .name("replacement-color")
             .description("Render replacement SignText with the selected dye color.")
             .defaultValue(DyeColor.RED)
             .visible(() -> signMode.get() == SignMode.Replace)
@@ -85,7 +85,7 @@ public class AntiToS extends Module {
     );
     private final Setting<Boolean> familyFriendlyGlowing = sgSources.add(
         new BoolSetting.Builder()
-            .name("Replacement Glowing")
+            .name("replacement-glowing")
             .description("Render replacement SignText with glowing text.")
             .defaultValue(true)
             .visible(() -> signMode.get() == SignMode.Replace)
@@ -94,7 +94,7 @@ public class AntiToS extends Module {
 
     private final Setting<Boolean> openBlacklistFile = sgBlacklist.add(
         new BoolSetting.Builder()
-            .name("Open Blacklist File")
+            .name("open-blacklist-file")
             .description("Open the anti-tos.txt file.")
             .defaultValue(false)
             .onChanged(it -> {

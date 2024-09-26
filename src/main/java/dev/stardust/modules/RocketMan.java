@@ -59,7 +59,7 @@ public class RocketMan extends Module {
 
     public final Setting<RocketMode> usageMode = sgRockets.add(
         new EnumSetting.Builder<RocketMode>()
-            .name("Usage Mode")
+            .name("usage-mode")
             .description("Which mode to operate in.")
             .defaultValue(RocketMode.OnKey)
             .build()
@@ -67,7 +67,7 @@ public class RocketMan extends Module {
 
     public final Setting<Keybind> usageKey = sgRockets.add(
         new KeybindSetting.Builder()
-            .name("Rocket Key")
+            .name("rocket-key")
             .description("The key you want to press to use a rocket.")
             .defaultValue(Keybind.fromKey(GLFW.GLFW_KEY_W))
             .build()
@@ -75,7 +75,7 @@ public class RocketMan extends Module {
 
     private final Setting<Integer> usageCooldown = sgRockets.add(
         new IntSetting.Builder()
-            .name("Rocket Usage Cooldown")
+            .name("rocket-usage-cooldown")
             .description("How often (in ticks) to allow using firework rockets.")
             .range(1, 10000).sliderRange(2, 100).defaultValue(40)
             .visible(() -> usageMode.get().equals(RocketMode.OnKey) || usageMode.get().equals(RocketMode.Speed))
@@ -84,7 +84,7 @@ public class RocketMan extends Module {
 
     private final Setting<Double> usageSpeed = sgRockets.add(
         new DoubleSetting.Builder()
-            .name("Minimum Speed Threshold (b/s)")
+            .name("minimum-speed-threshold-(b/s)")
             .description("Will use a rocket when your speed falls below this threshold.")
             .range(1, 1000).sliderRange(2, 100).defaultValue(37)
             .visible(() -> usageMode.get().equals(RocketMode.Speed))
@@ -93,7 +93,7 @@ public class RocketMan extends Module {
 
     private final Setting<Integer> usageTickRate = sgRockets.add(
         new IntSetting.Builder()
-            .name("Rocket Usage-Rate")
+            .name("rocket-usage-rate")
             .description("How often (in ticks) to use firework rockets.")
             .range(1, 10000).sliderRange(2, 420).defaultValue(100)
             .visible(() -> usageMode.get().equals(RocketMode.Static))
@@ -102,7 +102,7 @@ public class RocketMan extends Module {
 
     public final Setting<Boolean> yLevelLock = sgRockets.add(
         new BoolSetting.Builder()
-            .name("Y Level Lock")
+            .name("y-level-lock")
             .description("Lock Your Y level while flying (requires Dynamic mode.)")
             .defaultValue(false)
             .visible(() -> usageMode.get().equals(RocketMode.Dynamic))
@@ -111,7 +111,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> combatAssist = sgRockets.add(
         new BoolSetting.Builder()
-            .name("Combat Assist")
+            .name("combat-assist")
             .description("Automatically launch a rocket after firing arrows, throwing tridents, or eating food.")
             .defaultValue(false)
             .onChanged(it -> ticksBusy = 0)
@@ -120,7 +120,7 @@ public class RocketMan extends Module {
 
     public final Setting<Boolean> boostSpeed = sgBoosts.add(
         new BoolSetting.Builder()
-            .name("Speed Boost")
+            .name("speed-boost")
             .description("Boost the speed of your firework rockets.")
             .defaultValue(true)
             .build()
@@ -128,7 +128,7 @@ public class RocketMan extends Module {
 
     public final Setting<Double> speedSetting = sgBoosts.add(
         new DoubleSetting.Builder()
-            .name("Speed")
+            .name("speed")
             .description("How much to boost your rocket speed by (maximum.)")
             .range(0, 100)
             .sliderRange(0, 20)
@@ -139,7 +139,7 @@ public class RocketMan extends Module {
 
     public final Setting<Double> accelerationSetting = sgBoosts.add(
         new DoubleSetting.Builder()
-            .name("Acceleration")
+            .name("acceleration")
             .description("Acceleration Speed: lower values make grim less angry, but also soft-cap your max speed.")
             .range(0, 10)
             .sliderRange(0, 2)
@@ -150,7 +150,7 @@ public class RocketMan extends Module {
 
     private final Setting<Double> rocketSpeedThreshold = sgBoosts.add(
         new DoubleSetting.Builder()
-            .name("Acceleration Backoff Threshold")
+            .name("acceleration-backoff-threshold")
             .description("Backs down on acceleration when you've slowed down enough since using your last rocket (to prevent rubberbanding.)")
             .min(0).max(2).defaultValue(.69)
             .build()
@@ -158,7 +158,7 @@ public class RocketMan extends Module {
 
     public final Setting<Boolean> extendRockets = sgBoosts.add(
         new BoolSetting.Builder()
-            .name("Boost Rocket Duration")
+            .name("boost-rocket-duration")
             .description("Extend the duration of your rocket's boost effect.")
             .defaultValue(false)
             .build()
@@ -166,7 +166,7 @@ public class RocketMan extends Module {
 
     private final Setting<Integer> extendedDuration = sgBoosts.add(
         new IntSetting.Builder()
-            .name("Max Duration")
+            .name("max-duration")
             .description("Maximum amount in seconds to extend your firework's boost duration by.")
             .range(1, 420).sliderRange(2, 69).defaultValue(40)
             .visible(extendRockets::get)
@@ -175,7 +175,7 @@ public class RocketMan extends Module {
 
     private final Setting<Integer> extensionRange = sgBoosts.add(
         new IntSetting.Builder()
-            .name("Extension Range")
+            .name("extension-range")
             .description("Max range from usage point before refreshing your rocket, to prevent lagbacks.")
             .range(1, 1024).sliderRange(2, 512).defaultValue(200)
             .visible(extendRockets::get)
@@ -184,7 +184,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> keyboardControl = sgControl.add(
         new BoolSetting.Builder()
-            .name("Keyboard Control")
+            .name("keyboard-control")
             .description("Allows you to adjust your heading with WASD/Shift/Spacebar keys.")
             .defaultValue(true)
             .build()
@@ -192,7 +192,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> freeLookOnly = sgControl.add(
         new BoolSetting.Builder()
-            .name("Free Look Only")
+            .name("free-look-only")
             .description("Only allow rotation control when Free Look module is active.")
             .defaultValue(true)
             .visible(keyboardControl::get)
@@ -201,7 +201,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> invertPitch = sgControl.add(
         new BoolSetting.Builder()
-            .name("Invert Pitch")
+            .name("invert-pitch")
             .description("Invert pitch control for W & S keys.")
             .defaultValue(false)
             .visible(() -> keyboardControl.get() && !usageMode.get().equals(RocketMode.OnKey))
@@ -210,7 +210,7 @@ public class RocketMan extends Module {
 
     private final Setting<Integer> pitchSpeed = sgControl.add(
         new IntSetting.Builder()
-            .name("Pitch Speed")
+            .name("pitch-speed")
             .visible(keyboardControl::get)
             .range(0, 1000).sliderRange(0, 50).defaultValue(10)
             .build()
@@ -218,7 +218,7 @@ public class RocketMan extends Module {
 
     private final Setting<Integer> yawSpeed = sgControl.add(
         new IntSetting.Builder()
-            .name("Yaw Speed")
+            .name("yaw-speed")
             .visible(keyboardControl::get)
             .range(0, 1000).sliderRange(0, 50).defaultValue(20)
             .build()
@@ -226,7 +226,7 @@ public class RocketMan extends Module {
 
     public final Setting<HoverMode> hoverMode = sgHover.add(
         new EnumSetting.Builder<HoverMode>()
-            .name("Hover Mode")
+            .name("hover-mode")
             .description("Allows you to hover by pressing the backwards movement key (or by default in creative mode.)")
             .defaultValue(HoverMode.Toggle)
             .build()
@@ -234,7 +234,7 @@ public class RocketMan extends Module {
 
     public final Setting<Keybind> hoverKey = sgHover.add(
         new KeybindSetting.Builder()
-            .name("Hover Keybind")
+            .name("hover-keybind")
             .description("The key you want to press or hold to initiate hover mode.")
             .defaultValue(Keybind.fromKey(GLFW.GLFW_KEY_S))
             .build()
@@ -242,7 +242,7 @@ public class RocketMan extends Module {
 
     private final Setting<KeyModifiers> modifierKey = sgHover.add(
         new EnumSetting.Builder<KeyModifiers>()
-            .name("Modifier Key")
+            .name("modifier-key")
             .description("Require a modifier key to be held down alongside your hover keybind.")
             .defaultValue(KeyModifiers.Ctrl)
             .build()
@@ -250,7 +250,7 @@ public class RocketMan extends Module {
 
     public final Setting<Boolean> forceRocketUsage = sgHover.add(
         new BoolSetting.Builder()
-            .name("Force Rocket Usage")
+            .name("force-rocket-usage")
             .description("Force rocket usage when hovering.")
             .defaultValue(true)
             .build()
@@ -258,7 +258,7 @@ public class RocketMan extends Module {
 
     public final Setting<Double> verticalSpeed = sgHover.add(
         new DoubleSetting.Builder()
-            .name("Vertical Speed")
+            .name("vertical-speed")
             .description("Change your Y level with shift or space (pitch control moves to arrow keys.)")
             .min(0.0).max(10.0).defaultValue(0.69)
             .build()
@@ -266,7 +266,7 @@ public class RocketMan extends Module {
 
     public final Setting<Double> horizontalSpeed = sgHover.add(
         new DoubleSetting.Builder()
-            .name("Horizontal Speed")
+            .name("horizontal-speed")
             .description("For use with creative hover mode (yaw control moves to arrow keys.)")
             .min(0.0).max(10.0).defaultValue(0.69)
             .build()
@@ -274,7 +274,7 @@ public class RocketMan extends Module {
 
     private final Setting<Double> maxSpeedScrollSensitivity = sgScroll.add(
         new DoubleSetting.Builder()
-            .name("Scroll Sensitivity (Max Speed)")
+            .name("scroll-sensitivity-(Max-Speed)")
             .description("Change your max speed by holding ctrl and scrolling the mouse wheel.")
             .min(0).max(2).defaultValue(.25)
             .build()
@@ -282,7 +282,7 @@ public class RocketMan extends Module {
 
     private final Setting<Double> accelerationScrollSensitivity = sgScroll.add(
         new DoubleSetting.Builder()
-            .name("Scroll Sensitivity (Acceleration)")
+            .name("scroll-sensitivity-(Acceleration)")
             .description("Change your acceleration speed by holding alt and scrolling the mouse wheel.")
             .min(0).max(2).defaultValue(.025)
             .build()
@@ -290,7 +290,7 @@ public class RocketMan extends Module {
 
     private final Setting<Double> verticalScrollSensitivity = sgScroll.add(
         new DoubleSetting.Builder()
-            .name("Scroll Sensitivity (Vertical Hover)")
+            .name("scroll-sensitivity-(Vertical-Hover)")
             .description("Change your vertical hover speed by holding ctrl and scrolling the mouse wheel.")
             .min(0).max(2).defaultValue(.025)
             .build()
@@ -298,7 +298,7 @@ public class RocketMan extends Module {
 
     private final Setting<Double> horizontalScrollSensitivity = sgScroll.add(
         new DoubleSetting.Builder()
-            .name("Scroll Sensitivity (Horizontal Hover)")
+            .name("scroll-sensitivity-(Horizontal-Hover)")
             .description("Change your horizontal hover speed by holding alt and scrolling the mouse wheel.")
             .min(0).max(2).defaultValue(.025)
             .build()
@@ -306,7 +306,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> muteRockets = sgSound.add(
         new BoolSetting.Builder()
-            .name("Mute Rockets")
+            .name("mute-rockets")
             .description("Mute the firework rocket sounds.")
             .defaultValue(false)
             .build()
@@ -314,7 +314,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> muteElytra = sgSound.add(
         new BoolSetting.Builder()
-            .name("Mute Elytra")
+            .name("mute-elytra")
             .description("Mute the elytra wind sounds.")
             .defaultValue(false)
             .build()
@@ -322,7 +322,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> notifyOnLow = sgSound.add(
         new BoolSetting.Builder()
-            .name("Warn Low Rockets")
+            .name("warn-low-rockets")
             .description("Warn you audibly and/or in chat when you are low on rockets.")
             .defaultValue(true)
             .build()
@@ -330,7 +330,7 @@ public class RocketMan extends Module {
 
     private final Setting<Integer> notifyVolume = sgSound.add(
         new IntSetting.Builder()
-            .name("Low Rockets Volume")
+            .name("low-rockets-volume")
             .sliderRange(0, 100)
             .defaultValue(37)
             .visible(notifyOnLow::get)
@@ -339,7 +339,7 @@ public class RocketMan extends Module {
 
     private final Setting<Integer> notifyAmount = sgSound.add(
         new IntSetting.Builder()
-            .name("Low Rockets Threshold")
+            .name("low-rockets-threshold")
             .range(1, 384)
             .sliderRange(1, 128)
             .defaultValue(64)
@@ -349,7 +349,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> warnOnLow = sgSound.add(
         new BoolSetting.Builder()
-            .name("Warn Low Durability")
+            .name("warn-low-durability")
             .description("Warn you audibly and/or in chat when your elytra durability is low.")
             .defaultValue(true)
             .build()
@@ -357,7 +357,7 @@ public class RocketMan extends Module {
 
     private final Setting<Integer> warnVolume = sgSound.add(
         new IntSetting.Builder()
-            .name("Low Durability Volume")
+            .name("low-durability-volume")
             .sliderRange(0, 100)
             .defaultValue(50)
             .visible(warnOnLow::get)
@@ -366,7 +366,7 @@ public class RocketMan extends Module {
 
     private final Setting<Integer> durabilityThreshold = sgSound.add(
         new IntSetting.Builder()
-            .name("Low Durability Threshold (%)")
+            .name("low-durability-threshold-%")
             .sliderRange(1, 99)
             .defaultValue(5)
             .visible(warnOnLow::get)
@@ -375,7 +375,7 @@ public class RocketMan extends Module {
 
     public final Setting<Boolean> durationFeedback = sgSound.add(
         new BoolSetting.Builder()
-            .name("Duration Feedback")
+            .name("duration-feedback")
             .description("Display a message in chat indicating the duration of your currently-boosted rocket.")
             .defaultValue(true)
             .build()
@@ -383,7 +383,7 @@ public class RocketMan extends Module {
 
     public final Setting<Boolean> scrollSpeedFeedback = sgSound.add(
         new BoolSetting.Builder()
-            .name("Scroll Speed Feedback")
+            .name("scroll-speed-feedback")
             .description("Display a message in chat indicating speed value changes triggered by the scroll wheel.")
             .defaultValue(true)
             .build()
@@ -391,7 +391,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> antiLagBackFeedback = sgSound.add(
         new BoolSetting.Builder()
-            .name("AntiLagBack Feedback")
+            .name("antiLagBack-feedback")
             .description("Display a message in chat indicating when AntiLagBack is preventing you from being stuck in a rubberbanding loop.")
             .defaultValue(true)
             .build()
@@ -399,7 +399,7 @@ public class RocketMan extends Module {
 
     public final Setting<Boolean> hoverModeFeedback = sgSound.add(
         new BoolSetting.Builder()
-            .name("Hover Mode Feedback")
+            .name("hover-mode-feedback")
             .description("Display a message in chat indicating when hover mode is toggled.")
             .defaultValue(true)
             .build()
@@ -407,7 +407,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> autoEquip = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Auto-Equip")
+            .name("auto-equip")
             .description("Automatically equip an elytra when enabling the module.")
             .defaultValue(false)
             .build()
@@ -415,7 +415,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> takeoff = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Takeoff Assist")
+            .name("takeoff-assist")
             .description("Assist takeoff by launching a rocket as soon as you deploy your elytra.")
             .defaultValue(true)
             .build()
@@ -423,7 +423,7 @@ public class RocketMan extends Module {
 
     private final Setting<Boolean> autoReplace = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Elytra-Replace")
+            .name("elytra-replace")
             .description("Automatically replace your elytra with a fresh one when it reaches a durability threshold.")
             .defaultValue(true)
             .build()
@@ -431,7 +431,7 @@ public class RocketMan extends Module {
 
     private final Setting<Integer> replaceThreshold = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("Durability % Threshold")
+            .name("durability-%-threshold")
             .sliderRange(1, 99)
             .defaultValue(5)
             .visible(autoReplace::get)
@@ -440,7 +440,7 @@ public class RocketMan extends Module {
 
     private final Setting<Integer> lagBackDelay = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("LagBack Delay")
+            .name("lagBack-delay")
             .description("How many ticks to chill out for when AntiLagBack is triggered.")
             .range(1, 1200).sliderRange(10, 69).defaultValue(37)
             .build()
@@ -448,7 +448,7 @@ public class RocketMan extends Module {
 
     public final Setting<Boolean> debug = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Debug")
+            .name("debug")
             .description("Print various debug messages to your chat (useful for configuring & debugging the module.)")
             .defaultValue(false)
             .visible(() -> false) // toggle via settings command only
