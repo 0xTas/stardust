@@ -1,6 +1,5 @@
 package dev.stardust.util;
 
-import java.awt.*;
 import java.io.File;
 import dev.stardust.Stardust;
 import net.minecraft.text.Text;
@@ -235,27 +234,17 @@ public class StardustUtil {
     public static void openFile(MinecraftClient mc, String fileName) {
         File file = FabricLoader.getInstance().getGameDir().resolve(fileName).toFile();
 
-        if (Desktop.isDesktopSupported()) {
-            EventQueue.invokeLater(() -> {
-                try {
-                    Desktop.getDesktop().open(file);
-                }catch (Exception err) {
-                    Stardust.LOG.error("[Stardust] Failed to open "+ file.getAbsolutePath() +"! - Why:\n"+err);
-                }
-            });
-        } else {
-            try {
-                Runtime runtime = Runtime.getRuntime();
-                if (System.getenv("OS") == null) return;
-                if (System.getenv("OS").contains("Windows")) {
-                    runtime.exec(new String[]{"rundll32", "url.dll,", "FileProtocolHandler", file.getAbsolutePath()});
-                }else {
-                    runtime.exec(new String[]{"xdg-open", file.getAbsolutePath()});
-                }
-            } catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Failed to open "+ file.getAbsolutePath() +"! - Why:\n"+err);
-                if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open "+file.getName()+"§7."));
+        try {
+            Runtime runtime = Runtime.getRuntime();
+            if (System.getenv("OS") == null) return;
+            if (System.getenv("OS").contains("Windows")) {
+                runtime.exec(new String[]{"rundll32", "url.dll,", "FileProtocolHandler", file.getAbsolutePath()});
+            }else {
+                runtime.exec(new String[]{"xdg-open", file.getAbsolutePath()});
             }
+        } catch (Exception err) {
+            Stardust.LOG.error("[Stardust] Failed to open "+ file.getAbsolutePath() +"! - Why:\n"+err);
+            if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open "+file.getName()+"§7."));
         }
     }
 }
