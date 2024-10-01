@@ -13,7 +13,10 @@ import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.commands.Commands;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.settings.BoolSetting;
+import meteordevelopment.meteorclient.settings.EnumSetting;
 import meteordevelopment.meteorclient.systems.config.Config;
+import meteordevelopment.meteorclient.settings.SettingGroup;
+import dev.stardust.util.StardustUtil.IllegalDisconnectMethod;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.Category;
 
@@ -26,6 +29,8 @@ public class Stardust extends MeteorAddon {
     public static Setting<Boolean> greenSplashTextSetting = new BoolSetting.Builder().build();
     public static Setting<Boolean> rotateSplashTextSetting = new BoolSetting.Builder().build();
     public static Setting<Boolean> directConnectButtonSetting = new BoolSetting.Builder().build();
+    public static Setting<Boolean> illegalDisconnectButtonSetting = new BoolSetting.Builder().build();
+    public static Setting<IllegalDisconnectMethod> illegalDisconnectMethodSetting = new EnumSetting.Builder<IllegalDisconnectMethod>().defaultValue(IllegalDisconnectMethod.Slot).build();
 
     @Override
     public void onInitialize() {
@@ -55,28 +60,44 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new SignHistorian());
         Modules.get().add(new AutoDyeShulkers());
         Modules.get().add(new AutoDrawDistance());
+        SettingGroup sgStardust = Config.get().settings.createGroup("Stardust");
 
         // See SplashTextRendererMixin.java
-        greenSplashTextSetting = Config.get().settings.getGroup("Visual").add(
+        greenSplashTextSetting = sgStardust.add(
             new BoolSetting.Builder()
-                .name("Green Splash Text")
+                .name("green-splash-text")
                 .description(">Makes the title splash texts green.")
                 .defaultValue(false)
                 .build()
         );
         // See TitleScreenMixin.java
-        rotateSplashTextSetting = Config.get().settings.getGroup("Visual").add(
+        rotateSplashTextSetting = sgStardust.add(
             new BoolSetting.Builder()
-                .name("Rotate Splash Text")
+                .name("rotate-splash-text")
                 .description("Picks a new random splash text every 20 seconds.")
                 .defaultValue(false)
                 .build()
         );
-        directConnectButtonSetting = Config.get().settings.getGroup("Visual").add(
+        directConnectButtonSetting = sgStardust.add(
             new BoolSetting.Builder()
-                .name("Direct Connect Button")
+                .name("direct-connect-button")
                 .description("Adds a button to the main menu that directly connects you to 2b2t.org")
                 .defaultValue(false)
+                .build()
+        );
+        // See GameMenuScreenMixin.java
+        illegalDisconnectButtonSetting = sgStardust.add(
+            new BoolSetting.Builder()
+                .name("illegal-disconnect-button")
+                .description("Adds a button to the main menu that forces the server to kick you when pressed.")
+                .defaultValue(false)
+                .build()
+        );
+        illegalDisconnectMethodSetting = sgStardust.add(
+            new EnumSetting.Builder<IllegalDisconnectMethod>()
+                .name("illegal-disconnect-method")
+                .description("The method to use to cause the server to kick you.")
+                .defaultValue(IllegalDisconnectMethod.Slot)
                 .build()
         );
 

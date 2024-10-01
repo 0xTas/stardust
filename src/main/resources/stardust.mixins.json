@@ -13,6 +13,7 @@
     "SoundSystemMixin",
     "TitleScreenMixin",
     "MusicTrackerMixin",
+    "GameMenuScreenMixin",
     "EntityRendererMixin",
     "AnvilScreenAccessor",
     "BookEditScreenMixin",
@@ -37,13 +38,16 @@
   "mixins": [
     "WorldMixin",
     "EntityMixin",
+    "AutoLogMixin",
     "ItemStackMixin",
     "DoorBlockMixin",
     "PlayerEntityMixin",
     "GoatHornItemMixin",
     "LivingEntityMixin",
+    "ClientConnectionAccessor",
     "FireworkRocketEntityMixin",
     "AnvilScreenHandlerAccessor",
+    "DisconnectS2CPacketAccessor",
     "PlayerMoveC2SPacketAccessor",
     "FireworkRocketEntityAccessor"
   ]
