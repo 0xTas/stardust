@@ -32,8 +32,10 @@ import meteordevelopment.meteorclient.utils.render.RenderUtils;
 import net.minecraft.component.type.WrittenBookContentComponent;
 import net.minecraft.component.type.WritableBookContentComponent;
 import net.minecraft.network.packet.c2s.play.BookUpdateC2SPacket;
+import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.utils.player.FindItemResult;
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
+import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.meteorclient.systems.modules.render.blockesp.ESPBlockData;
 
@@ -561,6 +563,13 @@ public class PagePirate extends Module {
                 }
             }
         }
+    }
+
+    @EventHandler
+    private void onRespawnOrDimensionChange(PacketEvent.Receive event) {
+        if (!(event.packet instanceof PlayerRespawnS2CPacket)) return;
+        booksOnGround.clear();
+        booksInItemFrames.clear();
     }
 
     private record PirateTask(@Nullable WrittenBookContentComponent metadata, String piratedFrom, List<String> pages) {
