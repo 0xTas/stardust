@@ -129,7 +129,9 @@ public abstract class BookScreenMixin extends Screen {
         if (this.deobfuscated) return;
         if (!(this.contents instanceof BookScreen.Contents)) return;
 
-        BookTools bookTools = Modules.get().get(BookTools.class);
+        Modules mods = Modules.get();
+        if (mods == null) return;
+        BookTools bookTools = mods.get(BookTools.class);
         if (bookTools.skipDeobfuscation()) return;
 
         List<Text> pages = ((BookScreenContentsAccessor)(Object) contents).getPages();
