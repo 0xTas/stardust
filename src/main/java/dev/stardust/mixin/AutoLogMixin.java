@@ -32,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class AutoLogMixin extends Module {
     public AutoLogMixin(Category category, String name, String description) {
         super(category, name, description);
-        MeteorClient.EVENT_BUS.subscribe(this); // TODO: sus
+        MeteorClient.EVENT_BUS.subscribe(this);
     }
 
     @Shadow

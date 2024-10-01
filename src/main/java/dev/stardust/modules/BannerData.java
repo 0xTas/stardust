@@ -32,7 +32,7 @@ public class BannerData extends Module {
 
     private final Setting<StardustUtil.TextFormat> textFormatSetting = settings.getDefaultGroup().add(
         new EnumSetting.Builder<TextFormat>()
-            .name("Text Formatting")
+            .name("text-formatting")
             .description("Apply formatting to displayed NBT text.")
             .defaultValue(StardustUtil.TextFormat.Italic)
             .build()
@@ -40,14 +40,14 @@ public class BannerData extends Module {
 
     private final Setting<TextColor> flairColor = settings.getDefaultGroup().add(
         new EnumSetting.Builder<TextColor>()
-            .name("Accent Color")
+            .name("accent-color")
             .defaultValue(TextColor.Random)
             .build()
     );
 
     private final Setting<Boolean> bannerNameOnly = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Names Only")
+            .name("names-only")
             .description("Display banner names on right click only.")
             .defaultValue(false)
             .build()
@@ -55,14 +55,14 @@ public class BannerData extends Module {
 
     private final Setting<Boolean> signData = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Sign Data")
+            .name("sign-data")
             .description("Display NBT data when right clicking signs.")
             .defaultValue(false)
             .build()
     );
 
     private final Setting<Boolean> copyToClipboard = settings.getDefaultGroup().add(new BoolSetting.Builder()
-        .name("Copy to Clipboard")
+        .name("copy-to-clipboard")
         .description("Copy NBT data to your clipboard.")
         .defaultValue(false)
         .build()

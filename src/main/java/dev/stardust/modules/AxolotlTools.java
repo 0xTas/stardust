@@ -57,7 +57,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<Boolean> espVariants = sgEsp.add(
         new BoolSetting.Builder()
-            .name("Esp")
+            .name("ESP")
             .description("Extrasensory perception for axolotl variants.")
             .defaultValue(true)
             .build()
@@ -65,7 +65,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<Boolean> espTracers = sgEsp.add(
         new BoolSetting.Builder()
-            .name("Tracers")
+            .name("tracers")
             .defaultValue(true)
             .visible(espVariants::get)
             .build()
@@ -73,7 +73,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<EspMode> espMode = sgEsp.add(
         new EnumSetting.Builder<EspMode>()
-            .name("Wireframe Mode")
+            .name("wireframe-mode")
             .defaultValue(EspMode.Both)
             .visible(espVariants::get)
             .build()
@@ -81,7 +81,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<Integer> sidesAlpha = sgEsp.add(
         new IntSetting.Builder()
-            .name("Sides Alpha")
+            .name("sides-alpha")
             .range(0, 255)
             .sliderRange(0 ,255)
             .defaultValue(69)
@@ -91,7 +91,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<Integer> linesAlpha = sgEsp.add(
         new IntSetting.Builder()
-            .name("Lines Alpha")
+            .name("lines-alpha")
             .range(0, 255)
             .sliderRange(0, 255)
             .defaultValue(137)
@@ -101,7 +101,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<AxolotlMode> axolotlMode = sgAuto.add(
         new EnumSetting.Builder<AxolotlMode>()
-            .name("Axolotl Mode")
+            .name("axolotl-mode")
             .description("Axolotl interaction mode. Catch them, breed them, or do nothing (which allows catching fish instead.)")
             .defaultValue(AxolotlMode.None)
             .onChanged(it -> {
@@ -112,7 +112,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<Boolean> catchBabies = sgAuto.add(
         new BoolSetting.Builder()
-            .name("Catch Baby Axolotls")
+            .name("catch-baby-axolotls")
             .description("Automatically catch nearby baby axolotls in water buckets (works in catch mode.)")
             .defaultValue(false)
             .visible(() -> axolotlMode.get().equals(AxolotlMode.Catch))
@@ -121,7 +121,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<Boolean> onlyCatchBabies = sgAuto.add(
         new BoolSetting.Builder()
-            .name("Only Catch Babies")
+            .name("only-catch-babies")
             .defaultValue(false)
             .visible(() -> catchBabies.get() && catchBabies.isVisible())
             .build()
@@ -129,7 +129,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<Boolean> feedBabies = sgAuto.add(
         new BoolSetting.Builder()
-            .name("Feed Baby Axolotls")
+            .name("feed-baby-axolotls")
             .description("Feed baby axolotls buckets of tropical fish to make them grow up faster (works in breed mode.)")
             .defaultValue(false)
             .visible(() -> axolotlMode.get().equals(AxolotlMode.Breed))
@@ -138,7 +138,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<Boolean> onlyFeedBabies = sgAuto.add(
         new BoolSetting.Builder()
-            .name("Only Feed Babies")
+            .name("only-feed-babies")
             .description("Feed baby axolotls buckets of tropical fish to make them grow up faster (works in breed mode.)")
             .defaultValue(false)
             .visible(() -> feedBabies.get() && feedBabies.isVisible())
@@ -147,7 +147,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<InteractionMode> interactionMode = sgAuto.add(
         new EnumSetting.Builder<InteractionMode>()
-            .name("Interaction Mode")
+            .name("interaction-mode")
             .description("Full uses spoofed rotations while Trigger handles the interaction when you look at a valid entity.")
             .defaultValue(InteractionMode.Full)
             .build()
@@ -155,7 +155,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<Boolean> fillBuckets = sgAuto.add(
         new BoolSetting.Builder()
-            .name("Fill Buckets")
+            .name("fill-buckets")
             .description("Automatically fill empty buckets before catching axolotls or tropical fish.")
             .defaultValue(false)
             .visible(() -> interactionMode.get().equals(InteractionMode.Full))
@@ -164,7 +164,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<Boolean> emptyBuckets = sgAuto.add(
         new BoolSetting.Builder()
-            .name("Empty Buckets")
+            .name("empty-buckets")
             .description("Automatically empty buckets of water after feeding axolotls the fish they contained.")
             .defaultValue(false)
             .visible(() -> interactionMode.get().equals(InteractionMode.Full))
@@ -173,7 +173,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<Boolean> catchFish = sgAuto.add(
         new BoolSetting.Builder()
-            .name("Catch Tropical Fish")
+            .name("catch-tropical-fish")
             .description("Automatically catch nearby tropical fish in water buckets.")
             .defaultValue(true)
             .visible(() -> axolotlMode.get().equals(AxolotlMode.None))
@@ -182,7 +182,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<Boolean> fishFarm = sgAuto.add(
         new BoolSetting.Builder()
-            .name("Farm Tropical Fish")
+            .name("farm-tropical-fish")
             .description("Automatically afk-farm buckets of tropical fish (requires a farming setup.)")
             .defaultValue(false)
             .visible(() -> catchFish.isVisible() && catchFish.get())
@@ -195,7 +195,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<Integer> tickRate = sgAuto.add(
         new IntSetting.Builder()
-            .name("Tick Rate")
+            .name("tick-rate")
             .description("Lower values have a higher chance of rejecting & desyncing your interactions. 10+ recommended for Full mode.")
             .range(2, 10000)
             .sliderRange(5, 100)
@@ -205,7 +205,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<VariantBehavior> interactPink = sgVariantChoices.add(
         new EnumSetting.Builder<VariantBehavior>()
-            .name("Pink Variant")
+            .name("pink-variant")
             .description("Esp and/or automatically interact with nearby pink axolotl variants.")
             .defaultValue(VariantBehavior.Both)
             .onChanged(it -> {
@@ -218,7 +218,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<VariantBehavior> interactWild = sgVariantChoices.add(
         new EnumSetting.Builder<VariantBehavior>()
-            .name("Brown Variant")
+            .name("brown-variant")
             .description("Esp and/or automatically interact with nearby brown axolotl variants.")
             .defaultValue(VariantBehavior.Both)
             .onChanged(it -> {
@@ -231,7 +231,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<VariantBehavior> interactGold = sgVariantChoices.add(
         new EnumSetting.Builder<VariantBehavior>()
-            .name("Gold Variant")
+            .name("gold-variant")
             .description("Esp and/or automatically interact with nearby gold axolotl variants.")
             .defaultValue(VariantBehavior.Both)
             .onChanged(it -> {
@@ -244,7 +244,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<VariantBehavior> interactCyan = sgVariantChoices.add(
         new EnumSetting.Builder<VariantBehavior>()
-            .name("Cyan Variant")
+            .name("cyan-variant")
             .description("Esp and/or automatically interact with nearby cyan axolotl variants.")
             .defaultValue(VariantBehavior.Both)
             .onChanged(it -> {
@@ -257,7 +257,7 @@ public class AxolotlTools extends Module {
 
     private final Setting<VariantBehavior> interactBlue = sgVariantChoices.add(
         new EnumSetting.Builder<VariantBehavior>()
-            .name("Blue Variant")
+            .name("blue-variant")
             .description("Esp and/or automatically interact with nearby blue axolotl variants.")
             .defaultValue(VariantBehavior.Both)
             .onChanged(it -> {

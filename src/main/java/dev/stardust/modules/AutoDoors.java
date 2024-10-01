@@ -34,7 +34,7 @@ public class AutoDoors extends Module {
 
     private final Setting<DoorModes> modeSetting = settings.getDefaultGroup().add(
         new EnumSetting.Builder<DoorModes>()
-            .name("Mode")
+            .name("mode")
             .description("Which mode to operate in.")
             .defaultValue(DoorModes.Classic)
             .build()
@@ -42,7 +42,7 @@ public class AutoDoors extends Module {
 
     private final Setting<MuteModes> muteSetting = settings.getDefaultGroup().add(
         new EnumSetting.Builder<MuteModes>()
-            .name("Mute Doors")
+            .name("mute-doors")
             .description("Whether to mute door sounds when the module is active.")
             .defaultValue(MuteModes.Never)
             .build()
@@ -50,7 +50,7 @@ public class AutoDoors extends Module {
 
     private final Setting<Integer> spamRange = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("Spam Range")
+            .name("spam-range")
             .description("Range of blocks to look for doors in.")
             .range(1, 5)
             .sliderRange(1, 5)
@@ -61,7 +61,7 @@ public class AutoDoors extends Module {
 
     private final Setting<Integer> spamRate = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("Spam Delay")
+            .name("spam-delay")
             .description("Delay (in ticks) between each interaction.")
             .range(2, 20)
             .sliderRange(2, 20)
@@ -72,7 +72,7 @@ public class AutoDoors extends Module {
 
     private final Setting<Integer> interactDelay = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("Lever Delay")
+            .name("lever-delay")
             .description("Increase this if iron doors controlled by levers are acting scuffed.")
             .range(0, 100)
             .sliderRange(2, 60)
@@ -82,7 +82,7 @@ public class AutoDoors extends Module {
 
     private final Setting<Boolean> autoOpen = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Auto Open")
+            .name("auto-open")
             .description("Automatically open doors as you move towards them.")
             .defaultValue(true)
             .visible(() -> modeSetting.get() == DoorModes.Classic)
@@ -91,7 +91,7 @@ public class AutoDoors extends Module {
 
     private final Setting<Boolean> silentSwing = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Silent Swing")
+            .name("silent-swing")
             .description("No client-side hand swing.")
             .defaultValue(false)
             .build()
@@ -99,7 +99,7 @@ public class AutoDoors extends Module {
 
     private final Setting<Boolean> ninjaSwing = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Ninja Swing")
+            .name("ninja-swing")
             .description("No server-side hand swing.")
             .defaultValue(false)
             .build()
@@ -107,7 +107,7 @@ public class AutoDoors extends Module {
 
     private final Setting<Boolean> useIronDoors = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Iron Doors")
+            .name("iron-doors")
             .description("Interact with iron doors using nearby buttons or levers.")
             .defaultValue(true)
             .build()
@@ -115,7 +115,7 @@ public class AutoDoors extends Module {
 
     private final Setting<Boolean> useTrapdoors = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Trapdoors")
+            .name("trapdoors")
             .description("Interact with trapdoors (only works when not on ladders.)")
             .defaultValue(false)
             .build()
@@ -123,7 +123,7 @@ public class AutoDoors extends Module {
 
     private final Setting<Boolean> useFenceGates = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Fence Gates")
+            .name("fence-gates")
             .description("Interact with fence gates.")
             .defaultValue(false)
             .build()

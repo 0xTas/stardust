@@ -51,7 +51,7 @@ public class PagePirate extends Module {
 
     private final Setting<Boolean> chatDisplay = sgChat.add(
         new BoolSetting.Builder()
-            .name("Chat Display")
+            .name("chat-display")
             .description("Write nearby books to your chat for inspection.")
             .defaultValue(true)
             .build()
@@ -59,7 +59,7 @@ public class PagePirate extends Module {
 
     private final Setting<Boolean> displayBooksOnGround = sgChat.add(
         new BoolSetting.Builder()
-            .name("Display Books on Ground")
+            .name("display-books-on-ground")
             .description("Display the contents of books laying on the ground in your chat.")
             .defaultValue(false)
             .build()
@@ -67,7 +67,7 @@ public class PagePirate extends Module {
 
     private final Setting<Boolean> displayBooksInItemFrames = sgChat.add(
         new BoolSetting.Builder()
-            .name("Display Books in Item Frames")
+            .name("display-books-in-item-frames")
             .description("Display the contents of books in item frames.")
             .defaultValue(false)
             .build()
@@ -75,14 +75,14 @@ public class PagePirate extends Module {
 
     private final Setting<Boolean> deobfuscatePages = sgChat.add(
         new BoolSetting.Builder()
-            .name("Deobfuscate Contents in Chat")
+            .name("deobfuscate-contents-in-chat")
             .defaultValue(true)
             .build()
     );
 
     private final Setting<Boolean> localCopy = sgCopy.add(
         new BoolSetting.Builder()
-            .name("Physical Copy")
+            .name("physical-copy")
             .description("Write nearby books into a Book & Quill from your inventory for inspection.")
             .defaultValue(true)
             .build()
@@ -90,7 +90,7 @@ public class PagePirate extends Module {
 
     private final Setting<Boolean> finalizeCopy = sgCopy.add(
         new BoolSetting.Builder()
-            .name("Sign Local Copy")
+            .name("sign-local-copy")
             .description("Sign the local pirated copy with the name of the original book.")
             .defaultValue(false)
             .build()
@@ -98,7 +98,7 @@ public class PagePirate extends Module {
 
     private final Setting<Boolean> writeCoverPage = sgCopy.add(
         new BoolSetting.Builder()
-            .name("Write Cover Page")
+            .name("write-cover-page")
             .description("Writes a cover page with metadata about the pirated book.")
             .defaultValue(true)
             .build()
@@ -106,7 +106,7 @@ public class PagePirate extends Module {
 
     private final Setting<Boolean> copyBooksOnGround = sgCopy.add(
         new BoolSetting.Builder()
-            .name("Copy Books on Ground")
+            .name("copy-books-on-ground")
             .description("Copy books that are laying on the ground as an item.")
             .defaultValue(false)
             .build()
@@ -114,7 +114,7 @@ public class PagePirate extends Module {
 
     private final Setting<Boolean> copyBooksInItemFrames = sgCopy.add(
         new BoolSetting.Builder()
-            .name("Copy Books in Item Frames")
+            .name("copy-books-in-item-frames")
             .description("Copy the contents of books in item frames.")
             .defaultValue(false)
             .build()
@@ -122,7 +122,7 @@ public class PagePirate extends Module {
 
     private final Setting<Boolean> overwrite = sgCopy.add(
         new BoolSetting.Builder()
-            .name("Overwrite Book & Quill")
+            .name("overwrite-book-&-quill")
             .description("Overwrite Book & Quills that already contain page content.")
             .defaultValue(false)
             .build()
@@ -130,7 +130,7 @@ public class PagePirate extends Module {
 
     private final Setting<Integer> tickDelay = sgCopy.add(
         new IntSetting.Builder()
-            .name("Tick Delay")
+            .name("tick-delay")
             .description("Required to avoid being kicked when copying multiple books at once.")
             .range(0, 500).sliderRange(40, 200)
             .defaultValue(40)
@@ -139,7 +139,7 @@ public class PagePirate extends Module {
 
     private final Setting<Boolean> espItemFrames = sgESP.add(
         new BoolSetting.Builder()
-            .name("ESP Item Frames")
+            .name("ESP-item-frames")
             .description("Renders item frames containing written books or book & quills.")
             .defaultValue(true)
             .build()
@@ -147,7 +147,7 @@ public class PagePirate extends Module {
 
     private final Setting<Boolean> espBooksOnGround = sgESP.add(
         new BoolSetting.Builder()
-            .name("ESP Books on Ground")
+            .name("ESP-books-on-ground")
             .description("Render books that are laying on the ground as an item.")
             .defaultValue(true)
             .build()
@@ -155,7 +155,7 @@ public class PagePirate extends Module {
 
     private final Setting<ESPBlockData> bookESP = sgESP.add(
         new GenericSetting.Builder<ESPBlockData>()
-            .name("Book Entity ESP")
+            .name("book-entity-ESP")
             .defaultValue(
                 new ESPBlockData(
                     ShapeMode.Both,

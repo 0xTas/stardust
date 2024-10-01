@@ -82,7 +82,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Boolean> espSigns = sgESP.add(
         new BoolSetting.Builder()
-            .name("ESP Signs")
+            .name("ESP-signs")
             .description("Quick toggle for broken/modified ESP.")
             .defaultValue(true)
             .build()
@@ -90,7 +90,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Integer> espRange = sgESP.add(
         new IntSetting.Builder()
-            .name("ESP Range")
+            .name("ESP-range")
             .description("Range in blocks to render broken or modified signs.")
             .range(16, 512)
             .sliderRange(16, 256)
@@ -100,7 +100,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Boolean> dynamicColor = sgESP.add(
         new BoolSetting.Builder()
-            .name("Dynamic Color")
+            .name("dynamic-color")
             .description("Derive ESP side color from the sign's wood type.")
             .defaultValue(true)
             .build()
@@ -108,7 +108,7 @@ public class SignHistorian extends Module {
 
     private final Setting<ESPBlockData> destroyedSettings = sgESP.add(
         new GenericSetting.Builder<ESPBlockData>()
-            .name("Destroyed/Missing Signs ESP")
+            .name("destroyed/Missing-signs-ESP")
             .description("Tip: left-click on the block a ghost sign is rendered on to view its original text content in your chat.")
             .defaultValue(
                 new ESPBlockData(
@@ -124,7 +124,7 @@ public class SignHistorian extends Module {
 
     private final Setting<ESPBlockData> modifiedSettings = sgESP.add(
         new GenericSetting.Builder<ESPBlockData>()
-            .name("Modified Signs ESP")
+            .name("modified-signs-ESP")
             .description("Tip: right-click on a modified sign to view its original text content in your chat.")
             .defaultValue(
                 new ESPBlockData(
@@ -140,7 +140,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Boolean> strictSetting = sgSigns.add(
         new BoolSetting.Builder()
-            .name("Strict Mode")
+            .name("strict-mode")
             .description("Only consider signs to be restored if they have the same dye color and glow ink values as the original.")
             .defaultValue(false)
             .build()
@@ -148,7 +148,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Boolean> persistenceSetting = sgSigns.add(
         new BoolSetting.Builder()
-            .name("Persistence")
+            .name("persistence")
             .description("Save sign data to a file in order to persist SignHistorian's powers across play-sessions.")
             .defaultValue(false)
             .onChanged(it -> {
@@ -168,7 +168,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Boolean> ignoreBrokenSetting = sgSigns.add(
         new BoolSetting.Builder()
-            .name("Ignore Purposefully Broken")
+            .name("ignore-purposefully-broken")
             .description("Ignores signs you break on purpose (but still tracks them in case you change your mind later.)")
             .defaultValue(false)
             .build()
@@ -176,7 +176,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Boolean> waxRestoration = sgSigns.add(
         new BoolSetting.Builder()
-            .name("Wax Restored Signs")
+            .name("wax-restored-signs")
             .description("Automatically waxes signs that SignHistorian has restored.")
             .defaultValue(true)
             .build()
@@ -184,7 +184,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Boolean> contentBlacklist = sgBlacklist.add(
         new BoolSetting.Builder()
-            .name("Content Blacklist")
+            .name("content-blacklist")
             .description("Ignore signs that contain specific words or phrases (line-separated list in sign-historian/content-blacklist.txt)")
             .defaultValue(false)
             .onChanged(it -> {
@@ -203,7 +203,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Boolean> openBlacklistFile = sgBlacklist.add(
         new BoolSetting.Builder()
-            .name("Open Blacklist File")
+            .name("open-blacklist-file")
             .description("Open the content-blacklist.txt file.")
             .defaultValue(false)
             .onChanged(it -> {
@@ -217,7 +217,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Boolean> griefPrevention = sgPrevention.add(
         new BoolSetting.Builder()
-            .name("Mob-grief Alarm")
+            .name("mob-grief-alarm")
             .description("Warns you when nearby signs are in danger of an approaching creeper or wither.")
             .defaultValue(true)
             .build()
@@ -225,7 +225,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Boolean> chatNotification = sgPrevention.add(
         new BoolSetting.Builder()
-            .name("Chat Notification")
+            .name("chat-notification")
             .description("Warns you in chat when nearby signs are in danger of an approaching creeper.")
             .defaultValue(true)
             .build()
@@ -233,7 +233,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Double> alarmVolume = sgPrevention.add(
         new DoubleSetting.Builder()
-            .name("Volume")
+            .name("volume")
             .sliderMax(0)
             .sliderMax(200)
             .defaultValue(0)
@@ -242,7 +242,7 @@ public class SignHistorian extends Module {
 
     private final Setting<ESPBlockData> dangerESP = sgPrevention.add(
         new GenericSetting.Builder<ESPBlockData>()
-            .name("Grief Prevention ESP")
+            .name("grief-prevention-ESP")
             .defaultValue(
                 new ESPBlockData(
                     ShapeMode.Both,

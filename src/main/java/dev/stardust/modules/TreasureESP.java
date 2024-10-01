@@ -36,7 +36,7 @@ public class TreasureESP extends Module {
 
     private final Setting<Boolean> chatSetting = sgNotifications.add(
         new BoolSetting.Builder()
-            .name("Chat")
+            .name("chat")
             .description("Notify with a chat message.")
             .defaultValue(true)
             .build()
@@ -44,7 +44,7 @@ public class TreasureESP extends Module {
 
     private final Setting<Boolean> coordsSetting = sgNotifications.add(
         new BoolSetting.Builder()
-            .name("Coords")
+            .name("coords")
             .description("Display chest coordinates in chat notifications.")
             .defaultValue(false)
             .build()
@@ -52,7 +52,7 @@ public class TreasureESP extends Module {
 
     private final Setting<Boolean> soundSetting = sgNotifications.add(
         new BoolSetting.Builder()
-            .name("Sound")
+            .name("sound")
             .description("Notify with sound.")
             .defaultValue(true)
             .build()
@@ -60,7 +60,7 @@ public class TreasureESP extends Module {
 
     private final Setting<Double> volumeSetting = sgNotifications.add(
         new DoubleSetting.Builder()
-            .name("Volume")
+            .name("volume")
             .min(0.0)
             .max(10.0)
             .sliderMin(0.0)
@@ -79,7 +79,7 @@ public class TreasureESP extends Module {
 
     private final Setting<ESPBlockData> espColorSettings = sgESP.add(
         new GenericSetting.Builder<ESPBlockData>()
-            .name("ESP Settings")
+            .name("ESP-settings")
             .defaultValue(
                 new ESPBlockData(
                     ShapeMode.Both,

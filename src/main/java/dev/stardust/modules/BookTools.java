@@ -18,7 +18,7 @@ public class BookTools extends Module {
 
     private final Setting<Boolean> doFormatting = sgFormat.add(
         new BoolSetting.Builder()
-            .name("Formatting Buttons")
+            .name("formatting-buttons")
             .description("Adds buttons for coloring & formatting text in writable books.")
             .defaultValue(true)
             .build()
@@ -26,7 +26,7 @@ public class BookTools extends Module {
 
     private final Setting<Boolean> doFormatTitles = sgFormat.add(
         new BoolSetting.Builder()
-            .name("Allow Formatting Titles*")
+            .name("allow-formatting-titles*")
             .description("*Doesn't work on servers like 2b2t.")
             .visible(doFormatting::get)
             .defaultValue(false)
@@ -35,7 +35,7 @@ public class BookTools extends Module {
 
     public final Setting<String> autoTitles = sgFormat.add(
         new StringSetting.Builder()
-            .name("Auto Title") // See BookEditScreenMixin.java
+            .name("auto-title") // See BookEditScreenMixin.java
             .description("Automatically inserts this book title (if not empty) when signing books (for use with unicode chars).")
             .defaultValue("")
             .build()
@@ -43,7 +43,7 @@ public class BookTools extends Module {
 
     private final Setting<Boolean> doDeobfucscation = sgDeobfuscate.add(
         new BoolSetting.Builder()
-            .name("Deobfuscation Button")
+            .name("deobfuscation-button")
             .description("Adds a button that deobfuscates obfuscated/magic text in written books.")
             .defaultValue(true)
             .build()

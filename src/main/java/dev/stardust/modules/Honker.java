@@ -39,7 +39,7 @@ public class Honker extends Module {
 
     private final Setting<String> desiredCall = settings.getDefaultGroup().add(
         new ProvidedStringSetting.Builder()
-            .name("Horn Preference")
+            .name("horn-preference")
             .description("Which horn to prefer using")
             .supplier(() -> horns)
             .defaultValue("Random")
@@ -48,7 +48,7 @@ public class Honker extends Module {
 
     private final Setting<Boolean> ignoreFakes = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Ignore Fakes")
+            .name("ignore-fakes")
             .description("Ignore fake players created by modules like Blink.")
             .defaultValue(true)
             .build()
@@ -56,7 +56,7 @@ public class Honker extends Module {
 
     private final Setting<Boolean> hornSpam = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Horn Spam")
+            .name("horn-spam")
             .description("Spam the desired horn as soon as it's done cooling down (every 7 seconds.)")
             .defaultValue(false)
             .onChanged(it -> { if (it) this.ticksSinceUsedHorn = 420; })
@@ -65,7 +65,7 @@ public class Honker extends Module {
 
     private final Setting<Boolean> hornSpamAlone = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("When Alone")
+            .name("when-alone")
             .description("If you really want to, I guess..")
             .defaultValue(false)
             .visible(hornSpam::get)
@@ -75,7 +75,7 @@ public class Honker extends Module {
 
     private final Setting<Boolean> muteHorns = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Mute Horns")
+            .name("mute-horns")
             .description("Clientside mute for your own goat horns.")
             .defaultValue(false)
             .build()
@@ -83,7 +83,7 @@ public class Honker extends Module {
 
     private final Setting<Boolean> muteAllHorns = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Mute All Horns")
+            .name("mute-all-horns")
             .description("Mute everybody's horns, not just your own.")
             .visible(muteHorns::get)
             .defaultValue(false)

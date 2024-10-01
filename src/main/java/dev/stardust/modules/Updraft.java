@@ -30,7 +30,7 @@ public class Updraft extends Module {
 
     private final Setting<Boolean> swapSetting = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Swap")
+            .name("swap")
             .description("Automatically swaps to wind charges if none are being held.")
             .defaultValue(true)
             .build()
@@ -38,7 +38,7 @@ public class Updraft extends Module {
 
     private final Setting<Boolean> swapBackSetting = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Swap Back")
+            .name("swap-back")
             .description("Automatically swaps back after using wind charges.")
             .defaultValue(true)
             .build()
@@ -46,7 +46,7 @@ public class Updraft extends Module {
 
     private final Setting<Boolean> hotBarSetting = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Hotbar Only")
+            .name("hotbar-only")
             .description("Only swaps to wind charges in your hotbar.")
             .defaultValue(false)
             .build()
@@ -54,7 +54,7 @@ public class Updraft extends Module {
 
     private final Setting<Integer> cooldownSetting = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("Cooldown Ticks")
+            .name("cooldown-ticks")
             .description("Cooldown between wind charge uses.")
             .defaultValue(10)
             .range(0, 1000)
@@ -64,7 +64,7 @@ public class Updraft extends Module {
 
     private final Setting<Double> pitchSpoofSetting = settings.getDefaultGroup().add(
         new DoubleSetting.Builder()
-            .name("Pitch Spoof")
+            .name("pitch-spoof")
             .description("The angle to look at when throwing a wind charge.")
             .min(-90).max(90)
             .sliderRange(-90, 90)
@@ -74,7 +74,7 @@ public class Updraft extends Module {
 
     private final Setting<Integer> tickDelay = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("Tick Delay")
+            .name("tick-delay")
             .description("Delay between inventory actions.")
             .defaultValue(0)
             .range(0, 1000)

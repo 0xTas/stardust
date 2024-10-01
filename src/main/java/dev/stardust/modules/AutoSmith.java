@@ -85,14 +85,14 @@ public class AutoSmith extends Module {
 
     private final Setting<SmithingMode> modeSetting = modeSettings.add(
         new EnumSetting.Builder<SmithingMode>()
-            .name("Smithing Mode")
+            .name("smithing-mode")
             .defaultValue(SmithingMode.Upgrade)
             .build()
     );
 
     private final Setting<Boolean> overwriteTrims = modeSettings.add(
         new BoolSetting.Builder()
-            .name("Overwrite Trims")
+            .name("overwrite-trims")
             .description("Trim armor pieces which already contain a different trim pattern or material.")
             .defaultValue(false)
             .visible(() -> modeSetting.get() == SmithingMode.Trim)
@@ -101,7 +101,7 @@ public class AutoSmith extends Module {
 
     private final Setting<ArmorMaterials> helmetType = trimSettings.add(
         new EnumSetting.Builder<ArmorMaterials>()
-            .name("Helmet Armor Type")
+            .name("helmet-armor-type")
             .description("Which type of helmet to apply trims to.")
             .defaultValue(ArmorMaterials.Netherite)
             .visible(() -> modeSetting.get() == SmithingMode.Trim)
@@ -109,7 +109,7 @@ public class AutoSmith extends Module {
     );
     private final Setting<ArmorTrims> helmetTrim = trimSettings.add(
         new EnumSetting.Builder<ArmorTrims>()
-            .name("Helmet Armor Trim")
+            .name("helmet-armor-trim")
             .description("Which armor trim to apply onto helmets.")
             .defaultValue(ArmorTrims.Eye)
             .visible(() -> modeSetting.get() == SmithingMode.Trim)
@@ -117,7 +117,7 @@ public class AutoSmith extends Module {
     );
     private final Setting<TrimMaterial> helmetTrimMaterial = trimSettings.add(
         new EnumSetting.Builder<TrimMaterial>()
-            .name("Helmet Trim Material")
+            .name("helmet-trim-material")
             .description("What material to use for helmet armor trims.")
             .defaultValue(TrimMaterial.Amethyst)
             .visible(() -> modeSetting.get() == SmithingMode.Trim)
@@ -126,7 +126,7 @@ public class AutoSmith extends Module {
 
     private final Setting<ArmorMaterials> chestplateType = trimSettings.add(
         new EnumSetting.Builder<ArmorMaterials>()
-            .name("Chestplate Armor Type")
+            .name("chestplate-armor-type")
             .description("Which type of chestplates to apply trims to.")
             .defaultValue(ArmorMaterials.Netherite)
             .visible(() -> modeSetting.get() == SmithingMode.Trim)
@@ -134,7 +134,7 @@ public class AutoSmith extends Module {
     );
     private final Setting<ArmorTrims> chestplateTrim = trimSettings.add(
         new EnumSetting.Builder<ArmorTrims>()
-            .name("Chestplate Armor Trim")
+            .name("chestplate-armor-trim")
             .description("Which armor trim to apply onto chestplates.")
             .defaultValue(ArmorTrims.Eye)
             .visible(() -> modeSetting.get() == SmithingMode.Trim)
@@ -142,7 +142,7 @@ public class AutoSmith extends Module {
     );
     private final Setting<TrimMaterial> chestplateTrimMaterial = trimSettings.add(
         new EnumSetting.Builder<TrimMaterial>()
-            .name("Chestplate Trim Material")
+            .name("chestplate-trim-material")
             .description("What material to use for chestplate armor trims.")
             .defaultValue(TrimMaterial.Amethyst)
             .visible(() -> modeSetting.get() == SmithingMode.Trim)
@@ -151,7 +151,7 @@ public class AutoSmith extends Module {
 
     private final Setting<ArmorMaterials> leggingsType = trimSettings.add(
         new EnumSetting.Builder<ArmorMaterials>()
-            .name("Leggings Armor Type")
+            .name("leggings-armor-type")
             .description("Which type of leggings to apply trims to.")
             .defaultValue(ArmorMaterials.Netherite)
             .visible(() -> modeSetting.get() == SmithingMode.Trim)
@@ -159,7 +159,7 @@ public class AutoSmith extends Module {
     );
     private final Setting<ArmorTrims> leggingsTrim = trimSettings.add(
         new EnumSetting.Builder<ArmorTrims>()
-            .name("Leggings Armor Trim")
+            .name("leggings-armor-trim")
             .description("Which armor trim to apply onto leggings.")
             .defaultValue(ArmorTrims.Eye)
             .visible(() -> modeSetting.get() == SmithingMode.Trim)
@@ -167,7 +167,7 @@ public class AutoSmith extends Module {
     );
     private final Setting<TrimMaterial> leggingsTrimMaterial = trimSettings.add(
         new EnumSetting.Builder<TrimMaterial>()
-            .name("Leggings Trim Material")
+            .name("leggings-trim-material")
             .description("What material to use for leggings armor trims.")
             .defaultValue(TrimMaterial.Amethyst)
             .visible(() -> modeSetting.get() == SmithingMode.Trim)
@@ -176,7 +176,7 @@ public class AutoSmith extends Module {
 
     private final Setting<ArmorMaterials> bootsType = trimSettings.add(
         new EnumSetting.Builder<ArmorMaterials>()
-            .name("Boots Armor Type")
+            .name("boots-armor-type")
             .description("Which type of boots to apply trims to.")
             .defaultValue(ArmorMaterials.Netherite)
             .visible(() -> modeSetting.get() == SmithingMode.Trim)
@@ -184,7 +184,7 @@ public class AutoSmith extends Module {
     );
     private final Setting<ArmorTrims> bootsTrim = trimSettings.add(
         new EnumSetting.Builder<ArmorTrims>()
-            .name("Boots Armor Trim")
+            .name("boots-armor-trim")
             .description("Which armor trim to apply onto boots.")
             .defaultValue(ArmorTrims.Eye)
             .visible(() -> modeSetting.get() == SmithingMode.Trim)
@@ -192,7 +192,7 @@ public class AutoSmith extends Module {
     );
     private final Setting<TrimMaterial> bootsTrimMaterial = trimSettings.add(
         new EnumSetting.Builder<TrimMaterial>()
-            .name("Boots Trim Material")
+            .name("boots-trim-material")
             .description("What material to use for boots armor trims.")
             .defaultValue(TrimMaterial.Amethyst)
             .visible(() -> modeSetting.get() == SmithingMode.Trim)
@@ -202,7 +202,7 @@ public class AutoSmith extends Module {
     // See WorldMixin.java
     public final Setting<Boolean> muteSmithy = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Mute Smithing Table")
+            .name("mute-smithing-table")
             .description("Mute the smithing table sounds.")
             .defaultValue(false)
             .build()
@@ -210,7 +210,7 @@ public class AutoSmith extends Module {
 
     private final Setting<Boolean> closeOnDone = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Close Screen")
+            .name("close-screen")
             .description("Automatically close the crafting screen when no more gear can be upgraded.")
             .defaultValue(true)
             .build()
@@ -218,7 +218,7 @@ public class AutoSmith extends Module {
 
     private final Setting<Boolean> disableOnDone = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Disable on Done")
+            .name("disable-on-done")
             .description("Automatically disable the module when no more gear can be upgraded.")
             .defaultValue(false)
             .build()
@@ -226,7 +226,7 @@ public class AutoSmith extends Module {
 
     private final Setting<Boolean> pingOnDone = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Sound Ping")
+            .name("sound-ping")
             .description("Play a sound cue when no more gear can be trimmed or upgraded.")
             .defaultValue(true)
             .build()
@@ -234,7 +234,7 @@ public class AutoSmith extends Module {
 
     private final Setting<Double> pingVolume = settings.getDefaultGroup().add(
         new DoubleSetting.Builder()
-            .name("Ping Volume")
+            .name("ping-volume")
             .sliderMin(0.0)
             .sliderMax(5.0)
             .defaultValue(1.0)
@@ -243,7 +243,7 @@ public class AutoSmith extends Module {
 
     private final Setting<Integer> tickRate = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("Delay")
+            .name("delay")
             .description("You may need to increase this if your ping is high.")
             .range(2, 100)
             .sliderRange(2, 20)

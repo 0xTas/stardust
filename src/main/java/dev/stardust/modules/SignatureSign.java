@@ -54,7 +54,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Boolean> storyMode = sgMode.add(
         new BoolSetting.Builder()
-            .name("Story Mode")
+            .name("story-mode")
             .description("Fill signs continuously from .minecraft/meteor-client/storysign.text")
             .defaultValue(false)
             .build()
@@ -62,7 +62,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Boolean> secretSign = sgMode.add(
         new BoolSetting.Builder()
-            .name("Secret Signs")
+            .name("secret-signs")
             .description("Pad each line with spaces to hide your message from being rendered. Will then only be viewable via metadata (ChatSigns etc.)")
             .defaultValue(false)
             .build()
@@ -70,7 +70,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Boolean> protectSigns = sgSignsOpts.add(
         new BoolSetting.Builder()
-            .name("Wax Signs")
+            .name("wax-signs")
             .description("Apply honeycomb wax onto signs if found in inventory.")
             .defaultValue(true)
             .build()
@@ -78,7 +78,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Boolean> glowSigns = sgSignsOpts.add(
         new BoolSetting.Builder()
-            .name("Glow Signs")
+            .name("glow-signs")
             .description("Apply glow squid ink onto signs if found in inventory.")
             .defaultValue(false)
             .build()
@@ -86,7 +86,7 @@ public class SignatureSign extends Module {
 
     private final Setting<DyeColor> signColor = sgSignsOpts.add(
         new EnumSetting.Builder<DyeColor>()
-            .name("Sign Color")
+            .name("sign-color")
             .description("Apply selected dye color onto signs if found in inventory.")
             .defaultValue(DyeColor.BLACK)
             .build()
@@ -94,7 +94,7 @@ public class SignatureSign extends Module {
 
     public final Setting<Boolean> signFreedom = sgSignsOpts.add(
         new BoolSetting.Builder()
-            .name("Bypass Length Limits")
+            .name("bypass-length-limits")
             .description("Bypass client-sided length limits for sign text.")
             .defaultValue(true)
             .visible(() -> !secretSign.get())
@@ -103,7 +103,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line1ModeFront = sgLine1Front.add(
         new ProvidedStringSetting.Builder()
-            .name("Line 1 Mode")
+            .name("line-1-mode")
             .description("Line 1 template mode")
             .defaultValue("Stardust")
             .supplier(() -> lineModes)
@@ -113,7 +113,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line1TextFront = sgLine1Front.add(
         new StringSetting.Builder()
-            .name("Line 1 Text")
+            .name("line-1-text")
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(1))
             .onChanged(txt -> {
@@ -133,7 +133,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Integer> line1FileLineFront = sgLine1Front.add(
         new IntSetting.Builder()
-            .name("Line 1 File Line")
+            .name("line-1-file-line")
             .description("Which line of .minecraft/meteor-client/autosign.txt to use.")
             .range(1, 1000)
             .sliderRange(1, 420)
@@ -144,7 +144,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line1TimestampTypeFront = sgLine1Front.add(
         new ProvidedStringSetting.Builder()
-            .name("Line 1 Timestamp Type")
+            .name("line-1-timestamp-type")
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
             .visible(() -> !storyMode.get() && line1ModeFront.get().equals("Timestamp"))
@@ -153,7 +153,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line1TimestampDelimFront = sgLine1Front.add(
         new ProvidedStringSetting.Builder()
-            .name("Line 1 Timestamp Delimiter")
+            .name("line-1-timestamp-delimiter")
             .defaultValue("/")
             .supplier(() -> timestampDelimiters)
             .visible(() -> !storyMode.get() && line1ModeFront.get().equals("Timestamp") && line1TimestampTypeFront.get().contains("/"))
@@ -162,7 +162,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line2ModeFront = sgLine2Front.add(
         new ProvidedStringSetting.Builder()
-            .name("Line 2 Mode")
+            .name("line-2-mode")
             .description("Line 2 template mode")
             .defaultValue("Stardust")
             .supplier(() -> lineModes)
@@ -172,7 +172,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line2TextFront = sgLine2Front.add(
         new StringSetting.Builder()
-            .name("Line 2 Text")
+            .name("line-2-text")
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(2))
             .onChanged(txt -> {
@@ -192,7 +192,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Integer> line2FileLineFront = sgLine2Front.add(
         new IntSetting.Builder()
-            .name("Line 2 File Line")
+            .name("line-2-file-line")
             .description("Which line of .minecraft/meteor-client/autosign.txt to use.")
             .range(1, 1000)
             .sliderRange(1, 420)
@@ -203,7 +203,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line2TimestampTypeFront = sgLine2Front.add(
         new ProvidedStringSetting.Builder()
-            .name("Line 2 Timestamp Type")
+            .name("line-2-timestamp-type")
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
             .visible(() -> !storyMode.get() && line2ModeFront.get().equals("Timestamp"))
@@ -212,7 +212,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line2TimestampDelimFront = sgLine2Front.add(
         new ProvidedStringSetting.Builder()
-            .name("Line 2 Timestamp Delimiter")
+            .name("line-2-timestamp-delimiter")
             .defaultValue("/")
             .supplier(() -> timestampDelimiters)
             .visible(() -> !storyMode.get() && line2ModeFront.get().equals("Timestamp") && line2TimestampTypeFront.get().contains("/"))
@@ -221,7 +221,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line3ModeFront = sgLine3Front.add(
         new ProvidedStringSetting.Builder()
-            .name("Line 3 Mode")
+            .name("line-3-mode")
             .defaultValue("Stardust")
             .description("Line 3 template mode")
             .supplier(() -> lineModes)
@@ -231,7 +231,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line3TextFront = sgLine3Front.add(
         new StringSetting.Builder()
-            .name("Line 3 Text")
+            .name("line-3-text")
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(3))
             .onChanged(txt -> {
@@ -251,7 +251,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Integer> line3FileLineFront = sgLine3Front.add(
         new IntSetting.Builder()
-            .name("Line 3 File Line")
+            .name("line-3-file-line")
             .description("Which line of .minecraft/meteor-client/autosign.txt to use.")
             .range(1, 1000)
             .sliderRange(1, 420)
@@ -262,7 +262,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line3TimestampTypeFront = sgLine3Front.add(
         new ProvidedStringSetting.Builder()
-            .name("Line 3 Timestamp Type")
+            .name("line-3-timestamp-type")
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
             .visible(() -> !storyMode.get() && line3ModeFront.get().equals("Timestamp"))
@@ -271,7 +271,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line3TimestampDelimFront = sgLine3Front.add(
         new ProvidedStringSetting.Builder()
-            .name("Line 3 Timestamp Delimiter")
+            .name("line-3-timestamp-delimiter")
             .defaultValue("/")
             .supplier(() -> timestampDelimiters)
             .visible(() -> !storyMode.get() && line3ModeFront.get().equals("Timestamp") && line3TimestampTypeFront.get().contains("/"))
@@ -280,7 +280,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line4ModeFront = sgLine4Front.add(
         new ProvidedStringSetting.Builder()
-            .name("Line 4 Mode")
+            .name("line-4-mode")
             .defaultValue("Stardust")
             .description("Line 4 template mode")
             .supplier(() -> lineModes)
@@ -290,7 +290,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line4TextFront = sgLine4Front.add(
         new StringSetting.Builder()
-            .name("Line 4 Text")
+            .name("line-4-text")
             .defaultValue("")
             .visible(() -> !storyMode.get() && textLineVisibility(4))
             .onChanged(txt -> {
@@ -310,7 +310,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Integer> line4FileLineFront = sgLine4Front.add(
         new IntSetting.Builder()
-            .name("Line 4 File Line")
+            .name("line-4-file-line")
             .description("Which line of .minecraft/meteor-client/autosign.txt to use.")
             .range(1, 1000)
             .sliderRange(1, 420)
@@ -321,7 +321,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line4TimestampTypeFront = sgLine4Front.add(
         new ProvidedStringSetting.Builder()
-            .name("Line 4 Timestamp Type")
+            .name("line-4-timestamp-type")
             .defaultValue("Month Day Year")
             .supplier(() -> timestampTypes)
             .visible(() -> !storyMode.get() && line4ModeFront.get().equals("Timestamp"))
@@ -330,7 +330,7 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line4TimestampDelimFront = sgLine4Front.add(
         new ProvidedStringSetting.Builder()
-            .name("Line 4 Timestamp Delimiter")
+            .name("line-4-timestamp-delimiter")
             .defaultValue("/")
             .supplier(() -> timestampDelimiters)
             .visible(() -> !storyMode.get() && line4ModeFront.get().equals("Timestamp") && line4TimestampTypeFront.get().contains("/"))
@@ -339,7 +339,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Boolean> shortenedMonth = sgSignsOpts.add(
         new BoolSetting.Builder()
-            .name("Shortened Month")
+            .name("shortened-month")
             .description("Shorten the month to its abbreviation")
             .defaultValue(false)
             .build()
@@ -347,7 +347,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Boolean> autoConfirm = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Auto Confirm")
+            .name("auto-confirm")
             .description("Automatically confirm and close the sign edit screen.")
             .defaultValue(true)
             .build()
@@ -355,7 +355,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Boolean> autoDisable = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Auto Disable")
+            .name("auto-disable")
             .description("Automatically disable the module after placing a sign.")
             .defaultValue(false)
             .visible(() -> !storyMode.get())
@@ -364,7 +364,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Boolean> redo = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Redo Last Sign")
+            .name("redo-last-sign")
             .description("Click this to redo your last-placed story sign. Useful if you misplaced it.")
             .defaultValue(false)
             .visible(storyMode::get)
@@ -373,7 +373,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Boolean> openFolder = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Open Meteor Client Folder")
+            .name("open-meteor-client-folder")
             .description("Opens the meteor-client folder where autosign.txt & storysign.txt are kept.")
             .defaultValue(false)
             .onChanged(it -> {

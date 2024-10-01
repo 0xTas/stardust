@@ -26,14 +26,14 @@ public class StashBrander extends Module {
 
     private final Setting<List<Item>> itemList = settings.getDefaultGroup().add(
         new ItemListSetting.Builder()
-            .name("Items")
+            .name("items")
             .description("Items to automatically rename (or exclude from being renamed, if blacklist mode is enabled.)")
             .build()
     );
 
     private final Setting<String> itemName = settings.getDefaultGroup().add(
         new StringSetting.Builder()
-            .name("Custom Name")
+            .name("custom-name")
             .description("The name you want to give to qualifying items.")
             .defaultValue("")
             .onChanged(name -> {
@@ -48,7 +48,7 @@ public class StashBrander extends Module {
 
     private final Setting<Boolean> blacklistMode = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Blacklist Mode")
+            .name("blacklist-mode")
             .description("Rename all items except the ones selected in the Items list.")
             .defaultValue(false)
             .build()
@@ -56,7 +56,7 @@ public class StashBrander extends Module {
 
     private final Setting<Boolean> renameNamed = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Rename Prenamed")
+            .name("rename-prenamed")
             .description("Rename items which already have a different custom name.")
             .defaultValue(false)
             .build()
@@ -64,14 +64,14 @@ public class StashBrander extends Module {
 
     private final Setting<Boolean> muteAnvils = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Mute Anvils")
+            .name("mute-anvils")
             .defaultValue(true)
             .build()
     );
 
     private final Setting<Boolean> pingOnDone = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Sound Ping")
+            .name("sound-ping")
             .description("Play a sound cue when no more items can be renamed.")
             .defaultValue(true)
             .build()
@@ -79,7 +79,7 @@ public class StashBrander extends Module {
 
     private final Setting<Double> pingVolume = settings.getDefaultGroup().add(
         new DoubleSetting.Builder()
-            .name("Ping Volume")
+            .name("ping-volume")
             .sliderMin(0.0)
             .sliderMax(5.0)
             .defaultValue(1.0)
@@ -88,7 +88,7 @@ public class StashBrander extends Module {
 
     private final Setting<Boolean> closeOnDone = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Close Anvil")
+            .name("close-anvil")
             .description("Automatically close the anvil screen when no more items can be renamed.")
             .defaultValue(true)
             .build()
@@ -96,7 +96,7 @@ public class StashBrander extends Module {
 
     private final Setting<Boolean> disableOnDone = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Disable on Done")
+            .name("disable-on-done")
             .description("Automatically disable the module when no more items can be renamed.")
             .defaultValue(false)
             .build()
@@ -104,7 +104,7 @@ public class StashBrander extends Module {
 
     private final Setting<Integer> tickRate = settings.getDefaultGroup().add(
         new IntSetting.Builder()
-            .name("Tick Rate")
+            .name("tick-rate")
             .min(0).max(1000)
             .sliderRange(0, 100)
             .defaultValue(0)
