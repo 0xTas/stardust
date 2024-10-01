@@ -38,6 +38,7 @@
   "mixins": [
     "WorldMixin",
     "EntityMixin",
+    "AutoMendMixin",
     "ItemStackMixin",
     "DoorBlockMixin",
     "PlayerEntityMixin",
