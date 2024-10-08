@@ -1,0 +1,163 @@
+package dev.stardust.mixin;
+
+import java.time.Instant;
+import org.joml.Vector3d;
+import java.time.Duration;
+import net.minecraft.text.Text;
+import net.minecraft.block.AirBlock;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import meteordevelopment.meteorclient.settings.Setting;
+import meteordevelopment.meteorclient.pathing.PathManagers;
+import meteordevelopment.meteorclient.settings.BoolSetting;
+import meteordevelopment.meteorclient.settings.SettingGroup;
+import meteordevelopment.meteorclient.pathing.BaritoneUtils;
+import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.systems.modules.Category;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import meteordevelopment.meteorclient.events.meteor.MouseButtonEvent;
+import meteordevelopment.meteorclient.systems.modules.render.Freecam;
+
+/**
+ * @author Tas [0xTas] <root@0xTas.dev>
+ *
+ *     Adds "Click-to-come" functionality to Meteor's built-in Freecam module.
+ **/
+@Mixin(value = Freecam.class, remap = false)
+public class FreecamMixin extends Module {
+    public FreecamMixin(Category category, String name, String description) {
+        super(category, name, description);
+    }
+
+    @Shadow
+    @Final
+    public Vector3d pos;
+    @Shadow
+    @Final
+    private SettingGroup sgGeneral;
+
+    @Unique
+    private int timer = 0;
+    @Unique
+    private int clicks = 0;
+    @Unique
+    @Nullable
+    private Instant clickedAt = null;
+    @Unique
+    @Nullable
+    private Setting<Boolean> clickToCome = null;
+    @Unique
+    @Nullable
+    private Setting<Boolean> useBaritoneChat = null;
+    @Unique
+    @Nullable
+    private Setting<Boolean> doubleClickToCome = null;
+
+    @Inject(method = "<init>", at = @At(value = "FIELD", target = "Lmeteordevelopment/meteorclient/systems/modules/render/Freecam;rotate:Lmeteordevelopment/meteorclient/settings/Setting;"))
+    private void addClickToComeSettings(CallbackInfo ci) {
+        clickToCome = sgGeneral.add(
+            new BoolSetting.Builder()
+                .name("click-to-come")
+                .description("Click on a block while in freecam to path there with Baritone.")
+                .defaultValue(false)
+                .build()
+        );
+
+        doubleClickToCome = sgGeneral.add(
+            new BoolSetting.Builder()
+                .name("double-click-only")
+                .description("Require a double-click to Baritone path to your crosshair target.")
+                .defaultValue(false)
+                .visible(() -> clickToCome != null && clickToCome.get())
+                .build()
+        );
+
+        useBaritoneChat = sgGeneral.add(
+            new BoolSetting.Builder()
+                .name("use-baritone-chat")
+                .description("Use Baritone chat commands instead of the internal API. For compatibility with standalone Baritone versions.")
+                .defaultValue(false)
+                .visible(() -> clickToCome != null && clickToCome.get())
+                .build()
+        );
+    }
+
+    @Inject(method = "onTick", at = @At("HEAD"))
+    private void handleClickToCome(CallbackInfo ci) {
+        if ((doubleClickToCome != null && !doubleClickToCome.get() && clicks >= 1) || clicks >= 2) {
+            clicks = 0;
+            Direction side = null;
+            BlockPos crosshairPos;
+            if (mc.crosshairTarget instanceof EntityHitResult) {
+                crosshairPos = ((EntityHitResult) mc.crosshairTarget).getEntity().getBlockPos();
+            } else {
+                BlockHitResult result = ((BlockHitResult) mc.crosshairTarget);
+                crosshairPos = result.getBlockPos();
+                side = result.getSide();
+            }
+
+            if (useBaritoneChat != null && useBaritoneChat.get()) {
+                if (side != null) {
+                    // Try not to mine the block we clicked on
+                    if (side == Direction.DOWN) {
+                        crosshairPos = crosshairPos.offset(side, 2);
+                    }else if (side == Direction.UP) {
+                        crosshairPos = crosshairPos.offset(side);
+                    } else {
+                        crosshairPos = crosshairPos.offset(side);
+                        if (mc.world.getBlockState(crosshairPos.offset(Direction.DOWN)).getBlock() instanceof AirBlock) {
+                            crosshairPos = crosshairPos.offset(Direction.DOWN);
+                        }
+                    }
+                }
+                mc.getNetworkHandler().sendChatMessage("#goto "
+                    + crosshairPos.getX() + " "
+                    + crosshairPos.getY() + " "
+                    + crosshairPos.getZ()
+                );
+            } else if (BaritoneUtils.IS_AVAILABLE) {
+                PathManagers.get().moveTo(crosshairPos);
+                if (chatFeedback) mc.player.sendMessage(Text.literal("§8[§a§oFreecam§8] §7Baritone pathing to destination§a..!"));
+            } else {
+                error("Baritone was not found to be installed. If this is a mistake, please enable the \"Use Baritone Chat\" setting and try again.");
+            }
+        }
+
+        if (clicks <= 0) return;
+
+        ++timer;
+        if (timer >= 10) {
+            timer = 0;
+            clicks = 0;
+            clickedAt = null;
+        }
+    }
+
+    @Inject(method = "onMouseButton", at = @At("TAIL"))
+    private void handleMouseClicks(MouseButtonEvent event, CallbackInfo ci) {
+        if (clickToCome == null || !clickToCome.get()) return;
+        if (mc.options.attackKey.matchesMouse(event.button)) {
+            Instant now = Instant.now();
+            if (clickedAt == null || Duration.between(clickedAt, now).toMillis() > 100) {
+                clicks++;
+                clickedAt = now;
+            }
+        }
+    }
+
+    @Inject(method = "onDeactivate", at = @At("TAIL"))
+    private void resetCounters(CallbackInfo ci) {
+        timer = 0;
+        clicks = 0;
+        clickedAt = null;
+    }
+}

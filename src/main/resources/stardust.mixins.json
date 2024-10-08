@@ -39,6 +39,7 @@
     "WorldMixin",
     "EntityMixin",
     "AutoLogMixin",
+    "FreecamMixin",
     "ItemStackMixin",
     "DoorBlockMixin",
     "PlayerEntityMixin",

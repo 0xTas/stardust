@@ -36,6 +36,7 @@ It contains original modules to enhance your experience on old server, with a fo
 
 #### Miscellaneous
 - **Illegal Disconnect** - *Adds "Illegal Disconnect" functionality to Meteor's built-in AutoLog module.* Enable this in the AutoLog module's settings. Also adds a config setting to put a dedicated Illegal Disconnect button on the pause menu.
+- **Click-to-Come** - *When using Meteor's Freecam module, click on a block or entity to Baritone path there.* Enable this in the Freecam module's settings.
 - **Title Screen Tweaks** - *2b2t-themed changes to the title screen.* Adds config settings to make the splash texts green, to cycle them randomly, and to add a 2b2t direct-connect button to the title screen.
 - **Themed Category Icons** - *Enable module category icons in your config settings to see a random Stardust/2b2t-themed icon for the Stardust modules category.* Randomly picks a new icon each time you open your game!
 
