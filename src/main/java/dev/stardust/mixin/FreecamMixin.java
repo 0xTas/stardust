@@ -1,7 +1,6 @@
 package dev.stardust.mixin;
 
 import java.time.Instant;
-import org.joml.Vector3d;
 import java.time.Duration;
 import net.minecraft.text.Text;
 import net.minecraft.block.AirBlock;
@@ -38,9 +37,6 @@ public class FreecamMixin extends Module {
         super(category, name, description);
     }
 
-    @Shadow
-    @Final
-    public Vector3d pos;
     @Shadow
     @Final
     private SettingGroup sgGeneral;
