@@ -3,7 +3,6 @@ package dev.stardust.mixin;
 import java.time.Instant;
 import java.time.Duration;
 import net.minecraft.text.Text;
-import net.minecraft.block.AirBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.Final;
@@ -15,6 +14,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import net.minecraft.entity.ai.pathing.NavigationType;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.pathing.PathManagers;
 import meteordevelopment.meteorclient.settings.BoolSetting;
@@ -110,7 +110,7 @@ public class FreecamMixin extends Module {
                         crosshairPos = crosshairPos.offset(side);
                     } else {
                         crosshairPos = crosshairPos.offset(side);
-                        if (mc.world.getBlockState(crosshairPos.offset(Direction.DOWN)).getBlock() instanceof AirBlock) {
+                        if (mc.world.getBlockState(crosshairPos.offset(Direction.DOWN)).canPathfindThrough(NavigationType.LAND)) {
                             crosshairPos = crosshairPos.offset(Direction.DOWN);
                         }
                     }
