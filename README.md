@@ -2,7 +2,7 @@
 
 Stardust is an addon for [Meteor Client](https://meteorclient.com) designed for use on the
 anarchy Minecraft server [2b2t](https://2b2t.org).<br>
-It contains original modules to enhance your experience on old server, with a focus on configurability and polish.
+It contains original modules to enhance your experience on Old Server, with a focus on configurability and polish.
 
 ### Feature Set
 #### Commands
@@ -40,7 +40,7 @@ It contains original modules to enhance your experience on old server, with a fo
 
 >*OldSigns: <br>
 Ever since 2b2t updated to 1.19, the NBT tag artifact that separates pre-1.8 from post-1.8 signs is missing on newly-placed signs.<br>
-This means that false positives are now *unavoidable*, but should be limited to *oak signs placed after 1.19 in old (pre-1.8) chunks that do not contain dates after 2015*.<br>
+This means that false positives are now *unavoidable*, but should be limited to *oak signs placed after 1.19 in old (pre-1.8) chunks, which don't contain dates after 2015*.<br>
 Use your best judgement to further identify false positives or fakes.<br>
 OldSigns functionality can be accessed in the ChatSigns module settings. 
 
@@ -54,7 +54,7 @@ OldSigns functionality can be accessed in the ChatSigns module settings.
 | **Click-to-Come**         | *When using Meteor's Freecam module, click on a block or entity to Baritone path there.* Enable this in the Freecam module's settings.                                                                                  |
 | **Elytra Mending**        | *Tweaks Meteor's built-in AutoMend module to allow automatically equipping damaged elytras for mending.* This can be used in conjunction with offhand mending, or exclusively by enabling the "ignore offhand" setting. |
 | **Title Screen Tweaks**   | *2b2t-themed changes to the title screen.* Adds config settings to make the splash texts green, to cycle them randomly, and to add a 2b2t direct-connect button to the title screen.                                    |
-| **Themed Category Icons** | *Enable module category icons in your config settings to see a random Stardust/2b2t-themed icon for the Stardust modules category.* Randomly picks a new icon each time you open your game!                             |
+| **Themed Category Icons** | *Enable module category icons in your Meteor GUI settings to see a random Stardust/2b2t-themed icon for the Stardust modules category.* Randomly picks a new icon each time you launch your game!                       |
 
 <br>
 
