@@ -97,7 +97,7 @@ public class Stardust extends MeteorAddon {
             new EnumSetting.Builder<IllegalDisconnectMethod>()
                 .name("illegal-disconnect-method")
                 .description("The method to use to cause the server to kick you.")
-                .defaultValue(IllegalDisconnectMethod.Slot)
+                .defaultValue(IllegalDisconnectMethod.Interact)
                 .build()
         );
 
