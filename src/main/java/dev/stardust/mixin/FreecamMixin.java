@@ -121,6 +121,7 @@ public class FreecamMixin extends Module {
                     + crosshairPos.getZ()
                 );
             } else if (BaritoneUtils.IS_AVAILABLE) {
+                PathManagers.get().stop();
                 PathManagers.get().moveTo(crosshairPos);
                 if (chatFeedback) mc.player.sendMessage(Text.literal("§8[§a§oFreecam§8] §7Baritone pathing to destination§a..!"));
             } else {
