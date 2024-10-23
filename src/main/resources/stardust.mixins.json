@@ -42,6 +42,7 @@
     "AutoLogMixin",
     "FreecamMixin",
     "AutoMendMixin",
+    "NotifierMixin",
     "ItemStackMixin",
     "DoorBlockMixin",
     "CategoryAccessor",

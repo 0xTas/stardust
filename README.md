@@ -52,6 +52,7 @@ OldSigns functionality can be accessed in the ChatSigns module settings.
 |---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Illegal Disconnect**    | *Adds "Illegal Disconnect" functionality to Meteor's built-in AutoLog module.* Enable this in the AutoLog module's settings. Also adds a config setting to put a dedicated Illegal Disconnect button on the pause menu. |
 | **Click-to-Come**         | *When using Meteor's Freecam module, click on a block or entity to Baritone path there.* Enable this in the Freecam module's settings.                                                                                  |
+| **Greeter**               | *Adds Greeter-style join/leave notifications to Meteor's built-in Notifier module.* \***Requires Meteor dev-build 0.5.8-2188 or newer.**                                                                                |
 | **Elytra Mending**        | *Tweaks Meteor's built-in AutoMend module to allow automatically equipping damaged elytras for mending.* This can be used in conjunction with offhand mending, or exclusively by enabling the "ignore offhand" setting. |
 | **Title Screen Tweaks**   | *2b2t-themed changes to the title screen.* Adds config settings to make the splash texts green, to cycle them randomly, and to add a 2b2t direct-connect button to the title screen.                                    |
 | **Themed Category Icons** | *Enable module category icons in your Meteor GUI settings to see a random Stardust/2b2t-themed icon for the Stardust modules category.* Randomly picks a new icon each time you launch your game!                       |
@@ -62,7 +63,7 @@ OldSigns functionality can be accessed in the ChatSigns module settings.
 
 1. Ensure that [Fabric](https://fabricmc.net) for Minecraft version 1.21.1 is installed.
 2. Download the [latest release](https://github.com/0xTas/stardust/releases/latest), or build the addon from source with `./gradlew build`.
-3. Drop the .jar file in your `.minecraft/mods` folder, along with Meteor Client (v0.5.8 for 1.21.1)
+3. Drop the .jar file in your `.minecraft/mods` folder, along with Meteor Client v0.5.8-2188 or newer.
 4. Run your Fabric installation.
 <br>
 
