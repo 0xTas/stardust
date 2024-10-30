@@ -1,4 +1,4 @@
-package dev.stardust.mixin;
+package dev.stardust.mixin.meteor;
 
 import java.util.UUID;
 import net.minecraft.text.Text;

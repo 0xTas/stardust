@@ -1,4 +1,4 @@
-package dev.stardust.mixin;
+package dev.stardust.mixin.meteor;
 
 import net.minecraft.text.Text;
 import net.minecraft.item.Items;

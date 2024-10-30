@@ -1,4 +1,4 @@
-package dev.stardust.mixin;
+package dev.stardust.mixin.meteor;
 
 import dev.stardust.Stardust;
 import net.minecraft.text.Text;
@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import meteordevelopment.meteorclient.utils.Utils;
 import meteordevelopment.meteorclient.MeteorClient;
 import org.spongepowered.asm.mixin.injection.Inject;
+import dev.stardust.mixin.DisconnectS2CPacketAccessor;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.SettingGroup;

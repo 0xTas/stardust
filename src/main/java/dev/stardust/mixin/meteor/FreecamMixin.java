@@ -1,4 +1,4 @@
-package dev.stardust.mixin;
+package dev.stardust.mixin.meteor;
 
 import java.time.Instant;
 import java.time.Duration;

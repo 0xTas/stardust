@@ -1,4 +1,4 @@
-package dev.stardust.mixin;
+package dev.stardust.mixin.meteor;
 
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
