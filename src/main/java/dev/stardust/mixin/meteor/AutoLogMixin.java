@@ -41,6 +41,9 @@ public abstract class AutoLogMixin extends Module {
     @Shadow
     @Final
     private Setting<Boolean> toggleOff;
+    @Shadow
+    @Final
+    private Setting<Boolean> smartToggle;
 
     @Unique
     private boolean didLog = false;
@@ -53,7 +56,7 @@ public abstract class AutoLogMixin extends Module {
 
     @Override
     public void onDeactivate() {
-        if (toggleOff.get() && didLog) {
+        if (toggleOff.get() || smartToggle.get() && didLog) {
             MeteorClient.EVENT_BUS.subscribe(this);
         }
     }
@@ -71,16 +74,15 @@ public abstract class AutoLogMixin extends Module {
 
     @Inject(method = "onTick",at = @At("HEAD"), cancellable = true)
     private void preventNullPointerExceptions(CallbackInfo ci) {
-        if (!Utils.canUpdate()) ci.cancel();
+        if (!Utils.canUpdate() || !isActive()) ci.cancel();
     }
 
-    @Inject(method = "disconnect", at = @At("HEAD"), cancellable = true)
-    private void maybeForceKick(String reason, CallbackInfo ci) {
+    @Inject(method = "disconnect(Lnet/minecraft/text/Text;)V", at = @At("HEAD"), cancellable = true, remap = true)
+    private void maybeIllegalDisconnect(Text reason, CallbackInfo ci) {
         if (forceKick != null && forceKick.get()) {
             ci.cancel();
             didLog = true;
-            if (toggleOff.get()) toggle();
-            disconnectReason = Text.literal("§8[§aAutoLog§8] §f" + reason);
+            disconnectReason = Text.literal("§8[§a§oAutoLog§8] §f" + reason.getString());
             StardustUtil.illegalDisconnect(true, Stardust.illegalDisconnectMethodSetting.get());
         }
     }
@@ -91,7 +93,7 @@ public abstract class AutoLogMixin extends Module {
         if (disconnectReason == null || !(event.packet instanceof DisconnectS2CPacket packet))  return;
         if (didLog) {
             ((DisconnectS2CPacketAccessor)(Object) packet).setReason(disconnectReason);
-            MeteorClient.EVENT_BUS.unsubscribe(this);
+            if (!isActive()) MeteorClient.EVENT_BUS.unsubscribe(this);
             disconnectReason = null;
             didLog = false;
         }
