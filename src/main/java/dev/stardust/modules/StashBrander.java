@@ -8,15 +8,15 @@ import net.minecraft.item.ItemStack;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.sound.SoundEvents;
 import meteordevelopment.orbit.EventHandler;
-import dev.stardust.mixin.AnvilScreenAccessor;
 import net.minecraft.screen.AnvilScreenHandler;
 import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.component.DataComponentTypes;
-import dev.stardust.mixin.AnvilScreenHandlerAccessor;
+import dev.stardust.mixin.accessor.AnvilScreenAccessor;
 import net.minecraft.client.gui.screen.ingame.AnvilScreen;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import dev.stardust.mixin.accessor.AnvilScreenHandlerAccessor;
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>

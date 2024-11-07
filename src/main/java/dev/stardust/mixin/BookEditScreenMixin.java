@@ -12,6 +12,7 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import dev.stardust.mixin.accessor.BookEditScreenAccessor;
 import net.minecraft.client.gui.screen.ingame.BookEditScreen;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;

@@ -1,4 +1,4 @@
-package dev.stardust.mixin;
+package dev.stardust.mixin.accessor;
 
 import javax.annotation.Nullable;
 import org.spongepowered.asm.mixin.Mixin;

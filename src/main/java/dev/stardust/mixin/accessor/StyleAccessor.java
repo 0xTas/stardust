@@ -1,4 +1,4 @@
-package dev.stardust.mixin;
+package dev.stardust.mixin.accessor;
 
 import net.minecraft.text.Style;
 import net.minecraft.text.HoverEvent;

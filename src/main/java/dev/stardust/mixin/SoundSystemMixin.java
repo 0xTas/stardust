@@ -9,6 +9,7 @@ import dev.stardust.modules.MusicTweaks;
 import net.minecraft.util.math.MathHelper;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import dev.stardust.mixin.accessor.SourceManagerAccessor;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 

@@ -1,4 +1,4 @@
-package dev.stardust.mixin;
+package dev.stardust.mixin.accessor;
 
 import net.minecraft.screen.Property;
 import org.spongepowered.asm.mixin.Mixin;

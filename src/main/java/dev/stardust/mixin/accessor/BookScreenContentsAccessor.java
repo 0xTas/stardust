@@ -1,4 +1,4 @@
-package dev.stardust.mixin;
+package dev.stardust.mixin.accessor;
 
 import java.util.List;
 import net.minecraft.text.Text;

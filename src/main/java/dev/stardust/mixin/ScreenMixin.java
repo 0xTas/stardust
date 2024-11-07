@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Mutable;
 import net.minecraft.client.gui.screen.Screen;
 import org.spongepowered.asm.mixin.injection.At;
+import dev.stardust.mixin.accessor.StyleAccessor;
 import org.spongepowered.asm.mixin.injection.Inject;
 import net.minecraft.client.gui.AbstractParentElement;
 import meteordevelopment.meteorclient.systems.modules.Modules;

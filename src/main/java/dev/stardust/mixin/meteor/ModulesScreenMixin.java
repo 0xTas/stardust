@@ -11,6 +11,7 @@ import meteordevelopment.meteorclient.gui.tabs.Tab;
 import meteordevelopment.meteorclient.gui.GuiTheme;
 import org.spongepowered.asm.mixin.injection.Inject;
 import meteordevelopment.meteorclient.gui.tabs.TabScreen;
+import dev.stardust.mixin.meteor.accessor.CategoryAccessor;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.gui.screens.ModulesScreen;
 import meteordevelopment.meteorclient.gui.widgets.containers.WWindow;
