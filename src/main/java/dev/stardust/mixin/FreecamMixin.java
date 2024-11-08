@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.RaycastContext;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import org.spongepowered.asm.mixin.injection.At;
@@ -72,15 +71,13 @@ public class FreecamMixin {
     // Original commit: https://github.com/MeteorDevelopment/meteor-client/commit/2c5e8edc29e84d4f07e5534c8b0c967bb6696379
     @Inject(method = "onMouseScroll", at = @At("HEAD"), cancellable = true)
     private void fixScrollSpeedUpdate(MouseScrollEvent event, CallbackInfo ci) {
-        if (MinecraftClient.getInstance().currentScreen != null) ci.cancel();
+        if (mc.currentScreen != null) ci.cancel();
     }
 
     // 1.20.1 Fix for Freecam not properly recording previous movement values. Fixed in commit ea41864
     // Original commit: https://github.com/MeteorDevelopment/meteor-client/commit/ea418641b25d5d7ddec15e0a3ec659e5c8cc3862
     @Inject(method = "onActivate", at = @At(value = "INVOKE", target = "Lmeteordevelopment/meteorclient/systems/modules/render/Freecam;unpress()V"))
     private void preservePreviousMovementValues(CallbackInfo ci) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-
         this.up = mc.options.jumpKey.isPressed();
         this.left = mc.options.leftKey.isPressed();
         this.down = mc.options.sneakKey.isPressed();
