@@ -286,7 +286,7 @@ public class StardustUtil {
             case SequenceBreak -> illegalPacket = new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, -420);
         }
         if (illegalPacket != null) ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).invokeSendImmediately(
-            illegalPacket, null
+            illegalPacket, null, true
         );
     }
 
