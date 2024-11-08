@@ -134,20 +134,21 @@ public class FreecamMixin {
                 }
             }
 
-            if (useBaritoneChat != null && useBaritoneChat.get() && baritoneChatPrefix != null && !baritoneChatPrefix.get().isBlank()) {
-                if (side != null) {
-                    // Try not to mine the block we clicked on
-                    if (side == Direction.DOWN) {
-                        crosshairPos = crosshairPos.offset(side, 2);
-                    }else if (side == Direction.UP) {
-                        crosshairPos = crosshairPos.offset(side);
-                    } else {
-                        crosshairPos = crosshairPos.offset(side);
-                        if (mc.world.getBlockState(crosshairPos.offset(Direction.DOWN)).canPathfindThrough(mc.world, crosshairPos.offset(Direction.DOWN), NavigationType.LAND)) {
-                            crosshairPos = crosshairPos.offset(Direction.DOWN);
-                        }
+            if (side != null) {
+                // Try not to mine the block we clicked on
+                if (side == Direction.DOWN) {
+                    crosshairPos = crosshairPos.offset(side, 2);
+                }else if (side == Direction.UP) {
+                    crosshairPos = crosshairPos.offset(side);
+                } else {
+                    crosshairPos = crosshairPos.offset(side);
+                    if (mc.world.getBlockState(crosshairPos.offset(Direction.DOWN)).canPathfindThrough(mc.world, crosshairPos.offset(Direction.DOWN), NavigationType.LAND)) {
+                        crosshairPos = crosshairPos.offset(Direction.DOWN);
                     }
                 }
+            }
+
+            if (useBaritoneChat != null && useBaritoneChat.get() && baritoneChatPrefix != null && !baritoneChatPrefix.get().isBlank()) {
                 mc.getNetworkHandler().sendChatMessage(baritoneChatPrefix.get() + "goto "
                     + crosshairPos.getX() + " "
                     + crosshairPos.getY() + " "
