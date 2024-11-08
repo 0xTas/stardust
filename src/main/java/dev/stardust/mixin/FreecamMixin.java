@@ -2,6 +2,7 @@ package dev.stardust.mixin;
 
 import java.time.Instant;
 import java.time.Duration;
+import net.minecraft.text.Text;
 import net.minecraft.block.AirBlock;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.BlockPos;
@@ -13,19 +14,20 @@ import org.spongepowered.asm.mixin.Unique;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.RaycastContext;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import meteordevelopment.meteorclient.settings.Setting;
+import meteordevelopment.meteorclient.pathing.PathManagers;
 import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
+import meteordevelopment.meteorclient.pathing.BaritoneUtils;
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 import meteordevelopment.meteorclient.settings.StringSetting;
+import meteordevelopment.meteorclient.systems.modules.Modules;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import meteordevelopment.meteorclient.events.meteor.MouseScrollEvent;
 import meteordevelopment.meteorclient.systems.modules.render.Freecam;
 import meteordevelopment.meteorclient.events.meteor.MouseButtonEvent;
 
@@ -35,18 +37,6 @@ import meteordevelopment.meteorclient.events.meteor.MouseButtonEvent;
  **/
 @Mixin(value = Freecam.class, remap = false)
 public class FreecamMixin {
-    @Shadow
-    private boolean forward;
-    @Shadow
-    private boolean backward;
-    @Shadow
-    private boolean right;
-    @Shadow
-    private boolean left;
-    @Shadow
-    private boolean up;
-    @Shadow
-    private boolean down;
     @Shadow
     @Final
     private SettingGroup sgGeneral;
@@ -63,31 +53,13 @@ public class FreecamMixin {
     private Setting<Boolean> clickToCome = null;
     @Unique
     @Nullable
+    private Setting<Boolean> useBaritoneChat = null;
+    @Unique
+    @Nullable
     private Setting<String> baritoneChatPrefix = null;
     @Unique
     @Nullable
     private Setting<Boolean> doubleClickToCome = null;
-
-    // 1.20.1 Fix for Freecam scroll speed update, was fixed in newer version, in commit 2c5e8ed
-    // Original commit: https://github.com/MeteorDevelopment/meteor-client/commit/2c5e8edc29e84d4f07e5534c8b0c967bb6696379
-    @Inject(method = "onMouseScroll", at = @At("HEAD"), cancellable = true)
-    private void fixScrollSpeedUpdate(MouseScrollEvent event, CallbackInfo ci) {
-        if (MinecraftClient.getInstance().currentScreen != null) ci.cancel();
-    }
-
-    // 1.20.1 Fix for Freecam not properly recording previous movement values. Fixed in commit ea41864
-    // Original commit: https://github.com/MeteorDevelopment/meteor-client/commit/ea418641b25d5d7ddec15e0a3ec659e5c8cc3862
-    @Inject(method = "onActivate", at = @At(value = "INVOKE", target = "Lmeteordevelopment/meteorclient/systems/modules/render/Freecam;unpress()V"))
-    private void preservePreviousMovementValues(CallbackInfo ci) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-
-        this.up = mc.options.jumpKey.isPressed();
-        this.left = mc.options.leftKey.isPressed();
-        this.down = mc.options.sneakKey.isPressed();
-        this.right = mc.options.rightKey.isPressed();
-        this.backward = mc.options.backKey.isPressed();
-        this.forward = mc.options.forwardKey.isPressed();
-    }
 
     @Inject(method = "<init>", at = @At(value = "FIELD", target = "Lmeteordevelopment/meteorclient/systems/modules/render/Freecam;staticView:Lmeteordevelopment/meteorclient/settings/Setting;", shift = At.Shift.AFTER))
     private void addClickToComeSettings(CallbackInfo ci) {
@@ -108,12 +80,21 @@ public class FreecamMixin {
                 .build()
         );
 
+        useBaritoneChat = sgGeneral.add(
+            new BoolSetting.Builder()
+                .name("use-baritone-chat")
+                .description("Use Baritone chat commands instead of the internal API. For compatibility with standalone Baritone versions.")
+                .defaultValue(false)
+                .visible(() -> clickToCome != null && clickToCome.get())
+                .build()
+        );
+
         baritoneChatPrefix = sgGeneral.add(
             new StringSetting.Builder()
                 .name("baritone-command-prefix")
                 .description("What prefix to use for Baritone chat commands.")
                 .defaultValue("#")
-                .visible(() -> clickToCome != null && clickToCome.get())
+                .visible(() -> clickToCome != null && clickToCome.get() && useBaritoneChat != null && useBaritoneChat.get())
                 .build()
         );
     }
@@ -153,7 +134,7 @@ public class FreecamMixin {
                 }
             }
 
-            if (baritoneChatPrefix != null && !baritoneChatPrefix.get().isBlank()) {
+            if (useBaritoneChat != null && useBaritoneChat.get() && baritoneChatPrefix != null && !baritoneChatPrefix.get().isBlank()) {
                 if (side != null) {
                     // Try not to mine the block we clicked on
                     if (side == Direction.DOWN) {
@@ -172,6 +153,12 @@ public class FreecamMixin {
                     + crosshairPos.getY() + " "
                     + crosshairPos.getZ()
                 );
+            } else if (BaritoneUtils.IS_AVAILABLE) {
+                PathManagers.get().stop();
+                PathManagers.get().moveTo(crosshairPos);
+                if (Modules.get().get(Freecam.class).chatFeedback) mc.player.sendMessage(Text.literal("§8[§a§oFreecam§8] §7Baritone pathing to destination§a..!"));
+            } else {
+                Modules.get().get(Freecam.class).error("Baritone was not found to be installed. If this is a mistake, please enable the \"Use Baritone Chat\" setting and try again.");
             }
         }
 
