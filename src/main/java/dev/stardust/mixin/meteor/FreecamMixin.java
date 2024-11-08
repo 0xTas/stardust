@@ -3,6 +3,8 @@ package dev.stardust.mixin.meteor;
 import java.time.Instant;
 import java.time.Duration;
 import net.minecraft.text.Text;
+import net.minecraft.block.AirBlock;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.Final;
@@ -10,6 +12,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,6 +25,7 @@ import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.pathing.BaritoneUtils;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.settings.StringSetting;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import meteordevelopment.meteorclient.events.meteor.MouseButtonEvent;
@@ -56,6 +61,9 @@ public class FreecamMixin extends Module {
     private Setting<Boolean> useBaritoneChat = null;
     @Unique
     @Nullable
+    private Setting<String> baritoneChatPrefix = null;
+    @Unique
+    @Nullable
     private Setting<Boolean> doubleClickToCome = null;
 
     @Inject(method = "<init>", at = @At(value = "FIELD", target = "Lmeteordevelopment/meteorclient/systems/modules/render/Freecam;rotate:Lmeteordevelopment/meteorclient/settings/Setting;"))
@@ -85,6 +93,15 @@ public class FreecamMixin extends Module {
                 .visible(() -> clickToCome != null && clickToCome.get())
                 .build()
         );
+
+        baritoneChatPrefix = sgGeneral.add(
+            new StringSetting.Builder()
+                .name("baritone-command-prefix")
+                .description("What prefix to use for Baritone chat commands.")
+                .defaultValue("#")
+                .visible(() -> clickToCome != null && clickToCome.get() && useBaritoneChat != null && useBaritoneChat.get())
+                .build()
+        );
     }
 
     @Inject(method = "onTick", at = @At("HEAD"))
@@ -97,24 +114,46 @@ public class FreecamMixin extends Module {
                 crosshairPos = ((EntityHitResult) mc.crosshairTarget).getEntity().getBlockPos();
             } else {
                 BlockHitResult result = ((BlockHitResult) mc.crosshairTarget);
-                crosshairPos = result.getBlockPos();
-                side = result.getSide();
+                if (mc.world.getBlockState(result.getBlockPos()).getBlock() instanceof AirBlock) {
+                    Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
+                    float pitch = mc.gameRenderer.getCamera().getPitch();
+                    float yaw = mc.gameRenderer.getCamera().getYaw();
+
+                    Vec3d direction = getRotationVector(pitch, yaw);
+                    RaycastContext context = new RaycastContext(
+                        cameraPos, cameraPos.add(direction.multiply(256)),
+                        RaycastContext.ShapeType.VISUAL, RaycastContext.FluidHandling.NONE, mc.getCameraEntity()
+                    );
+
+                    BlockHitResult rayCast = mc.world.raycast(context);
+                    if (rayCast != null && !(mc.world.getBlockState(rayCast.getBlockPos()).getBlock() instanceof AirBlock)) {
+                        crosshairPos = rayCast.getBlockPos();
+                        side = rayCast.getSide();
+                    } else {
+                        crosshairPos = result.getBlockPos();
+                        side = result.getSide();
+                    }
+                } else {
+                    crosshairPos = result.getBlockPos();
+                    side = result.getSide();
+                }
             }
 
-            if (useBaritoneChat != null && useBaritoneChat.get()) {
-                if (side != null) {
-                    // Try not to mine the block we clicked on
-                    if (side == Direction.DOWN) {
-                        crosshairPos = crosshairPos.offset(side, 2);
-                    }else if (side == Direction.UP) {
-                        crosshairPos = crosshairPos.offset(side);
-                    } else {
-                        crosshairPos = crosshairPos.offset(side);
-                        if (mc.world.getBlockState(crosshairPos.offset(Direction.DOWN)).canPathfindThrough(NavigationType.LAND)) {
-                            crosshairPos = crosshairPos.offset(Direction.DOWN);
-                        }
+            if (side != null) {
+                // Try not to mine the block we clicked on
+                if (side == Direction.DOWN) {
+                    crosshairPos = crosshairPos.offset(side, 2);
+                }else if (side == Direction.UP) {
+                    crosshairPos = crosshairPos.offset(side);
+                } else {
+                    crosshairPos = crosshairPos.offset(side);
+                    if (mc.world.getBlockState(crosshairPos.offset(Direction.DOWN)).canPathfindThrough(NavigationType.LAND)) {
+                        crosshairPos = crosshairPos.offset(Direction.DOWN);
                     }
                 }
+            }
+
+            if (useBaritoneChat != null && useBaritoneChat.get() && baritoneChatPrefix != null && !baritoneChatPrefix.get().isBlank()) {
                 mc.getNetworkHandler().sendChatMessage("#goto "
                     + crosshairPos.getX() + " "
                     + crosshairPos.getY() + " "
@@ -156,5 +195,16 @@ public class FreecamMixin extends Module {
         timer = 0;
         clicks = 0;
         clickedAt = null;
+    }
+
+    @Unique
+    private Vec3d getRotationVector(float pitch, float yaw) {
+        float f = pitch * ((float)Math.PI / 180);
+        float g = -yaw * ((float)Math.PI / 180);
+        float h = MathHelper.cos(g);
+        float i = MathHelper.sin(g);
+        float j = MathHelper.cos(f);
+        float k = MathHelper.sin(f);
+        return new Vec3d(i * j, -k, h * j);
     }
 }
