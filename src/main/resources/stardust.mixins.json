@@ -38,6 +38,7 @@
   "mixins": [
     "WorldMixin",
     "EntityMixin",
+    "FreecamMixin",
     "AutoMendMixin",
     "ItemStackMixin",
     "DoorBlockMixin",
