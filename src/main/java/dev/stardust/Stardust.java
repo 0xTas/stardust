@@ -44,10 +44,12 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new WaxAura());
         Modules.get().add(new AntiToS());
         Modules.get().add(new AutoDoors());
+        Modules.get().add(new AutoSmith());
         Modules.get().add(new BookTools());
         Modules.get().add(new ChatSigns());
         Modules.get().add(new RocketMan());
         Modules.get().add(new BannerData());
+        Modules.get().add(new PagePirate());
         Modules.get().add(new MusicTweaks());
         Modules.get().add(new TreasureESP());
         Modules.get().add(new LoreLocator());
