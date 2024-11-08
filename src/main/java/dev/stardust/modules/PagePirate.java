@@ -176,7 +176,7 @@ public class PagePirate extends Module {
     private final HashMap<String, ArrayList<String>> seenBooks = new HashMap<>();
 
     private String formatPageText(String page) {
-        String formattedPage = page.replaceAll("\\\\n", " ");
+        String formattedPage = page.replaceAll("\\\\n", "~pgprte~newline~");
         formattedPage = formattedPage
             .replace("{\"text\":\"", "")
             .replaceAll("(?m)\"}$", "");
@@ -231,7 +231,7 @@ public class PagePirate extends Module {
                     || pageList.stream()
                         .map(this::formatPageText)
                         .map(this::decodeUnicodeChars)
-                        .allMatch(page -> page.trim().isEmpty());
+                        .allMatch(page -> page.replace("~pgprte~newline~", " ").trim().isEmpty());
             }
             return false;
         });
@@ -277,9 +277,9 @@ public class PagePirate extends Module {
                 .map(this::decodeUnicodeChars)
                 .collect(Collectors.joining("\n"));
 
-            if (seenPages.contains(pageText) && seenBooks.containsKey(author) && seenBooks.get(author).contains(title)) return;
+            if (seenPages.contains(pageText.replace("~pgprte~newline~", "\n")) && seenBooks.containsKey(author) && seenBooks.get(author).contains(title)) return;
 
-            seenPages.add(pageText);
+            seenPages.add(pageText.replace("~pgprte~newline~", "\n"));
             if (seenBooks.containsKey(author)) {
                 ArrayList<String> booksFromAuthor = seenBooks.get(author);
                 booksFromAuthor.add(title);
@@ -301,7 +301,7 @@ public class PagePirate extends Module {
                                 Text.literal(
                                     "§8[§a§oPagePirate§8] §7Author: "
                                         +StardustUtil.rCC()+"§o"+author+" §7Title: "
-                                        +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText
+                                        +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
                                 )
                             );
                         }
@@ -312,7 +312,7 @@ public class PagePirate extends Module {
                                 Text.literal(
                                     "§8[§a§oPagePirate§8] §7Author: "
                                         +StardustUtil.rCC()+"§o"+author+" §7Title: "
-                                        +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText
+                                        +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
                                 )
                             );
                         }
@@ -321,7 +321,7 @@ public class PagePirate extends Module {
                         Text.literal(
                             "§8[§a§oPagePirate§8] §7Author: "
                                 +StardustUtil.rCC()+"§o"+author+" §7Title: "
-                                +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText
+                                +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
                         )
                     );
                 }
@@ -354,10 +354,10 @@ public class PagePirate extends Module {
             .map(this::decodeUnicodeChars)
             .collect(Collectors.joining("\n"));
 
-        if (seenPages.contains(pageText)) return;
+        if (seenPages.contains(pageText.replace("~pgprte~newline~", "\n"))) return;
 
-        seenPages.add(pageText);
-        if (chatDisplay.get() && !pageText.isBlank()) {
+        seenPages.add(pageText.replace("~pgprte~newline~", "\n"));
+        if (chatDisplay.get() && !pageText.replace("~pgprte~newline~", " ").isBlank()) {
             if (deobfuscatePages.get()) {
                 pageText = pageText.replace("§k", "");
             }
@@ -366,18 +366,18 @@ public class PagePirate extends Module {
                 case "on ground" -> {
                     if (displayBooksOnGround.get()) {
                         mc.player.sendMessage(
-                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText)
+                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n"))
                         );
                     }
                 }
                 case "item frame" -> {
                     if (displayBooksInItemFrames.get()) {
                         mc.player.sendMessage(
-                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText)
+                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n"))
                         );
                     }
                 }
-                default -> mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText));
+                default -> mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n")));
             }
         }
         if (localCopy.get()) {
@@ -411,7 +411,7 @@ public class PagePirate extends Module {
         }
 
         List<String> piratedPages = new ArrayList<>();
-        if (metadata != null) {
+        if (writeCoverPage.get() && metadata != null) {
             String rcc = StardustUtil.rCC();
             LocalDate currentDate = LocalDate.now();
             LocalTime currentTime = LocalTime.now();
@@ -434,12 +434,14 @@ public class PagePirate extends Module {
                 "§o" + dayOfMonthSuffix(currentDate.getDayOfMonth()) +
                 " §0§oof "+rcc+"§o" + currentDate.getMonth().toString().charAt(0) +
                 currentDate.getMonth().toString().substring(1).toLowerCase() + "§0§o, "+rcc+"§o" + currentDate.getYear() + "§0§o.";
-            if (writeCoverPage.get()) piratedPages.add(coverPage);
+
+            piratedPages.add(coverPage);
         }
-        piratedPages.addAll(filtered);
+
         int slot = mc.player.getInventory().selectedSlot;
         boolean shouldSign = finalizeCopy.get() && metadata != null;
         mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Successfully copied nearby book!"));
+        piratedPages.addAll(filtered.stream().map(page -> page.replace("~pgprte~newline~", "\n")).toList());
         mc.getNetworkHandler().sendPacket(new BookUpdateC2SPacket(slot, piratedPages, shouldSign ? Optional.of(metadata.title().raw()) : Optional.empty()));
     }
 
