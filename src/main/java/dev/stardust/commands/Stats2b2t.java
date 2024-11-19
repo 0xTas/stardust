@@ -67,53 +67,70 @@ public class Stats2b2t extends Command {
                         long playtimeSeconds = stats.playtimeSeconds;
                         long playtimeSecondsInMonth = stats.playtimeSecondsMonth;
 
-                        long days = TimeUnit.SECONDS.toDays(playtimeSeconds);
-                        long hours = TimeUnit.SECONDS.toHours(playtimeSeconds);
-                        long minutes = TimeUnit.SECONDS.toMinutes(playtimeSeconds);
-                        long daysInMonth = TimeUnit.SECONDS.toDays(playtimeSecondsInMonth);
-                        long hoursInMonth = TimeUnit.SECONDS.toHours(playtimeSecondsInMonth);
-                        long minutesInMonth = TimeUnit.SECONDS.toMinutes(playtimeSecondsInMonth);
-
-                        if (days >= 60) {
-                            formattedPlaytime = days / 30 + " Months";
-                        } else if (days >= 30) {
-                            formattedPlaytime = "1 Month";
-                        } else if (days >= 14) {
-                            formattedPlaytime = days / 7 + " Weeks";
-                        } else if (days >= 7) {
-                            formattedPlaytime = "1 Week";
-                        } else if (days >= 2) {
-                            formattedPlaytime = days + " Days";
-                        } else if (days > 0) {
-                            formattedPlaytime = "1 Day";
-                        } else if (hours >= 2) {
-                            formattedPlaytime = hours + " Hours";
-                        } else if (hours > 0) {
-                            formattedPlaytime = "1 Hour";
-                        } else if (minutes >= 2) {
-                            formattedPlaytime = minutes + " Minutes";
+                        if (playtimeSeconds <= 0) {
+                            formattedPlaytime = "none";
                         } else {
-                            formattedPlaytime = "1 Minute";
+                            long days = TimeUnit.SECONDS.toDays(playtimeSeconds);
+                            long hours = TimeUnit.SECONDS.toHours(playtimeSeconds);
+                            long minutes = TimeUnit.SECONDS.toMinutes(playtimeSeconds);
+
+                            if (days >= 60) {
+                                formattedPlaytime = days / 30 + " months";
+                            } else if (days >= 30) {
+                                formattedPlaytime = "1 month";
+                            } else if (days >= 14) {
+                                formattedPlaytime = days / 7 + " weeks";
+                            } else if (days >= 7) {
+                                formattedPlaytime = "1 week";
+                            } else if (days >= 2) {
+                                formattedPlaytime = days + " days";
+                            } else if (days > 0) {
+                                formattedPlaytime = "1 day";
+                            } else if (hours >= 2) {
+                                formattedPlaytime = hours + " hours";
+                            } else if (hours > 0) {
+                                formattedPlaytime = "1 hour";
+                            } else if (minutes >= 2) {
+                                formattedPlaytime = minutes + " minutes";
+                            } else if (minutes > 0) {
+                                formattedPlaytime = "1 minute";
+                            } else if (playtimeSeconds > 1) {
+                                formattedPlaytime = playtimeSeconds + " seconds";
+                            } else {
+                                formattedPlaytime = "1 second";
+                            }
                         }
 
-                        if (daysInMonth >= 28) {
-                            formattedPlaytimeInMonth = "1 Month";
-                        } else if (daysInMonth >= 14) {
-                            formattedPlaytimeInMonth = daysInMonth / 7 + " Weeks";
-                        } else if (daysInMonth >= 7) {
-                            formattedPlaytimeInMonth = "1 Week";
-                        } else if (daysInMonth >= 2) {
-                            formattedPlaytimeInMonth = daysInMonth + " Days";
-                        } else if (daysInMonth > 0) {
-                            formattedPlaytimeInMonth = "1 Day";
-                        } else if (hoursInMonth >= 2) {
-                            formattedPlaytimeInMonth = hoursInMonth + " Hours";
-                        } else if (hoursInMonth > 0) {
-                            formattedPlaytimeInMonth = "1 Hour";
-                        } else if (minutesInMonth >= 2) {
-                            formattedPlaytimeInMonth = minutesInMonth + " Minutes";
+                        if (playtimeSecondsInMonth <= 0) {
+                            formattedPlaytimeInMonth = "none";
                         } else {
-                            formattedPlaytimeInMonth = "1 Minute";
+                            long daysInMonth = TimeUnit.SECONDS.toDays(playtimeSecondsInMonth);
+                            long hoursInMonth = TimeUnit.SECONDS.toHours(playtimeSecondsInMonth);
+                            long minutesInMonth = TimeUnit.SECONDS.toMinutes(playtimeSecondsInMonth);
+
+                            if (daysInMonth >= 28) {
+                                formattedPlaytimeInMonth = "1 Month";
+                            } else if (daysInMonth >= 14) {
+                                formattedPlaytimeInMonth = daysInMonth / 7 + " Weeks";
+                            } else if (daysInMonth >= 7) {
+                                formattedPlaytimeInMonth = "1 Week";
+                            } else if (daysInMonth >= 2) {
+                                formattedPlaytimeInMonth = daysInMonth + " Days";
+                            } else if (daysInMonth > 0) {
+                                formattedPlaytimeInMonth = "1 Day";
+                            } else if (hoursInMonth >= 2) {
+                                formattedPlaytimeInMonth = hoursInMonth + " Hours";
+                            } else if (hoursInMonth > 0) {
+                                formattedPlaytimeInMonth = "1 Hour";
+                            } else if (minutesInMonth >= 2) {
+                                formattedPlaytimeInMonth = minutesInMonth + " Minutes";
+                            } else if (minutesInMonth > 0) {
+                                formattedPlaytimeInMonth = "1 Minute";
+                            } else if (playtimeSecondsInMonth > 1) {
+                                formattedPlaytimeInMonth = playtimeSecondsInMonth + " seconds";
+                            } else {
+                                formattedPlaytimeInMonth = "1 second";
+                            }
                         }
 
                         String kdRatioString = String.valueOf((float) stats.killCount / (float) stats.deathCount);
