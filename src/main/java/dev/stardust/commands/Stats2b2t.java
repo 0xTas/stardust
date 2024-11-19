@@ -109,23 +109,23 @@ public class Stats2b2t extends Command {
                             long minutesInMonth = TimeUnit.SECONDS.toMinutes(playtimeSecondsInMonth);
 
                             if (daysInMonth >= 28) {
-                                formattedPlaytimeInMonth = "1 Month";
+                                formattedPlaytimeInMonth = "1 month";
                             } else if (daysInMonth >= 14) {
-                                formattedPlaytimeInMonth = daysInMonth / 7 + " Weeks";
+                                formattedPlaytimeInMonth = daysInMonth / 7 + " weeks";
                             } else if (daysInMonth >= 7) {
-                                formattedPlaytimeInMonth = "1 Week";
+                                formattedPlaytimeInMonth = "1 week";
                             } else if (daysInMonth >= 2) {
-                                formattedPlaytimeInMonth = daysInMonth + " Days";
+                                formattedPlaytimeInMonth = daysInMonth + " days";
                             } else if (daysInMonth > 0) {
-                                formattedPlaytimeInMonth = "1 Day";
+                                formattedPlaytimeInMonth = "1 day";
                             } else if (hoursInMonth >= 2) {
-                                formattedPlaytimeInMonth = hoursInMonth + " Hours";
+                                formattedPlaytimeInMonth = hoursInMonth + " hours";
                             } else if (hoursInMonth > 0) {
-                                formattedPlaytimeInMonth = "1 Hour";
+                                formattedPlaytimeInMonth = "1 hour";
                             } else if (minutesInMonth >= 2) {
-                                formattedPlaytimeInMonth = minutesInMonth + " Minutes";
+                                formattedPlaytimeInMonth = minutesInMonth + " minutes";
                             } else if (minutesInMonth > 0) {
-                                formattedPlaytimeInMonth = "1 Minute";
+                                formattedPlaytimeInMonth = "1 minute";
                             } else if (playtimeSecondsInMonth > 1) {
                                 formattedPlaytimeInMonth = playtimeSecondsInMonth + " seconds";
                             } else {
