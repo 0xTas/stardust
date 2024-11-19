@@ -142,10 +142,10 @@ public abstract class AutoMendMixin extends Module {
             replaceElytra();
         }
 
-        if (mendElytrasOnly != null && mendElytrasOnly.get()) {
+        if ((ignoreOffhand != null && ignoreOffhand.get())) {
             ci.cancel();
-            if ((ignoreOffhand != null && ignoreOffhand.get())) return;
-
+        } else if (mendElytrasOnly != null && mendElytrasOnly.get()) {
+            ci.cancel();
             ItemStack offhand = mc.player.getOffHandStack();
             if (offhand.isEmpty() || !Utils.hasEnchantments(offhand, Enchantments.MENDING) || offhand.getDamage() == 0) {
                 int slot = getElytraSlot();
