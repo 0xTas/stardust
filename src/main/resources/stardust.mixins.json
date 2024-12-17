@@ -30,7 +30,8 @@
     "WrittenBookContentsAccessor",
     "AbstractSignEditScreenMixin",
     "SignBlockEntityRendererMixin",
-    "AbstractSignEditScreenAccessor"
+    "AbstractSignEditScreenAccessor",
+    "BannerBlockEntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
@@ -40,6 +41,7 @@
     "EntityMixin",
     "FreecamMixin",
     "AutoMendMixin",
+    "NoRenderMixin",
     "ItemStackMixin",
     "DoorBlockMixin",
     "PlayerEntityMixin",
