@@ -122,7 +122,7 @@ public class RocketMan extends Module {
         new BoolSetting.Builder()
             .name("speed-boost")
             .description("Boost the speed of your firework rockets.")
-            .defaultValue(true)
+            .defaultValue(false)
             .build()
     );
 
@@ -153,6 +153,7 @@ public class RocketMan extends Module {
             .name("acceleration-backoff-threshold")
             .description("Backs down on acceleration when you've slowed down enough since using your last rocket (to prevent rubberbanding.)")
             .min(0).max(2).defaultValue(.69)
+            .visible(boostSpeed::get)
             .build()
     );
 
@@ -168,7 +169,7 @@ public class RocketMan extends Module {
         new IntSetting.Builder()
             .name("max-duration")
             .description("Maximum amount in seconds to extend your firework's boost duration by.")
-            .range(1, 420).sliderRange(2, 69).defaultValue(40)
+            .range(1, 420).sliderRange(1, 69).defaultValue(1)
             .visible(extendRockets::get)
             .build()
     );
@@ -405,6 +406,14 @@ public class RocketMan extends Module {
             .build()
     );
 
+    private final Setting<Boolean> syncInventory = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("sync-inventory")
+            .description("Automatically open and close the inv when joining the game, to prevent inventory desync when afk reconnecting.")
+            .defaultValue(false)
+            .build()
+    );
+
     private final Setting<Boolean> autoEquip = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
             .name("auto-equip")
@@ -466,6 +475,7 @@ public class RocketMan extends Module {
     private int durabilityCheckTicks = 0;
     private double rocketBoostSpeed = 1.5;
     private int tridentThrowGracePeriod = 0;
+    private boolean synced = false;
     private boolean boosted = false;
     private boolean justUsed = false;
     private boolean needReset = false;
@@ -537,15 +547,15 @@ public class RocketMan extends Module {
             );
         }
 
-        hasActiveRocket = false;
-        durationBoosted = false;
-        extensionStartTime = null;
-        extensionStartPos = null;
         if (firstRocket) firstRocket = false;
-        if (currentRocket != null) {
+        if (currentRocket != null && durationBoosted) {
             ((FireworkRocketEntityAccessor) currentRocket).invokeExplodeAndRemove();
             currentRocket = null;
         }
+        hasActiveRocket = false;
+        durationBoosted = false;
+        extensionStartPos = null;
+        extensionStartTime = null;
 
         if (extendRockets.get() && !pongQueue.isEmpty()) {
             for (CommonPongC2SPacket pong : pongQueue) {
@@ -719,8 +729,8 @@ public class RocketMan extends Module {
 
     @Override
     public void onActivate() {
-        timer = 0;
         if (mc.player == null) return;
+        if (mc.getNetworkHandler() == null || mc.getNetworkHandler().getPlayerList().size() <= 1) return; // Ignore queue
         boolean isWearingElytra = mc.player.getEquippedStack(EquipmentSlot.CHEST).getItem() == Items.ELYTRA;
 
         if (!isWearingElytra) {
@@ -763,6 +773,8 @@ public class RocketMan extends Module {
 
     @Override
     public void onDeactivate() {
+        timer = 0;
+        synced = false;
         hoverTimer = 0;
         boosted = false;
         setbackTimer = 0;
@@ -779,6 +791,18 @@ public class RocketMan extends Module {
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         if (mc.player == null || mc.interactionManager == null) return;
+        if (syncInventory.get() && !synced && mc.getNetworkHandler().getPlayerList().size() > 1) {
+            if (timer == 0 && debug.get()) mc.player.sendMessage(Text.literal("§7Priming inventory to prevent desync..."));
+            ++timer;
+            if (timer >= 37) {
+                timer = 0;
+                synced = true;
+                mc.player.closeHandledScreen();
+                if (debug.get()) mc.player.sendMessage(Text.literal("§7Inventory synced with server."));
+            }
+            return;
+        }
+
         try {
             if (extendRockets.get() && hasActiveRocket && extensionStartTime != null && extensionStartPos != null) {
                 BlockPos playerPos = new BlockPos(mc.player.getBlockX(), 0, mc.player.getBlockZ());
@@ -983,8 +1007,8 @@ public class RocketMan extends Module {
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onScrollWheel(MouseScrollEvent event) {
         Modules mods = Modules.get();
+        if (mc.currentScreen != null || !boostSpeed.get()) return;
         if (mods == null || mods.get(Freecam.class).isActive()) return;
-        if (MinecraftClient.getInstance().currentScreen != null) return;
 
         if (Input.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL)) {
             if (isHovering) {
