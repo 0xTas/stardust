@@ -6,11 +6,17 @@ import java.util.stream.Collectors;
 import dev.stardust.modules.AntiToS;
 import org.spongepowered.asm.mixin.Mixin;
 import net.minecraft.block.entity.SignText;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.block.entity.SignBlockEntity;
+import org.spongepowered.asm.mixin.injection.Inject;
+import net.minecraft.client.render.VertexConsumerProvider;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import meteordevelopment.meteorclient.systems.modules.Modules;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
+import meteordevelopment.meteorclient.systems.modules.render.NoRender;
 import net.minecraft.client.render.block.entity.SignBlockEntityRenderer;
 
 /**
@@ -32,5 +38,26 @@ public abstract class SignBlockEntityRendererMixin implements BlockEntityRendere
             .collect(Collectors.joining(" "))
             .trim();
         return antiToS.containsBlacklistedText(testText) ? antiToS.familyFriendlySignText(signText) : signText;
+    }
+
+    // See NoRenderMixin.java
+    @Inject(method = "render(Lnet/minecraft/block/entity/SignBlockEntity;FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;II)V", at = @At("HEAD"), cancellable = true)
+    private void onRender(SignBlockEntity signBlockEntity, float f, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, int j, CallbackInfo ci) {
+        Modules mods = Modules.get();
+        if (mods == null) return;
+        NoRender noRender = mods.get(NoRender.class);
+        if (!noRender.isActive()) return;
+
+        var signSetting = noRender.settings.get("cody-signs");
+        if (signSetting == null) return;
+        if ((boolean) signSetting.get() && isCodySign(signBlockEntity)) {
+            ci.cancel();
+        }
+    }
+
+    @Unique
+    private boolean isCodySign(SignBlockEntity sbe) {
+        SignText frontText = sbe.getFrontText();
+        return Arrays.stream(frontText.getMessages(false)).anyMatch(msg -> msg.getString().contains("codysmile11"));
     }
 }

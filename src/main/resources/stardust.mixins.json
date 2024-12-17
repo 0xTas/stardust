@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "dev.stardust.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "client": [
     "ScreenMixin",
     "ChatHudMixin",
@@ -28,6 +28,7 @@
     "accessor.AnvilScreenAccessor",
     "accessor.GameOptionsAccessor",
     "accessor.MusicTrackerAccessor",
+    "BannerBlockEntityRendererMixin",
     "accessor.SourceManagerAccessor",
     "accessor.BookEditScreenAccessor",
     "accessor.BookScreenContentsAccessor",
@@ -48,6 +49,7 @@
     "meteor.FreecamMixin",
     "meteor.AutoMendMixin",
     "meteor.NotifierMixin",
+    "meteor.NoRenderMixin",
     "FireworkRocketEntityMixin",
     "meteor.accessor.CategoryAccessor",
     "accessor.ClientConnectionAccessor",
