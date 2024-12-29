@@ -50,6 +50,7 @@
     "meteor.AutoMendMixin",
     "meteor.NotifierMixin",
     "meteor.NoRenderMixin",
+    "meteor.NametagsMixin",
     "FireworkRocketEntityMixin",
     "meteor.accessor.CategoryAccessor",
     "accessor.ClientConnectionAccessor",
