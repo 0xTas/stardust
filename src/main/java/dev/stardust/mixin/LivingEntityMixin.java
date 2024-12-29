@@ -39,7 +39,7 @@ public abstract class LivingEntityMixin extends Entity
 
         if (!rm.isActive() || !rm.shouldLockYLevel()) return;
         if (!this.getUuid().equals(rm.getClientInstance().player.getUuid())) return;
-        if (!rm.getClientInstance().player.isFallFlying() || !rm.hasActiveRocket) return;
+        if (!rm.getClientInstance().player.isFallFlying() || !rm.hasActiveRocket()) return;
 
         if (rm.getClientInstance().player.input.jumping && rm.verticalSpeed.get() > 0) {
             f.set(-45);

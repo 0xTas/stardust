@@ -53,13 +53,10 @@ public abstract class FireworkRocketEntityMixin implements FlyingItemEntity {
         if (rm.currentRocket != null) {
             if (rm.currentRocket.getId() != ((FireworkRocketEntity)(Object)this).getId()) {
                 rm.discardCurrentRocket("overwrite current");
-
-                rm.hasActiveRocket = true;
                 rm.currentRocket = (FireworkRocketEntity)(Object)this;
                 rm.extensionStartPos = new BlockPos(player.getBlockX(), 0, player.getBlockZ());
             }
         } else {
-            rm.hasActiveRocket = true;
             rm.currentRocket = (FireworkRocketEntity)(Object)this;
             rm.extensionStartPos = new BlockPos(player.getBlockX(), 0, player.getBlockZ());
             if (rm.debug.get()) player.sendMessage(Text.literal("§7Created tracked rocket entity!"));
@@ -86,7 +83,7 @@ public abstract class FireworkRocketEntityMixin implements FlyingItemEntity {
             rm = modules.get(RocketMan.class);
         }
         if (!rm.isActive() || !rm.shouldLockYLevel()) return;
-        if (!rm.getClientInstance().player.isFallFlying() || !rm.hasActiveRocket) return;
+        if (!rm.getClientInstance().player.isFallFlying() || !rm.hasActiveRocket()) return;
 
         float g = -rm.getClientInstance().player.getYaw() * ((float)Math.PI / 180);
         float h = MathHelper.cos(g);
@@ -95,7 +92,7 @@ public abstract class FireworkRocketEntityMixin implements FlyingItemEntity {
         rotationVec.set(new Vec3d(i, -1, h));
     }
 
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/projectile/FireworkRocketEntity;explodeAndRemove()V", shift = At.Shift.BEFORE), cancellable = true)
+    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/projectile/FireworkRocketEntity;explodeAndRemove()V"), cancellable = true)
     private void extendFireworkDuration(CallbackInfo ci) {
         if (this.rm == null) {
             Modules modules = Modules.get();
