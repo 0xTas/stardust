@@ -47,6 +47,7 @@
     "PlayerEntityMixin",
     "GoatHornItemMixin",
     "LivingEntityMixin",
+    "BetterTooltipsMixin",
     "ClientConnectionAccessor",
     "FireworkRocketEntityMixin",
     "AnvilScreenHandlerAccessor",
