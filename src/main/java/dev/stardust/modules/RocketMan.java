@@ -8,14 +8,17 @@ import net.minecraft.util.Hand;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import javax.annotation.Nullable;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.entity.EquipmentSlot;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import meteordevelopment.orbit.EventPriority;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.utils.Utils;
 import dev.stardust.mixin.PlayerMoveC2SPacketAccessor;
@@ -165,11 +168,11 @@ public class RocketMan extends Module {
             .build()
     );
 
-    private final Setting<Integer> extendedDuration = sgBoosts.add(
-        new IntSetting.Builder()
+    private final Setting<Double> extendedDuration = sgBoosts.add(
+        new DoubleSetting.Builder()
             .name("max-duration")
             .description("Maximum amount in seconds to extend your firework's boost duration by.")
-            .range(1, 420).sliderRange(1, 69).defaultValue(1)
+            .range(0.01, 420).sliderRange(0.1, 69.0).defaultValue(0.90)
             .visible(extendRockets::get)
             .build()
     );
@@ -483,7 +486,6 @@ public class RocketMan extends Module {
     public boolean isHovering = false;
     public boolean wasHovering = false;
     private boolean firstRocket = false;
-    public boolean hasActiveRocket = false;
     public boolean durationBoosted = false;
     private String rcc = StardustUtil.rCC();
     public @Nullable Long extensionStartTime = null;
@@ -509,7 +511,7 @@ public class RocketMan extends Module {
 
         if (foundRocket) {
             timer = 0;
-            hasActiveRocket = true;
+            justUsed = true;
             mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND);
             InvUtils.swapBack();
         }else {
@@ -527,7 +529,7 @@ public class RocketMan extends Module {
 
             if (foundRocket) {
                 timer = 0;
-                hasActiveRocket = true;
+                justUsed = true;
                 mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND);
                 //noinspection ConstantConditions
                 if (movedSlot != -1) {
@@ -550,9 +552,7 @@ public class RocketMan extends Module {
         if (firstRocket) firstRocket = false;
         if (currentRocket != null && durationBoosted) {
             ((FireworkRocketEntityAccessor) currentRocket).invokeExplodeAndRemove();
-            currentRocket = null;
         }
-        hasActiveRocket = false;
         durationBoosted = false;
         extensionStartPos = null;
         extensionStartTime = null;
@@ -563,6 +563,15 @@ public class RocketMan extends Module {
             }
             pongQueue.clear();
         }
+    }
+
+    public boolean hasActiveRocket() {
+        for (Entity e : mc.world.getEntities()) {
+            if (e instanceof FireworkRocketEntity r && r.getOwner() != null && r.getOwner() != null && r.getOwner().equals(mc.player)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean replaceElytra() {
@@ -803,8 +812,17 @@ public class RocketMan extends Module {
             return;
         }
 
+        if (hasActiveRocket() && currentRocket == null) {
+            for (Entity e : mc.world.getEntities()) {
+                if (e instanceof FireworkRocketEntity r && r.getOwner() != null && r.getOwner().equals(mc.player)) {
+                    currentRocket = r;
+                    break;
+                }
+            }
+        }
+
         try {
-            if (extendRockets.get() && hasActiveRocket && extensionStartTime != null && extensionStartPos != null) {
+            if (extendRockets.get() && hasActiveRocket() && extensionStartTime != null && extensionStartPos != null) {
                 BlockPos playerPos = new BlockPos(mc.player.getBlockX(), 0, mc.player.getBlockZ());
                 long elapsed = System.currentTimeMillis() - extensionStartTime;
 
@@ -819,7 +837,7 @@ public class RocketMan extends Module {
 
                 if (pongQueue.size() >= 1900) {
                     discardCurrentRocket("max packet queue size reached");
-                } else if (elapsed >= extendedDuration.get() * 1000) {
+                } else if (elapsed >= extendedDuration.get() * 1000.0) {
                     discardCurrentRocket("max duration reached");
                 } else if (!playerPos.isWithinDistance(extensionStartPos, extensionRange.get())) {
                     extensionStartPos = null;
@@ -859,7 +877,7 @@ public class RocketMan extends Module {
 
         Item activeItem = mc.player.getActiveItem().getItem();
         if ((activeItem.isFood() || Utils.isThrowable(activeItem)) && mc.player.getItemUseTime() > 0) {
-            if (!isHovering || (isHovering && hasActiveRocket)) {
+            if (!isHovering || (isHovering && hasActiveRocket())) {
                 ++ticksBusy;
                 return;
             }
@@ -904,9 +922,9 @@ public class RocketMan extends Module {
             firstRocket = true;
             ++rocketStockTicks;
             ++durabilityCheckTicks;
-            if (hoverTimer == 2 && (!hasActiveRocket || durationBoosted)) {
+            if (hoverTimer == 2 && (!hasActiveRocket() || durationBoosted)) {
                 useFireworkRocket("hover initiate");
-            } else if (!hasActiveRocket && forceRocketUsage.get()) useFireworkRocket("hover maintain");
+            } else if (!hasActiveRocket() && forceRocketUsage.get()) useFireworkRocket("hover maintain");
             return;
         } else hoverTimer = 0;
 
@@ -918,8 +936,7 @@ public class RocketMan extends Module {
         switch (usageMode.get()) {
             case Speed -> {
                 double blocksPerSecond = Utils.getPlayerSpeed().length();
-                if (blocksPerSecond <= usageSpeed.get() && !justUsed && !hasActiveRocket) {
-                    justUsed = true;
+                if (blocksPerSecond <= usageSpeed.get() && !justUsed && !hasActiveRocket()) {
                     useFireworkRocket("speed threshold usage");
                 }
             }
@@ -930,18 +947,17 @@ public class RocketMan extends Module {
                 }
             }
             case Dynamic -> {
-                if (!hasActiveRocket) useFireworkRocket("dynamic usage");
+                if (!hasActiveRocket() && !justUsed) useFireworkRocket("dynamic usage");
             }
             case OnKey -> {
                 if (usageKey.get().isPressed() && !justUsed) {
-                    justUsed = true;
                     useFireworkRocket("forward key usage");
                 }
             }
         }
         if (justUsed) {
             ++ticksSinceUsed;
-            if (ticksSinceUsed >= usageCooldown.get()) {
+            if (ticksSinceUsed >= usageCooldown.get() || (usageMode.get().equals(RocketMode.Dynamic) && ticksSinceUsed >= 10)) {
                 justUsed = false;
                 ticksSinceUsed = 0;
             }
@@ -968,7 +984,7 @@ public class RocketMan extends Module {
         } else ((PlayerMoveC2SPacketAccessor) packet).setPitch(0);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     private void onReceivePacket(PacketEvent.Receive event) {
         if (mc.player == null || !mc.player.isFallFlying()) return;
         if (event.packet instanceof PlayerPositionLookS2CPacket) {
@@ -983,18 +999,21 @@ public class RocketMan extends Module {
             if (durationBoosted) {
                 discardCurrentRocket("lagback reset");
             }
-        }else if (currentRocket != null && event.packet instanceof EntitiesDestroyS2CPacket packet) {
+        }else if (extendRockets.get() && currentRocket != null && event.packet instanceof EntitiesDestroyS2CPacket packet) {
+            boolean cancelled = false;
+            IntList entityIds = new IntArrayList();
             for (int id : packet.getEntityIds()) {
                 if (id == currentRocket.getId()) {
-                    if (extendRockets.get()) {
-                        event.cancel();
-                        durationBoosted = true;
-                        extensionStartTime = System.currentTimeMillis();
-                    } else {
-                      discardCurrentRocket("default duration discard");
-                    }
-                    return;
+                    event.cancel();
+                    cancelled = true;
+                    durationBoosted = true;
+                    extensionStartTime = System.currentTimeMillis();
+                } else {
+                    entityIds.add(id);
                 }
+            }
+            if (cancelled && !entityIds.isEmpty()) {
+                mc.getNetworkHandler().onEntitiesDestroy(new EntitiesDestroyS2CPacket(entityIds));
             }
         }
 
