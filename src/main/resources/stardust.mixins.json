@@ -45,6 +45,7 @@
     "NoRenderMixin",
     "ItemStackMixin",
     "DoorBlockMixin",
+    "ItemStackAccessor",
     "PlayerEntityMixin",
     "GoatHornItemMixin",
     "LivingEntityMixin",
