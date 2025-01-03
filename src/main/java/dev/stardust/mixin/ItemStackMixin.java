@@ -92,7 +92,7 @@ public abstract class ItemStackMixin {
                     nbt.putInt("Damage", dmg);
                 }
                 cir.cancel();
-                cir.setReturnValue(ItemStackAccessor.invokeInit(item, 69, Optional.of(nbt)));
+                cir.setReturnValue(new ItemStack(item.getRegistryEntry(), 69, Optional.of(nbt)));
             }
         }
     }
