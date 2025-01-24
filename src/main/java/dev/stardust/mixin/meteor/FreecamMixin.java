@@ -154,7 +154,7 @@ public class FreecamMixin extends Module {
             }
 
             if (useBaritoneChat != null && useBaritoneChat.get() && baritoneChatPrefix != null && !baritoneChatPrefix.get().isBlank()) {
-                mc.getNetworkHandler().sendChatMessage("#goto "
+                mc.getNetworkHandler().sendChatMessage(baritoneChatPrefix.get() + "goto "
                     + crosshairPos.getX() + " "
                     + crosshairPos.getY() + " "
                     + crosshairPos.getZ()
