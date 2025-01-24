@@ -3,6 +3,7 @@ package dev.stardust.util;
 import java.awt.*;
 import java.io.File;
 import java.time.Instant;
+import java.util.Optional;
 import dev.stardust.Stardust;
 import net.minecraft.util.Hand;
 import net.minecraft.text.Text;
@@ -10,8 +11,10 @@ import net.minecraft.text.Style;
 import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.ClickEvent;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.MutableText;
 import net.minecraft.network.packet.Packet;
+import dev.stardust.mixin.ItemStackAccessor;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.enchantment.Enchantments;
@@ -169,8 +172,49 @@ public class StardustUtil {
 
     private static ItemStack[] getCustomIcons() {
         ItemStack enchantedPick = new ItemStack(
-            ThreadLocalRandom.current().nextInt(2) == 0 ? Items.DIAMOND_PICKAXE : Items.NETHERITE_PICKAXE);
+            ThreadLocalRandom.current().nextInt(2) == 0 ? Items.WOODEN_PICKAXE : Items.GOLDEN_PICKAXE);
         enchantedPick.addEnchantment(Enchantments.MENDING, 1);
+
+        var stardustPick = ThreadLocalRandom.current().nextInt(2) == 0 ? Items.NETHERITE_PICKAXE : Items.DIAMOND_PICKAXE;
+        NbtCompound stardustNbt = stardustPick.getDefaultStack().getNbt();
+        if (stardustNbt != null) stardustNbt.putInt("Damage", 32769);
+        ItemStack stardust = ItemStackAccessor.invokeInit(
+            stardustPick, 1,
+            stardustNbt == null ? Optional.empty() : Optional.of(stardustNbt)
+        );
+        stardust.setCustomName(Text.literal("Stardust"));
+        stardust.addEnchantment(Enchantments.MENDING, 1);
+
+        var meteoritePick = ThreadLocalRandom.current().nextInt(2) == 0 ? Items.NETHERITE_PICKAXE : Items.DIAMOND_PICKAXE;
+        NbtCompound meteoriteNbt = meteoritePick.getDefaultStack().getNbt();
+        if (meteoriteNbt != null) meteoriteNbt.putInt("Damage", -32769);
+        ItemStack meteorite = ItemStackAccessor.invokeInit(
+            meteoritePick, 69,
+            meteoriteNbt == null ? Optional.empty() : Optional.of(meteoriteNbt)
+        );
+        meteorite.setCustomName(Text.literal("Meteorite"));
+        meteorite.addEnchantment(Enchantments.MENDING, 1);
+
+        ItemStack[] pickaxes = new ItemStack[]{enchantedPick, stardust, meteorite};
+
+        var helmet = ThreadLocalRandom.current().nextInt(2) == 0 ?
+            Items.DIAMOND_HELMET : Items.GOLDEN_HELMET;
+        var chestplate = ThreadLocalRandom.current().nextInt(2) == 0 ?
+            Items.DIAMOND_CHESTPLATE : Items.GOLDEN_CHESTPLATE;
+        var pants = ThreadLocalRandom.current().nextInt(2) == 0 ?
+            Items.DIAMOND_LEGGINGS : Items.GOLDEN_LEGGINGS;
+        var shoes = ThreadLocalRandom.current().nextInt(2) == 0 ?
+            Items.DIAMOND_BOOTS : Items.GOLDEN_BOOTS;
+
+        ItemStack stackedHelmets = new ItemStack(helmet, 69);
+        ItemStack stackedChestplates = new ItemStack(chestplate, 69);
+        ItemStack stackedLeggings = new ItemStack(pants, 69);
+        ItemStack stackedBoots = new ItemStack(shoes, 69);
+        stackedHelmets.addEnchantment(Enchantments.MENDING, 1);
+        stackedChestplates.addEnchantment(Enchantments.MENDING, 1);
+        stackedLeggings.addEnchantment(Enchantments.MENDING, 1);
+        stackedBoots.addEnchantment(Enchantments.MENDING, 1);
+        ItemStack[] stackedArmor = new ItemStack[]{stackedHelmets, stackedChestplates, stackedLeggings, stackedBoots};
 
         ItemStack sword32k = new ItemStack(
             ThreadLocalRandom.current().nextInt(2) == 0 ? Items.DIAMOND_SWORD : Items.WOODEN_SWORD);
@@ -205,7 +249,9 @@ public class StardustUtil {
         ripTridentFly.addEnchantment(Enchantments.RIPTIDE, 3);
 
         return new ItemStack[] {
-            enchantedPick, sword32k, illegalBow, bindingPumpkin, cgiElytra, ripTridentFly,
+            sword32k, illegalBow, bindingPumpkin, cgiElytra, ripTridentFly,
+            pickaxes[ThreadLocalRandom.current().nextInt(pickaxes.length)],
+            stackedArmor[ThreadLocalRandom.current().nextInt(stackedArmor.length)],
             enchantedGlass[ThreadLocalRandom.current().nextInt(enchantedGlass.length)]
         };
     }
