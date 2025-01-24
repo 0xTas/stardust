@@ -3,7 +3,7 @@
   "id": "stardust",
   "version": "${version}",
   "name": "Stardust",
-  "description": "A collection of anarchy-enhancing modules for Meteor Client",
+  "description": "2b2t Utility Addon for Meteor Client.",
   "authors": [
     "Tas [@0xTas] <root@0xTas.dev>"
   ],
@@ -25,7 +25,7 @@
     "meteor-client:commit": "${commit}"
   },
   "depends": {
-    "java": ">=17",
+    "java": ">=21",
     "minecraft": ["1.21", "${mc_version}"],
     "meteor-client": "*"
   }
