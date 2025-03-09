@@ -5,6 +5,7 @@ import java.util.Optional;
 import net.minecraft.item.Item;
 import net.minecraft.text.Text;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Rarity;
 import net.minecraft.nbt.NbtElement;
 import dev.stardust.modules.AntiToS;
@@ -75,6 +76,8 @@ public abstract class ItemStackMixin {
             Item item = Registries.ITEM.get(new Identifier(nbt.getString("id")));
             int count = nbt.getByte("Count");
 
+            Text customName = null;
+            NbtList enchants = null;
             if (nbt.contains("tag", NbtElement.COMPOUND_TYPE)) {
                 NbtCompound tag = nbt.getCompound("tag");
                 int index = tag.toString().indexOf("Damage:");
@@ -84,12 +87,27 @@ public abstract class ItemStackMixin {
                         trueDamage = Optional.of(Integer.parseInt(subStr.substring(0, subStr.indexOf(',') == -1 ? subStr.indexOf('}') : subStr.indexOf(','))));
                     } catch (Exception ignored) {}
                 }
+
+                if (tag.contains("Enchantments", NbtElement.LIST_TYPE)) {
+                    enchants = tag.getList("Enchantments", NbtElement.COMPOUND_TYPE);
+                }
+                if (tag.contains("display", NbtElement.COMPOUND_TYPE) && tag.getCompound("display").contains("Name", NbtElement.STRING_TYPE)) {
+                    customName = Text.Serializer.fromJson(tag.getCompound("display").getString("Name"));
+                }
             }
 
             if (count <= 0 && item != Items.AIR) {
                 if (item.isDamageable() && trueDamage.isPresent()) {
                     int dmg = trueDamage.get();
                     nbt.putInt("Damage", dmg);
+                }
+                if (enchants != null) {
+                    nbt.put("Enchantments", enchants);
+                }
+                if (customName != null) {
+                    nbt.put("display", new NbtCompound());
+                    NbtCompound displayTag = nbt.getCompound("display");
+                    displayTag.putString("Name", Text.Serializer.toJson(customName));
                 }
                 cir.cancel();
                 cir.setReturnValue(ItemStackAccessor.invokeInit(item, 69, Optional.of(nbt)));
