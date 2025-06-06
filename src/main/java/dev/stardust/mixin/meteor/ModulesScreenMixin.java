@@ -1,5 +1,6 @@
 package dev.stardust.mixin.meteor;
 
+import java.util.List;
 import java.time.Instant;
 import java.time.Duration;
 import dev.stardust.util.StardustUtil;
@@ -12,6 +13,7 @@ import meteordevelopment.meteorclient.gui.GuiTheme;
 import org.spongepowered.asm.mixin.injection.Inject;
 import meteordevelopment.meteorclient.gui.tabs.TabScreen;
 import dev.stardust.mixin.meteor.accessor.CategoryAccessor;
+import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.gui.screens.ModulesScreen;
 import meteordevelopment.meteorclient.gui.widgets.containers.WWindow;
@@ -34,7 +36,7 @@ public abstract class ModulesScreenMixin extends TabScreen {
     private Instant createdAt = null;
 
     @Inject(method = "createCategory", at = @At("HEAD"))
-    private void cycleCategoryIcons(WContainer c, Category category, CallbackInfoReturnable<WWindow> cir) {
+    private void cycleCategoryIcons(WContainer c, Category category, List<Module> moduleList, CallbackInfoReturnable<WWindow> cir) {
         if (category.name.equals("Stardust")) {
             if (!theme.categoryIcons()) {
                 ((CategoryAccessor) category).setIcon(StardustUtil.chooseMenuIcon());

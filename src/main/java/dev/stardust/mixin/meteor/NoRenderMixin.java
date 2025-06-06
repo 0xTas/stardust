@@ -16,7 +16,6 @@ import meteordevelopment.meteorclient.systems.modules.render.NoRender;
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
-// TODO: Paul wants this to stop the signs from showing up on another client's search somehow...
 @Mixin(value = NoRender.class, remap = false)
 public abstract class NoRenderMixin extends Module {
     public NoRenderMixin(Category category, String name, String description) {

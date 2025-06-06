@@ -9,13 +9,11 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.item.ItemStack;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.recipe.CraftingRecipe;
 import meteordevelopment.orbit.EventHandler;
 import io.netty.util.internal.ThreadLocalRandom;
 import net.minecraft.screen.PlayerScreenHandler;
 import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.recipe.input.CraftingRecipeInput;
 import net.minecraft.screen.AbstractRecipeScreenHandler;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.events.world.TickEvent;
@@ -133,7 +131,7 @@ public class AutoDyeShulkers extends Module {
         return  slot;
     }
 
-    private <T extends AbstractRecipeScreenHandler<CraftingRecipeInput, CraftingRecipe>> int getItemSlot(Item wanted, T cs, int invStart, int invEnd) {
+    private <T extends AbstractRecipeScreenHandler> int getItemSlot(Item wanted, T cs, int invStart, int invEnd) {
         for (int n = invStart; n < invEnd; n++) {
             ItemStack stack = cs.getSlot(n).getStack();
             if (wanted == Items.SHULKER_BOX) {
@@ -144,7 +142,7 @@ public class AutoDyeShulkers extends Module {
         return -1;
     }
 
-    private <T extends AbstractRecipeScreenHandler<CraftingRecipeInput, CraftingRecipe>> void dyeShulker(T cs, int inputEnd, int invStart, int invEnd) {
+    private <T extends AbstractRecipeScreenHandler> void dyeShulker(T cs, int inputEnd, int invStart, int invEnd) {
         ItemStack output = cs.getSlot(0).getStack();
 
         if (isColoredShulker(output.getItem())) {
@@ -195,7 +193,7 @@ public class AutoDyeShulkers extends Module {
                     if (closeOnDone.get() && cs instanceof CraftingScreenHandler) mc.player.closeHandledScreen();
                     if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1f);
                     mc.player.sendMessage(
-                        Text.of("§8<" + StardustUtil.rCC() + "✨§8> §2§oFinished coloring shulkers§8§o.")
+                        Text.of("§8<" + StardustUtil.rCC() + "✨§8> §2§oFinished coloring shulkers§8§o."), false
                     );
                 }
             }
@@ -211,23 +209,27 @@ public class AutoDyeShulkers extends Module {
     @EventHandler
     private void onTick(TickEvent.Post event) {
         if (mc.player == null) return;
-        if (mc.currentScreen == null) {
-            onDeactivate();
-            return;
+        switch (mc.currentScreen) {
+            case null -> onDeactivate();
+            case
+                CraftingScreen ignored when mc.player.currentScreenHandler instanceof CraftingScreenHandler cs -> {
+                ++timer;
+                if (timer >= tickRate.get()) {
+                    timer = 0;
+                    dyeShulker(cs, 10, 10, 46);
+                }
+            }
+            case
+                InventoryScreen ignored when mc.player.currentScreenHandler instanceof PlayerScreenHandler ps -> {
+                ++timer;
+                if (timer >= tickRate.get()) {
+                    timer = 0;
+                    dyeShulker(ps, 5, 9, 45);
+                }
+            }
+            default -> {
+            }
         }
 
-        if (mc.currentScreen instanceof CraftingScreen && mc.player.currentScreenHandler instanceof CraftingScreenHandler cs) {
-            ++timer;
-            if (timer >= tickRate.get()) {
-                timer = 0;
-                dyeShulker(cs, 10, 10, 46);
-            }
-        } else if (mc.currentScreen instanceof InventoryScreen && mc.player.currentScreenHandler instanceof PlayerScreenHandler ps) {
-            ++timer;
-            if (timer >= tickRate.get()) {
-                timer = 0;
-                dyeShulker(ps, 5, 9, 45);
-            }
-        }
     }
 }

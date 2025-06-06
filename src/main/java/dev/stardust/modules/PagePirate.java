@@ -16,6 +16,7 @@ import dev.stardust.util.StardustUtil;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.registry.tag.ItemTags;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import meteordevelopment.meteorclient.settings.*;
@@ -245,7 +246,7 @@ public class PagePirate extends Module {
                     InvUtils.move().from(result.slot()).to(emptySlot.slot());
                     InvUtils.swap(emptySlot.slot(), true);
                 } else {
-                    FindItemResult nonCriticalSlot = InvUtils.find(stack -> !(stack.getItem() instanceof ToolItem) && !stack.contains(DataComponentTypes.FOOD));
+                    FindItemResult nonCriticalSlot = InvUtils.find(stack -> !(stack.getItem() instanceof MiningToolItem) && !(stack.isIn(ItemTags.WEAPON_ENCHANTABLE)) && !stack.contains(DataComponentTypes.FOOD));
                     if (nonCriticalSlot.found() && nonCriticalSlot.slot() < 9) {
                         InvUtils.move().from(result.slot()).to(nonCriticalSlot.slot());
                         InvUtils.swap(nonCriticalSlot.slot(), true);
@@ -302,7 +303,7 @@ public class PagePirate extends Module {
                                     "§8[§a§oPagePirate§8] §7Author: "
                                         +StardustUtil.rCC()+"§o"+author+" §7Title: "
                                         +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
-                                )
+                                ), false
                             );
                         }
                     }
@@ -313,7 +314,7 @@ public class PagePirate extends Module {
                                     "§8[§a§oPagePirate§8] §7Author: "
                                         +StardustUtil.rCC()+"§o"+author+" §7Title: "
                                         +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
-                                )
+                                ), false
                             );
                         }
                     }
@@ -322,7 +323,7 @@ public class PagePirate extends Module {
                             "§8[§a§oPagePirate§8] §7Author: "
                                 +StardustUtil.rCC()+"§o"+author+" §7Title: "
                                 +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
-                        )
+                        ), false
                     );
                 }
             }
@@ -366,18 +367,18 @@ public class PagePirate extends Module {
                 case "on ground" -> {
                     if (displayBooksOnGround.get()) {
                         mc.player.sendMessage(
-                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n"))
+                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n")), false
                         );
                     }
                 }
                 case "item frame" -> {
                     if (displayBooksInItemFrames.get()) {
                         mc.player.sendMessage(
-                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n"))
+                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n")), false
                         );
                     }
                 }
-                default -> mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n")));
+                default -> mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n")), false);
             }
         }
         if (localCopy.get()) {
@@ -406,7 +407,7 @@ public class PagePirate extends Module {
         if (filtered.isEmpty()) return;
 
         if (!equipBookAndQuill()) {
-            mc.player.sendMessage(Text.literal("§8[§4§oPagePirate§8] §7Failed to copy nearby book because you have no empty Book & Quills§4..!"));
+            mc.player.sendMessage(Text.literal("§8[§4§oPagePirate§8] §7Failed to copy nearby book because you have no empty Book & Quills§4..!"), false);
             return;
         }
 
@@ -440,7 +441,7 @@ public class PagePirate extends Module {
 
         int slot = mc.player.getInventory().selectedSlot;
         boolean shouldSign = finalizeCopy.get() && metadata != null;
-        mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Successfully copied nearby book!"));
+        mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Successfully copied nearby book!"), false);
         piratedPages.addAll(filtered.stream().map(page -> page.replace("~pgprte~newline~", "\n")).toList());
         mc.getNetworkHandler().sendPacket(new BookUpdateC2SPacket(slot, piratedPages, shouldSign ? Optional.of(metadata.title().raw()) : Optional.empty()));
     }

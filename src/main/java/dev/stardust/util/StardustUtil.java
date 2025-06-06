@@ -277,13 +277,13 @@ public class StardustUtil {
                 if (file.createNewFile()) {
                     if (mc.player != null) {
                         mc.player.sendMessage(
-                            Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created "+file.getName()+" in meteor-client folder.")
+                            Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created "+file.getName()+" in meteor-client folder."), false
                         );
                         Text msg = Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Click §2§lhere §r§7to open the file.");
                         Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()));
 
                         MutableText txt = msg.copyContentOnly().setStyle(style);
-                        mc.player.sendMessage(txt);
+                        mc.player.sendMessage(txt, false);
                     }
                     return true;
                 }
@@ -308,7 +308,7 @@ public class StardustUtil {
             }
         } catch (Exception err) {
             Stardust.LOG.error("Failed to open "+ file.getAbsolutePath() +"! - Why:\n"+err);
-            if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open "+file.getName()+"§7."));
+            if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open "+file.getName()+"§7."), false);
         }
     }
 
@@ -331,13 +331,14 @@ public class StardustUtil {
                 ((ClientPlayNetworkHandlerAccessor) mc.getNetworkHandler()).getLastSeenMessagesCollector().collect().update()
             );
             case Interact -> illegalPacket = PlayerInteractEntityC2SPacket.interact(mc.player, false, Hand.MAIN_HAND);
-            case Movement -> illegalPacket = new PlayerMoveC2SPacket.PositionAndOnGround(Double.NaN, 69, Double.NaN, false);
+            case Movement -> illegalPacket = new PlayerMoveC2SPacket.PositionAndOnGround(Double.NaN, 69, Double.NaN, false, false);
             case SequenceBreak -> illegalPacket = new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, -420, 13.37F, 69.69F);
             case InvalidSettings -> illegalPacket = new ClientOptionsC2SPacket(new SyncedClientOptions(
                 mc.options.language, -69,
                 mc.options.getChatVisibility().getValue(), mc.options.getChatColors().getValue(),
                 mc.options.getSyncedOptions().playerModelParts(), mc.options.getMainArm().getValue(),
-                mc.options.getSyncedOptions().filtersText(), mc.options.getAllowServerListing().getValue()
+                mc.options.getSyncedOptions().filtersText(), mc.options.getAllowServerListing().getValue(),
+                mc.options.getSyncedOptions().particleStatus()
             ));
         }
         if (illegalPacket != null) ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).invokeSendImmediately(

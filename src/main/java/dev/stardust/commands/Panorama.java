@@ -87,7 +87,7 @@ public class Panorama extends Command {
 
         instance.getWindow().setFramebufferWidth(4096);
         instance.getWindow().setFramebufferHeight(4096);
-        instance.getFramebuffer().resize(4096, 4096, MinecraftClient.IS_SYSTEM_MAC);
+        instance.getFramebuffer().resize(4096, 4096);
 
         takingPanorama = true;
     }
@@ -138,7 +138,7 @@ public class Panorama extends Command {
         readyToAssemble = false;
         if (instance.player != null) {
             instance.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, 1f, 1f);
-            instance.player.sendMessage(Text.of("§8<" + StardustUtil.rCC() + "✨§8> §3§oYour resource pack is ready to be enabled§f§o!"));
+            instance.player.sendMessage(Text.of("§8<" + StardustUtil.rCC() + "✨§8> §3§oYour resource pack is ready to be enabled§f§o!"), false);
         }
     }
 
@@ -178,7 +178,7 @@ public class Panorama extends Command {
                 if (!isWarming) {
                     instance.gameRenderer.setRenderingPanorama(true);
                     instance.gameRenderer.setBlockOutlineEnabled(false);
-                    instance.worldRenderer.reloadTransparencyPostProcessor();
+                    instance.worldRenderer.reload();
                     if (!instance.options.hudHidden) instance.options.hudHidden = true;
                     instance.player.setYaw(preYaw);
                     instance.player.setPitch(0f);
@@ -230,13 +230,13 @@ public class Panorama extends Command {
                     instance.getWindow().setFramebufferWidth(preWidth);
                     instance.getWindow().setFramebufferHeight(preHeight);
                     if (instance.options.hudHidden) instance.options.hudHidden = false;
-                    instance.getFramebuffer().resize(preWidth, preHeight, MinecraftClient.IS_SYSTEM_MAC);
-                    instance.worldRenderer.reloadTransparencyPostProcessor();
+                    instance.getFramebuffer().resize(preWidth, preHeight);
+                    instance.worldRenderer.reload();
 
                     timer = 100; // wait a few seconds for the screenshot files to get fully written to disk,
                     readyToAssemble = true; // and then copy them into a resource pack (this avoids copying empty files.)
                     instance.player.sendMessage(
-                        Text.of("§8<§2§o✨§8> §8§oFinalizing resource pack§2§o, §8§oplease wait§2§o...")
+                        Text.of("§8<§2§o✨§8> §8§oFinalizing resource pack§2§o, §8§oplease wait§2§o..."), false
                     );
                 }
             }

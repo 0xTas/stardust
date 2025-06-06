@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.sound.MusicInstance;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -47,9 +48,9 @@ public class MinecraftClientMixin {
 
         if (mc.player == null) return;
         if (!rocketMan.hoverMode.get().equals(RocketMan.HoverMode.Off)) {
-            if (mc.player.input.sneaking && !rocketMan.shouldLockYLevel() && !rocketMan.isHovering) {
+            if (mc.player.input.playerInput.sneak() && !rocketMan.shouldLockYLevel() && !rocketMan.isHovering) {
                 changeLookDirection(mc.player, 0.0f, rocketMan.getPitchSpeed() * deltaTime);
-            } else if (mc.player.input.jumping && !rocketMan.shouldLockYLevel() && !rocketMan.isHovering) {
+            } else if (mc.player.input.playerInput.jump() && !rocketMan.shouldLockYLevel() && !rocketMan.isHovering) {
                 changeLookDirection(mc.player, 0.0f, -rocketMan.getPitchSpeed() * deltaTime);
             } else if (Input.isKeyPressed(GLFW.GLFW_KEY_UP)) {
                 changeLookDirection(mc.player, 0.0f, -rocketMan.getPitchSpeed() * deltaTime);
@@ -62,9 +63,9 @@ public class MinecraftClientMixin {
 
             switch (mode) {
                 case OnKey -> {
-                    if (mc.player.input.sneaking) {
+                    if (mc.player.input.playerInput.sneak()) {
                         changeLookDirection(mc.player, 0.0f, rocketMan.getPitchSpeed() * deltaTime);
-                    } else if (mc.player.input.jumping) {
+                    } else if (mc.player.input.playerInput.jump()) {
                         changeLookDirection(mc.player, 0.0f, -rocketMan.getPitchSpeed() * deltaTime);
                     } else if (Input.isKeyPressed(GLFW.GLFW_KEY_UP)) {
                         changeLookDirection(mc.player, 0.0f, -rocketMan.getPitchSpeed() * deltaTime);
@@ -74,9 +75,9 @@ public class MinecraftClientMixin {
                 }
                 case Static, Dynamic -> {
                     if (inverted) {
-                        if ((mc.player.input.pressingForward || mc.player.input.sneaking) && !rocketMan.shouldLockYLevel()) {
+                        if ((mc.player.input.playerInput.forward() || mc.player.input.playerInput.sneak()) && !rocketMan.shouldLockYLevel()) {
                             changeLookDirection(mc.player, 0.0f, rocketMan.getPitchSpeed() * deltaTime);
-                        } else if ((mc.player.input.pressingBack || mc.player.input.jumping) && !rocketMan.shouldLockYLevel()) {
+                        } else if ((mc.player.input.playerInput.backward() || mc.player.input.playerInput.jump()) && !rocketMan.shouldLockYLevel()) {
                             changeLookDirection(mc.player, 0.0f, -rocketMan.getPitchSpeed() * deltaTime);
                         } else if (Input.isKeyPressed(GLFW.GLFW_KEY_DOWN)) {
                             changeLookDirection(mc.player, 0.0f, -rocketMan.getPitchSpeed() * deltaTime);
@@ -84,9 +85,9 @@ public class MinecraftClientMixin {
                             changeLookDirection(mc.player, 0.0f, rocketMan.getPitchSpeed() * deltaTime);
                         }
                     } else {
-                        if ((mc.player.input.pressingBack || mc.player.input.sneaking) && !rocketMan.shouldLockYLevel()) {
+                        if ((mc.player.input.playerInput.backward() || mc.player.input.playerInput.sneak()) && !rocketMan.shouldLockYLevel()) {
                             changeLookDirection(mc.player, 0.0f, rocketMan.getPitchSpeed() * deltaTime);
-                        } else if ((mc.player.input.pressingForward || mc.player.input.jumping) && !rocketMan.shouldLockYLevel()) {
+                        } else if ((mc.player.input.playerInput.forward() || mc.player.input.playerInput.jump()) && !rocketMan.shouldLockYLevel()) {
                             changeLookDirection(mc.player, 0.0f, -rocketMan.getPitchSpeed() * deltaTime);
                         }else if (Input.isKeyPressed(GLFW.GLFW_KEY_UP)) {
                             changeLookDirection(mc.player, 0.0f, -rocketMan.getPitchSpeed() * deltaTime);
@@ -98,9 +99,9 @@ public class MinecraftClientMixin {
             }
         }
 
-        if (mc.player.input.pressingRight && !rocketMan.isHovering) {
+        if (mc.player.input.playerInput.right() && !rocketMan.isHovering) {
             changeLookDirection(mc.player, rocketMan.getYawSpeed() * deltaTime, 0.0f);
-        } else if (mc.player.input.pressingLeft && !rocketMan.isHovering) {
+        } else if (mc.player.input.playerInput.left() && !rocketMan.isHovering) {
             changeLookDirection(mc.player, -rocketMan.getYawSpeed() * deltaTime, 0.0f);
         } else if (Input.isKeyPressed(GLFW.GLFW_KEY_RIGHT)) {
             changeLookDirection(mc.player, rocketMan.getYawSpeed() * deltaTime, 0.0f);
@@ -112,8 +113,8 @@ public class MinecraftClientMixin {
     }
 
     // See MusicTweaks.java
-    @Inject(method = "getMusicType", at = @At("HEAD"), cancellable = true)
-    public void mixinGetMusicType(CallbackInfoReturnable<MusicSound> cir) {
+    @Inject(method = "getMusicInstance", at = @At("HEAD"), cancellable = true)
+    public void mixinGetMusicType(CallbackInfoReturnable<MusicInstance> cir) {
         Modules modules = Modules.get();
         if (modules == null ) return;
         MusicTweaks tweaks = modules.get(MusicTweaks.class);
@@ -122,7 +123,7 @@ public class MinecraftClientMixin {
         MusicSound type = tweaks.getType();
 
         if (type != null) {
-            cir.setReturnValue(type);
+            cir.setReturnValue(new MusicInstance(type));
         }
     }
 }

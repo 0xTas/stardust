@@ -54,7 +54,7 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new MusicTweaks());
         Modules.get().add(new TreasureESP());
         Modules.get().add(new LoreLocator());
-        Modules.get().add(new AxolotlTools());
+        // Modules.get().add(new AxolotlTools());
         Modules.get().add(new StashBrander());
         Modules.get().add(new SignatureSign());
         Modules.get().add(new SignHistorian());
@@ -116,7 +116,7 @@ public class Stardust extends MeteorAddon {
     @Override
     public String getWebsite() { return "https://github.com/0xTas/stardust"; }
     @Override
-    public GithubRepo getRepo() { return new GithubRepo("0xTas", "Stardust", "1.21.1", null); }
+    public GithubRepo getRepo() { return new GithubRepo("0xTas", "Stardust", "1.21.4", null); }
     @Override
     public String getCommit() {
         CustomValue commit = FabricLoader.getInstance()

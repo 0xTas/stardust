@@ -126,7 +126,7 @@ public class Honker extends Module {
                 if (!(stack.getItem() instanceof GoatHornItem)) continue;
                 if (!stack.contains(DataComponentTypes.INSTRUMENT)) continue;
                 RegistryEntry<Instrument> instrument = stack.get(DataComponentTypes.INSTRUMENT);
-                String id = instrument.value().soundEvent().value().getId().toUnderscoreSeparatedString();
+                String id = instrument.value().soundEvent().value().id().toUnderscoreSeparatedString();
                 if (id == null) continue;
 
                 hornIndex = n;

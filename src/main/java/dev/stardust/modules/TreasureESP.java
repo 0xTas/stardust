@@ -149,7 +149,7 @@ public class TreasureESP extends Module {
                                             "§8<" + StardustUtil.rCC() + "✨§8> §3§oFound buried treasure§7§o!"
                                         );
                                     }
-                                    mc.player.sendMessage(notification);
+                                    mc.player.sendMessage(notification, false);
                                 }
                                 notified.add(blockPos);
                             }
@@ -188,7 +188,7 @@ public class TreasureESP extends Module {
                                 "§8<" + StardustUtil.rCC() + "✨§8> §3§oFound buried treasure§7§o!"
                             );
                         }
-                        mc.player.sendMessage(notification);
+                        mc.player.sendMessage(notification, false);
                     }
                     notified.add(pos);
                 }

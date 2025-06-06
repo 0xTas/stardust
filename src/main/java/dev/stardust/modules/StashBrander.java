@@ -39,7 +39,7 @@ public class StashBrander extends Module {
             .onChanged(name -> {
                 if (name.length() > AnvilScreenHandler.MAX_NAME_LENGTH) {
                     if (mc.player != null) mc.player.sendMessage(
-                        Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §4§oCustom name exceeds max accepted length§8§o!")
+                        Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §4§oCustom name exceeds max accepted length§8§o!"), false
                     );
                 }
             })
@@ -135,7 +135,7 @@ public class StashBrander extends Module {
     private void noXP() {
         if (!notified) {
             mc.player.sendMessage(
-                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNot enough experience§8§o...")
+                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNot enough experience§8§o..."), false
             );
             if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
         }
@@ -147,7 +147,7 @@ public class StashBrander extends Module {
     private void finished() {
         if (!notified) {
             mc.player.sendMessage(
-                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNo more items to rename§8§o.")
+                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNo more items to rename§8§o."), false
             );
             if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
         }

@@ -161,7 +161,7 @@ public class BannerData extends Module {
                 }
 
                 String bannerData = patternsList.toString().trim();
-                mc.player.sendMessage(Text.of(bannerData));
+                mc.player.sendMessage(Text.of(bannerData), false);
 
                 if (copyToClipboard.get()) {
                      mc.keyboard.setClipboard(patterns.toString());
@@ -191,7 +191,7 @@ public class BannerData extends Module {
                     mc.player.sendMessage(
                         Text.of(
                             "§8<"+StardustUtil.rCC()+"§o✨§r§8> §7"+metadata
-                        )
+                        ), false
                     );
                 }
 

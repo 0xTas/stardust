@@ -90,7 +90,7 @@ public class Updraft extends Module {
     private State currentState = State.Idle;
 
     private void useWindCharge() {
-        if (mc.interactionManager == null || mc.player == null || mc.player.isFallFlying()) {
+        if (mc.interactionManager == null || mc.player == null || mc.player.isGliding()) {
             currentState = State.Idle;
             return;
         }
@@ -185,7 +185,7 @@ public class Updraft extends Module {
 
         --timer;
         --notify;
-        if (mc.player.isFallFlying()) return;
+        if (mc.player.isGliding()) return;
         ItemStack current = mc.player.getMainHandStack();
         if ((current.contains(DataComponentTypes.FOOD) || Utils.isThrowable(current.getItem())) && mc.player.getItemUseTime() > 0) return;
         else if (current.isEmpty()) {

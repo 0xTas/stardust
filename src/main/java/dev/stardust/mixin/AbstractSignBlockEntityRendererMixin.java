@@ -5,8 +5,8 @@ import net.minecraft.text.Text;
 import java.util.stream.Collectors;
 import dev.stardust.modules.AntiToS;
 import org.spongepowered.asm.mixin.Mixin;
-import net.minecraft.block.entity.SignText;
 import org.spongepowered.asm.mixin.Unique;
+import net.minecraft.block.entity.SignText;
 import org.spongepowered.asm.mixin.injection.At;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.block.entity.SignBlockEntity;
@@ -17,13 +17,13 @@ import meteordevelopment.meteorclient.systems.modules.Modules;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import meteordevelopment.meteorclient.systems.modules.render.NoRender;
-import net.minecraft.client.render.block.entity.SignBlockEntityRenderer;
+import net.minecraft.client.render.block.entity.AbstractSignBlockEntityRenderer;
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
-@Mixin(SignBlockEntityRenderer.class)
-public abstract class SignBlockEntityRendererMixin implements BlockEntityRenderer<SignBlockEntity> {
+@Mixin(AbstractSignBlockEntityRenderer.class)
+public abstract class AbstractSignBlockEntityRendererMixin implements BlockEntityRenderer<SignBlockEntity> {
 
     // See AntiToS.java
     @ModifyVariable(method = "renderText", at = @At("HEAD"), argsOnly = true)

@@ -116,10 +116,10 @@ public class AntiToS extends Module {
         try(Stream<String> lineStream = Files.lines(blackListFile.toPath())) {
             blacklisted.addAll(lineStream.toList());
             if (blacklisted.isEmpty()) {
-                mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7"+BLACKLIST_FILE+" §4was empty§7!"));
-                mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."));
-                mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."));
-                mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7You must toggle this setting or the module after updating the blacklist's contents."));
+                mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7"+BLACKLIST_FILE+" §4was empty§7!"), false);
+                mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."), false);
+                mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."), false);
+                mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7You must toggle this setting or the module after updating the blacklist's contents."), false);
             }
         }catch (Exception err) {
             Stardust.LOG.error("[Stardust] Failed to read from "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err);
@@ -132,7 +132,7 @@ public class AntiToS extends Module {
     // && BookScreenMixin.java
     // && TextRendererMixin.java
     // && EntityRendererMixin.java
-    // && SignBlockEntityRendererMixin.java
+    // && AbstractSignBlockEntityRendererMixin.java
     public boolean containsBlacklistedText(String text) {
         return blacklisted.stream().anyMatch(line -> text.trim().toLowerCase().contains(line.trim().toLowerCase()));
     }
@@ -171,10 +171,10 @@ public class AntiToS extends Module {
             toggle();
             mc.player.sendMessage(Text.of(
                 "§8[§4Stardust§8] §4§lFailed to create anti-tos.txt in your meteor-client folder§8!"
-            ));
+            ),false);
             mc.player.sendMessage(Text.of(
                 "§8[§4Stardust§8] §4§lThis issue is fatal§8§l. §4§lPlease check latest.log for more info§8§l."
-            ));
+            ),false);
         }
     }
 

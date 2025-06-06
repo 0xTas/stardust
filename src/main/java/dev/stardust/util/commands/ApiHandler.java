@@ -26,7 +26,7 @@ public class ApiHandler {
                 Text.of(
                     "§8<"+StardustUtil.rCC()
                         +"§o✨"+"§r§8> §4An error occurred§7, §4please try again later or check §7latest.log §4for more info§7.."
-                )
+                ), false
             );
         }
     }

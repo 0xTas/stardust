@@ -45,7 +45,7 @@ public abstract class FireworkRocketEntityMixin implements FlyingItemEntity {
             rm = modules.get(RocketMan.class);
         }
 
-        if (!rm.getClientInstance().player.isFallFlying()) return;
+        if (!rm.getClientInstance().player.isGliding()) return;
         if (!this.shooter.getUuid().equals(rm.getClientInstance().player.getUuid())) return;
         if (!rm.isActive() || rm.currentRocket == (Object)this) return;
 
@@ -59,7 +59,7 @@ public abstract class FireworkRocketEntityMixin implements FlyingItemEntity {
         } else {
             rm.currentRocket = (FireworkRocketEntity)(Object)this;
             rm.extensionStartPos = new BlockPos(player.getBlockX(), 0, player.getBlockZ());
-            if (rm.debug.get()) player.sendMessage(Text.literal("§7Created tracked rocket entity!"));
+            if (rm.debug.get()) player.sendMessage(Text.literal("§7Created tracked rocket entity!"), false);
         }
     }
 
@@ -83,7 +83,7 @@ public abstract class FireworkRocketEntityMixin implements FlyingItemEntity {
             rm = modules.get(RocketMan.class);
         }
         if (!rm.isActive() || !rm.shouldLockYLevel()) return;
-        if (!rm.getClientInstance().player.isFallFlying() || !rm.hasActiveRocket()) return;
+        if (!rm.getClientInstance().player.isGliding() || !rm.hasActiveRocket()) return;
 
         float g = -rm.getClientInstance().player.getYaw() * ((float)Math.PI / 180);
         float h = MathHelper.cos(g);
@@ -92,7 +92,7 @@ public abstract class FireworkRocketEntityMixin implements FlyingItemEntity {
         rotationVec.set(new Vec3d(i, -1, h));
     }
 
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/projectile/FireworkRocketEntity;explodeAndRemove()V"), cancellable = true)
+    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/projectile/FireworkRocketEntity;explodeAndRemove(Lnet/minecraft/server/world/ServerWorld;)V"), cancellable = true)
     private void extendFireworkDuration(CallbackInfo ci) {
         if (this.rm == null) {
             Modules modules = Modules.get();
@@ -102,7 +102,7 @@ public abstract class FireworkRocketEntityMixin implements FlyingItemEntity {
         if (rm.currentRocket == null) return;
         if (!rm.isActive() || !rm.extendRockets.get()) return;
         if (rm.currentRocket.getId() != ((FireworkRocketEntity)(Object)this).getId()) return;
-        if (rm.debug.get()) rm.getClientInstance().player.sendMessage(Text.literal("§7Cancelling natural rocket expiration!"));
+        if (rm.debug.get()) rm.getClientInstance().player.sendMessage(Text.literal("§7Cancelling natural rocket expiration!"), false);
         ci.cancel();
     }
 }

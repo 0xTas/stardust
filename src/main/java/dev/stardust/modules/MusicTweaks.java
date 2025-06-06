@@ -11,6 +11,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.client.MinecraftClient;
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.client.sound.MusicInstance;
 import io.netty.util.internal.ThreadLocalRandom;
 import net.minecraft.client.sound.SoundInstance;
 import meteordevelopment.meteorclient.settings.*;
@@ -1058,7 +1059,7 @@ public class MusicTweaks extends Module {
         if (!startOnEnable.get()) return;
 
         MusicSound type = getType();
-        if (((MusicTrackerAccessor) mc.getMusicTracker()).getCurrent() == null) mc.getMusicTracker().play(type);
+        if (((MusicTrackerAccessor) mc.getMusicTracker()).getCurrent() == null) mc.getMusicTracker().play(new MusicInstance(type));
     }
 
     @Override
@@ -1072,9 +1073,9 @@ public class MusicTweaks extends Module {
         SoundInstance instance = ((MusicTrackerAccessor) mc.getMusicTracker()).getCurrent();
         if (instance != null) {
             MusicSound type = getType();
-            if (type != mc.getMusicType()) {
+            if (type != mc.getMusicInstance().music()) {
                 mc.getMusicTracker().stop();
-                mc.getMusicTracker().play(type);
+                mc.getMusicTracker().play(new MusicInstance(type));
             }
         }
 
@@ -1094,7 +1095,7 @@ public class MusicTweaks extends Module {
                 MusicSound type = getType();
 
                 mc.getMusicTracker().stop();
-                mc.getMusicTracker().play(type);
+                mc.getMusicTracker().play(new MusicInstance(type));
                 lastDim = dimensionType;
             }
         }

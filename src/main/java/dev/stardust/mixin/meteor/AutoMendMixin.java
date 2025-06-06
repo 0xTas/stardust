@@ -82,11 +82,11 @@ public abstract class AutoMendMixin extends Module {
                     sendToggledMsg();
                     if (didWearMending) {
                         mc.player.sendMessage(
-                            Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§7Done mending elytras.")
+                            Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§7Done mending elytras."), false
                         );
                     } else {
                         mc.player.sendMessage(
-                            Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§7No damaged elytras in inventory.")
+                            Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§7No damaged elytras in inventory."), false
                         );
                     }
                 }

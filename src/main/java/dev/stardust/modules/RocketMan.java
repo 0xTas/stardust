@@ -31,7 +31,6 @@ import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import dev.stardust.mixin.accessor.PlayerMoveC2SPacketAccessor;
-import dev.stardust.mixin.accessor.FireworkRocketEntityAccessor;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
@@ -497,7 +496,7 @@ public class RocketMan extends Module {
     private void useFireworkRocket(String caller) {
         if (mc.player == null) return;
         if (mc.interactionManager == null) return;
-        if (debug.get() && chatFeedback) mc.player.sendMessage(Text.literal("§7Caller: "+StardustUtil.rCC()+caller));
+        if (debug.get() && chatFeedback) mc.player.sendMessage(Text.literal("§7Caller: "+StardustUtil.rCC()+caller), false);
 
         boolean foundRocket = false;
         for (int n = 0; n < 9; n++) {
@@ -546,13 +545,13 @@ public class RocketMan extends Module {
                 Text.literal("§7Discarding current rocket! Why: "
                     +StardustUtil.rCC()+source+" §7| Packets: "
                     +StardustUtil.rCC()+pongQueue.size()
-                )
+                ), false
             );
         }
 
         if (firstRocket) firstRocket = false;
         if (currentRocket != null && durationBoosted) {
-            ((FireworkRocketEntityAccessor) currentRocket).invokeExplodeAndRemove();
+            currentRocket.discard();
         }
         durationBoosted = false;
         extensionStartPos = null;
@@ -686,7 +685,7 @@ public class RocketMan extends Module {
     public boolean shouldTickRotation() {
         if (mc.player == null) return false;
         if (freeLookOnly.get() && !Modules.get().get(FreeLook.class).isActive()) return false;
-        return (keyboardControl.get() || isHovering) && mc.player.isFallFlying();
+        return (keyboardControl.get() || isHovering) && mc.player.isGliding();
     }
 
     public boolean shouldInvertPitch() {
@@ -708,7 +707,7 @@ public class RocketMan extends Module {
     // See ClientPlayerEntityMixin.java && ElytraSoundInstanceMixin.java
     public boolean shouldMuteElytra() {
         if (mc.player == null) return false;
-        return muteElytra.get() && mc.player.isFallFlying();
+        return muteElytra.get() && mc.player.isGliding();
     }
 
     // See FireworkRocketEntityMixin.java
@@ -774,7 +773,7 @@ public class RocketMan extends Module {
                     "No elytra warning".hashCode()
                 );
             }
-        } else if (takeoff.get() && mc.player.isFallFlying()) {
+        } else if (takeoff.get() && mc.player.isGliding()) {
             justUsed = true;
             takingOff = true;
             useFireworkRocket("on activate");
@@ -802,13 +801,13 @@ public class RocketMan extends Module {
     private void onTick(TickEvent.Pre event) {
         if (mc.player == null || mc.interactionManager == null) return;
         if (syncInventory.get() && !synced && mc.getNetworkHandler().getPlayerList().size() > 1) {
-            if (timer == 0 && debug.get()) mc.player.sendMessage(Text.literal("§7Priming inventory to prevent desync..."));
+            if (timer == 0 && debug.get()) mc.player.sendMessage(Text.literal("§7Priming inventory to prevent desync..."), false);
             ++timer;
             if (timer >= 37) {
                 timer = 0;
                 synced = true;
                 mc.player.closeHandledScreen();
-                if (debug.get()) mc.player.sendMessage(Text.literal("§7Inventory synced with server."));
+                if (debug.get()) mc.player.sendMessage(Text.literal("§7Inventory synced with server."), false);
             }
             return;
         }
@@ -882,7 +881,7 @@ public class RocketMan extends Module {
                 ++ticksBusy;
                 return;
             }
-        }else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isFallFlying() && activeItem.getItem() == Items.TRIDENT) {
+        }else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isGliding() && activeItem.getItem() == Items.TRIDENT) {
             ++tridentThrowGracePeriod;
             if (tridentThrowGracePeriod >= 20) {
                 ticksBusy = 0;
@@ -890,13 +889,13 @@ public class RocketMan extends Module {
                 tridentThrowGracePeriod = 0;
                 return;
             }
-        } else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isFallFlying() && activeItem.getItem() != Items.TRIDENT) {
+        } else if (combatAssist.get() && ticksBusy >= 10 && mc.player.isGliding() && activeItem.getItem() != Items.TRIDENT) {
             useFireworkRocket("combat assist miscellaneous");
             ticksBusy = 0;
             return;
         }
 
-        if (mc.player.isOnGround() || !mc.player.isFallFlying()) {
+        if (mc.player.isOnGround() || !mc.player.isGliding()) {
             discardCurrentRocket("");
             ticksBusy = 0;
             hoverTimer = 0;
@@ -906,17 +905,17 @@ public class RocketMan extends Module {
             rocketBoostSpeed = 1.5;
             if (!hoverMode.get().equals(HoverMode.Toggle)) isHovering = false;
             return;
-        }else if (!takingOff && takeoff.get() && mc.player.isFallFlying()) {
+        }else if (!takingOff && takeoff.get() && mc.player.isGliding()) {
             justUsed = true;
             takingOff = true;
             useFireworkRocket("takeoff assist");
             return;
-        }else if (mc.player.isFallFlying()) {
+        }else if (mc.player.isGliding()) {
             handleDurabilityChecks();
             handleFireworkRocketChecks();
         }
 
-        if (mc.player.isFallFlying() && isHovering) {
+        if (mc.player.isGliding() && isHovering) {
             ++timer;
             ++hoverTimer;
             ++ticksFlying;
@@ -967,7 +966,7 @@ public class RocketMan extends Module {
 
     @EventHandler
     private void onSendPacket(PacketEvent.Send event) {
-        if (mc.player == null || !mc.player.isFallFlying()) return;
+        if (mc.player == null || !mc.player.isGliding()) return;
         if (extendRockets.get() && durationBoosted && event.packet instanceof CommonPongC2SPacket packet) {
             event.cancel();
             pongQueue.add(packet);
@@ -976,10 +975,10 @@ public class RocketMan extends Module {
         if (!shouldLockYLevel()) return;
         if (!(event.packet instanceof PlayerMoveC2SPacket packet)) return;
 
-        if (mc.player.input.jumping && verticalSpeed.get() > 0) {
+        if (mc.player.input.playerInput.jump() && verticalSpeed.get() > 0) {
             if (isHovering) ((PlayerMoveC2SPacketAccessor) packet).setPitch(-90);
             else ((PlayerMoveC2SPacketAccessor) packet).setPitch(-45);
-        } else if (mc.player.input.sneaking && verticalSpeed.get() > 0) {
+        } else if (mc.player.input.playerInput.sneak() && verticalSpeed.get() > 0) {
             if (isHovering) ((PlayerMoveC2SPacketAccessor) packet).setPitch(90);
             else ((PlayerMoveC2SPacketAccessor) packet).setPitch(45);
         } else ((PlayerMoveC2SPacketAccessor) packet).setPitch(0);
@@ -987,7 +986,7 @@ public class RocketMan extends Module {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onReceivePacket(PacketEvent.Receive event) {
-        if (mc.player == null || !mc.player.isFallFlying()) return;
+        if (mc.player == null || !mc.player.isGliding()) return;
         if (event.packet instanceof PlayerPositionLookS2CPacket) {
             ++setbackCounter;
             if (setbackCounter > 5) {

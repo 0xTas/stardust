@@ -43,7 +43,7 @@ public class Stats2b2t extends Command {
                     player.sendMessage(
                         Text.of(
                             "§8<"+ StardustUtil.rCC()+"§o✨"+"§r§8> §4§oPlayer not found§7..."
-                        )
+                        ), false
                     );
                 } else {
                     try {
@@ -140,7 +140,7 @@ public class Stats2b2t extends Command {
                                 + "\n    §7Chats: "+cc+"§o"+stats.chatsCount+"\n    §7Prio: "+cc+"§o"+stats.prio
                                 + "\n    §7First Seen: "+cc+"§o"+formattedFirstSeen+"\n    §7Last Seen: "+cc+"§o"+formattedLastSeen
                                 + "\n    §7Playtime: "+cc+"§o"+formattedPlaytime+"\n    §7Playtime in last month: "+cc+"§o"+formattedPlaytimeInMonth
-                            )
+                            ), false
                         );
                     } catch (Exception err) {
                         Stardust.LOG.error("[Stats2b2t] Failed to deserialize Json: "+err);

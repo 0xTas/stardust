@@ -162,7 +162,7 @@ public class FreecamMixin extends Module {
             } else if (BaritoneUtils.IS_AVAILABLE) {
                 PathManagers.get().stop();
                 PathManagers.get().moveTo(crosshairPos);
-                if (chatFeedback) mc.player.sendMessage(Text.literal("§8[§a§oFreecam§8] §7Baritone pathing to destination§a..!"));
+                if (chatFeedback) mc.player.sendMessage(Text.literal("§8[§a§oFreecam§8] §7Baritone pathing to destination§a..!"), false);
             } else {
                 error("Baritone was not found to be installed. If this is a mistake, please enable the \"Use Baritone Chat\" setting and try again.");
             }

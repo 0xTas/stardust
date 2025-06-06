@@ -24,7 +24,7 @@
     "ElytraSoundInstanceMixin",
     "meteor.ModulesScreenMixin",
     "AbstractSignEditScreenMixin",
-    "SignBlockEntityRendererMixin",
+    "AbstractSignBlockEntityRendererMixin",
     "accessor.AnvilScreenAccessor",
     "accessor.GameOptionsAccessor",
     "accessor.MusicTrackerAccessor",
@@ -56,7 +56,6 @@
     "accessor.ClientConnectionAccessor",
     "accessor.AnvilScreenHandlerAccessor",
     "accessor.DisconnectS2CPacketAccessor",
-    "accessor.PlayerMoveC2SPacketAccessor",
-    "accessor.FireworkRocketEntityAccessor"
+    "accessor.PlayerMoveC2SPacketAccessor"
   ]
 }

@@ -192,9 +192,9 @@ public class SignHistorian extends Module {
                     this.blacklisted.clear();
                     initBlacklistText();
                     if (mc.player != null) {
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."));
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."));
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7You must toggle this setting or the module after updating the blacklist's contents."));
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."), false);
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."), false);
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7You must toggle this setting or the module after updating the blacklist's contents."), false);
                     }
                 }
             })
@@ -307,7 +307,7 @@ public class SignHistorian extends Module {
                 readSignsFromFile(signsFile);
             } else if (signsFile.toFile().createNewFile()) {
                 if (mc.player != null) mc.player.sendMessage(
-                    Text.of("§8<"+ StardustUtil.rCC()+"✨§8> [§5SignHistorian§8] §7Sign data will be saved to §2§o"+signsFile.getFileName()+" §7in your §7§ometeor-client/sign-historian folder.")
+                    Text.of("§8<"+ StardustUtil.rCC()+"✨§8> [§5SignHistorian§8] §7Sign data will be saved to §2§o"+signsFile.getFileName()+" §7in your §7§ometeor-client/sign-historian folder."), false
                 );
                 readSignsFromFile(signsFile);
             }
@@ -730,12 +730,12 @@ public class SignHistorian extends Module {
             if (event.result.getBlockPos().isWithinDistance(sbe.getPos(), 1)) {
                 mc.player.sendMessage(Text.of(
                     "§8<"+ StardustUtil.rCC()+"✨§8> §e§lOriginal§7§l: §7§o"+ Arrays.stream(sbe.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" "))
-                ));
+                ), false);
                 mc.player.sendMessage(Text.of(
                     "§8<"+ StardustUtil.rCC()+"✨§8> §6§lWoodType§7§l: "+((AbstractSignBlock) sbe.getCachedState().getBlock()).getWoodType().name()
                     +" | §3§lColor§7§l: "+sbe.getText(true).getColor().name()
                     +" | §f§lGlow Ink§7§l: "+sbe.getText(true).isGlowing()
-                ));
+                ), false);
                 return;
             }
         }
@@ -751,12 +751,12 @@ public class SignHistorian extends Module {
             if (packet.getPos().isWithinDistance(ghost.getPos(), 1.5)) {
                 mc.player.sendMessage(Text.of(
                     "§8<"+ StardustUtil.rCC()+"✨§8> §c§lOriginal§7§l: §7§o"+ Arrays.stream(ghost.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" "))
-                ));
+                ), false);
                 mc.player.sendMessage(Text.of(
                     "§8<"+ StardustUtil.rCC()+"✨§8> §6§lWoodType§7§l: "+((AbstractSignBlock) ghost.getCachedState().getBlock()).getWoodType().name()
                         +" | §3§lColor§7§l: "+ghost.getText(true).getColor().name()
                         +" | §f§lGlow Ink§7§l: "+ghost.getText(true).isGlowing()
-                ));
+                ), false);
             }
         }
     }
