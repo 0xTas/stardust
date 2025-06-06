@@ -61,9 +61,9 @@ OldSigns functionality can be accessed in the ChatSigns module settings.
 
 ### Installation
 
-1. Ensure that [Fabric](https://fabricmc.net) for Minecraft version 1.21.1 is installed.
-2. Download the [latest release](https://github.com/0xTas/stardust/releases/latest), or build the addon from source with `./gradlew build`.
-3. Drop the .jar file in your `.minecraft/mods` folder, along with Meteor Client v0.5.8-2196 or newer.
+1. Ensure that [Fabric](https://fabricmc.net) for Minecraft version 1.21.4 is installed.
+2. Download the [latest release](https://github.com/0xTas/stardust/releases/tag/latest-1.21.4), or build the addon from source with `./gradlew build`.
+3. Drop the .jar file in your `.minecraft/mods` folder, along with [Meteor Client for 1.21.4](https://meteorclient.com/archive).
 4. Run your Fabric installation.
 <br>
 
