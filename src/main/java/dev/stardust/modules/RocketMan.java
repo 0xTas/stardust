@@ -15,6 +15,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.registry.tag.FluidTags;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import meteordevelopment.orbit.EventPriority;
@@ -23,6 +24,7 @@ import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.component.DataComponentTypes;
 import meteordevelopment.meteorclient.utils.Utils;
 import meteordevelopment.meteorclient.utils.misc.Keybind;
+import meteordevelopment.meteorclient.utils.world.Dimension;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.utils.misc.input.Input;
@@ -31,10 +33,12 @@ import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import dev.stardust.mixin.accessor.PlayerMoveC2SPacketAccessor;
+import meteordevelopment.meteorclient.utils.player.PlayerUtils;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.c2s.common.CommonPongC2SPacket;
+import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import meteordevelopment.meteorclient.events.meteor.MouseScrollEvent;
 import meteordevelopment.meteorclient.systems.modules.render.Freecam;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
@@ -52,6 +56,7 @@ public class RocketMan extends Module {
     public enum KeyModifiers { Alt, Ctrl, Shift, None }
     public enum HoverMode { Off, Hold, Toggle, Creative }
     public enum RocketMode {OnKey, Static, Dynamic, Speed }
+    public enum TakeoffMode { None, Full, Partial, DeployElytra, UseRocket, Jump}
 
     private final SettingGroup sgRockets = settings.createGroup("Rocket Usage");
     private final SettingGroup sgBoosts = settings.createGroup("Rocket Boosts");
@@ -73,6 +78,7 @@ public class RocketMan extends Module {
             .name("rocket-key")
             .description("The key you want to press to use a rocket.")
             .defaultValue(Keybind.fromKey(GLFW.GLFW_KEY_W))
+            .visible(() -> usageMode.get().equals(RocketMode.OnKey))
             .build()
     );
 
@@ -89,7 +95,7 @@ public class RocketMan extends Module {
         new DoubleSetting.Builder()
             .name("minimum-speed-threshold-(b/s)")
             .description("Will use a rocket when your speed falls below this threshold.")
-            .range(1, 1000).sliderRange(2, 100).defaultValue(37)
+            .range(1, 1000).sliderRange(2, 100).defaultValue(24)
             .visible(() -> usageMode.get().equals(RocketMode.Speed))
             .build()
     );
@@ -240,7 +246,7 @@ public class RocketMan extends Module {
         new KeybindSetting.Builder()
             .name("hover-keybind")
             .description("The key you want to press or hold to initiate hover mode.")
-            .defaultValue(Keybind.fromKey(GLFW.GLFW_KEY_S))
+            .defaultValue(Keybind.none())
             .build()
     );
 
@@ -248,7 +254,7 @@ public class RocketMan extends Module {
         new EnumSetting.Builder<KeyModifiers>()
             .name("modifier-key")
             .description("Require a modifier key to be held down alongside your hover keybind.")
-            .defaultValue(KeyModifiers.Ctrl)
+            .defaultValue(KeyModifiers.None)
             .build()
     );
 
@@ -370,7 +376,7 @@ public class RocketMan extends Module {
 
     private final Setting<Integer> durabilityThreshold = sgSound.add(
         new IntSetting.Builder()
-            .name("low-durability-threshold-(%)")
+            .name("low-durability-threshold-%")
             .sliderRange(1, 99)
             .defaultValue(5)
             .visible(warnOnLow::get)
@@ -409,6 +415,14 @@ public class RocketMan extends Module {
             .build()
     );
 
+    private final Setting<Boolean> disableOnLand = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("disable-on-land")
+            .description("Disable the module upon landing.")
+            .defaultValue(true)
+            .build()
+    );
+
     private final Setting<Boolean> syncInventory = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
             .name("sync-inventory")
@@ -425,11 +439,20 @@ public class RocketMan extends Module {
             .build()
     );
 
-    private final Setting<Boolean> takeoff = settings.getDefaultGroup().add(
-        new BoolSetting.Builder()
-            .name("takeoff-assist")
-            .description("Assist takeoff by launching a rocket as soon as you deploy your elytra.")
-            .defaultValue(true)
+    private final Setting<TakeoffMode> takeoff = settings.getDefaultGroup().add(
+        new EnumSetting.Builder<TakeoffMode>()
+            .name("takeoff-assist-mode")
+            .defaultValue(TakeoffMode.Full)
+            .build()
+    );
+
+    private final Setting<Integer> assistCooldown = settings.getDefaultGroup().add(
+        new IntSetting.Builder()
+            .name("takeoff-assist-cooldown")
+            .description("How long to wait before attempting another takeoff assist. Set to 0 to disable.")
+            .sliderRange(0, 100)
+            .min(-1).defaultValue(40)
+            .visible(() -> !takeoff.get().equals(TakeoffMode.None))
             .build()
     );
 
@@ -447,6 +470,14 @@ public class RocketMan extends Module {
             .sliderRange(1, 99)
             .defaultValue(5)
             .visible(autoReplace::get)
+            .build()
+    );
+
+    private final Setting<Boolean> escapeLava = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("attempt-escape-lava")
+            .description("Automatically pitch upwards and fire a rocket to fly out of lava pools in the nether.")
+            .defaultValue(false)
             .build()
     );
 
@@ -478,9 +509,12 @@ public class RocketMan extends Module {
     private int durabilityCheckTicks = 0;
     private double rocketBoostSpeed = 1.5;
     private int tridentThrowGracePeriod = 0;
+    private float lastPlayerPitch = -420.69f;
+    private boolean inLava = false;
     private boolean synced = false;
     private boolean boosted = false;
     private boolean justUsed = false;
+    private boolean assisted = false;
     private boolean needReset = false;
     private boolean takingOff = false;
     public boolean isHovering = false;
@@ -488,6 +522,7 @@ public class RocketMan extends Module {
     private boolean firstRocket = false;
     public boolean durationBoosted = false;
     private String rcc = StardustUtil.rCC();
+    private long assistTimer = assistCooldown.get();
     public @Nullable Long extensionStartTime = null;
     public @Nullable BlockPos extensionStartPos = null;
     public @Nullable FireworkRocketEntity currentRocket = null;
@@ -540,6 +575,7 @@ public class RocketMan extends Module {
     }
 
     public void discardCurrentRocket(String source) {
+        if (mc.player == null || mc.getNetworkHandler() == null) return;
         if (!source.trim().isEmpty() && debug.get() && chatFeedback) {
             mc.player.sendMessage(
                 Text.literal("§7Discarding current rocket! Why: "
@@ -566,6 +602,7 @@ public class RocketMan extends Module {
     }
 
     public boolean hasActiveRocket() {
+        if (mc.world == null) return false;
         for (Entity e : mc.world.getEntities()) {
             if (e instanceof FireworkRocketEntity r && r.getOwner() != null && r.getOwner() != null && r.getOwner().equals(mc.player)) {
                 return true;
@@ -651,6 +688,75 @@ public class RocketMan extends Module {
                 "Rockets remaining warning".hashCode()
             );
             rocketStockTicks = 0;
+        }
+    }
+
+    private void assistTakeoff() {
+        if (mc.player == null || mc.getNetworkHandler() == null) return;
+
+        if (PlayerUtils.getDimension().equals(Dimension.Nether) && mc.player.isSubmergedIn(FluidTags.LAVA)) {
+            inLava = true;
+            if (lastPlayerPitch == -420.69f) {
+                lastPlayerPitch = mc.player.getPitch();
+                mc.player.setPitch(-75);
+            }
+            mc.options.jumpKey.setPressed(true);
+            if (mc.player.isGliding() && !justUsed) {
+                assisted = true;
+                justUsed = true;
+                takingOff = true;
+                useFireworkRocket("full lava escape");
+            } else if (mc.player.getEquippedStack(EquipmentSlot.CHEST).isOf(Items.ELYTRA)) {
+                mc.player.startGliding();
+                mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+            }
+        } else switch (takeoff.get()) {
+            case None -> assisted = true;
+            case Full -> {
+                if (mc.player.isOnGround()) {
+                    mc.player.jump();
+                } else if (!mc.player.isGliding() && mc.player.getEquippedStack(EquipmentSlot.CHEST).isOf(Items.ELYTRA)) {
+                    mc.player.startGliding();
+                    mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                } else if (!justUsed) {
+                    assisted = true;
+                    justUsed = true;
+                    takingOff = true;
+                    useFireworkRocket("full takeoff assist");
+                }
+            }
+            case Jump -> {
+                if (mc.player.isGliding()) assisted = true;
+                else if (mc.player.isOnGround()) {
+                    mc.player.jump();
+                }
+            }
+            case Partial -> {
+                if (mc.player.isGliding() && !justUsed) {
+                    assisted = true;
+                    justUsed = true;
+                    takingOff = true;
+                    useFireworkRocket("partial takeoff assist");
+                } else if (!mc.player.isOnGround() && !mc.player.isGliding() && mc.player.getEquippedStack(EquipmentSlot.CHEST).isOf(Items.ELYTRA)) {
+                    mc.player.startGliding();
+                    mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                }
+            }
+            case UseRocket -> {
+                if (mc.player.isGliding() && !justUsed) {
+                    justUsed = true;
+                    takingOff = true;
+                    useFireworkRocket("rocket takeoff assist");
+                }
+            }
+            case DeployElytra -> {
+                if (!mc.player.isOnGround() && !mc.player.isGliding() && mc.player.getEquippedStack(EquipmentSlot.CHEST).isOf(Items.ELYTRA)) {
+                    assisted = true;
+                    takingOff = true;
+                    mc.player.startGliding();
+                    mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                }
+            }
         }
     }
 
@@ -773,11 +879,7 @@ public class RocketMan extends Module {
                     "No elytra warning".hashCode()
                 );
             }
-        } else if (takeoff.get() && mc.player.isGliding()) {
-            justUsed = true;
-            takingOff = true;
-            useFireworkRocket("on activate");
-        }
+        } else if (!takingOff && !assisted) assistTakeoff();
     }
 
     @Override
@@ -787,19 +889,23 @@ public class RocketMan extends Module {
         hoverTimer = 0;
         boosted = false;
         setbackTimer = 0;
+        assisted = false;
+        takingOff = false;
         needReset = false;
         isHovering = false;
         firstRocket = true;
         setbackCounter = 0;
         wasHovering = false;
         rocketBoostSpeed = 1.5;
+        assistTimer = assistCooldown.get();
         discardCurrentRocket("on deactivate");
         rcc = StardustUtil.rCC();
     }
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
-        if (mc.player == null || mc.interactionManager == null) return;
+        if (mc.getNetworkHandler() == null) return;
+        if (mc.player == null || mc.world == null || mc.interactionManager == null) return;
         if (syncInventory.get() && !synced && mc.getNetworkHandler().getPlayerList().size() > 1) {
             if (timer == 0 && debug.get()) mc.player.sendMessage(Text.literal("§7Priming inventory to prevent desync..."), false);
             ++timer;
@@ -845,7 +951,7 @@ public class RocketMan extends Module {
                 }
             }
         } catch (Exception err) {
-            Stardust.LOG.error("[RocketMan] extensionStartPos should not have been null, but it was! Why:\n"+err);
+            Stardust.LOG.error("[RocketMan] extensionStartPos should not have been null, but it was! Why:\n{}", err.toString());
         }
 
 
@@ -877,7 +983,7 @@ public class RocketMan extends Module {
 
         ItemStack activeItem = mc.player.getActiveItem();
         if ((activeItem.contains(DataComponentTypes.FOOD) || Utils.isThrowable(activeItem.getItem())) && mc.player.getItemUseTime() > 0) {
-            if (!isHovering || (isHovering && hasActiveRocket())) {
+            if (!isHovering || hasActiveRocket()) {
                 ++ticksBusy;
                 return;
             }
@@ -895,27 +1001,49 @@ public class RocketMan extends Module {
             return;
         }
 
-        if (mc.player.isOnGround() || !mc.player.isGliding()) {
+        if (assisted && mc.player.isOnGround() && (assistCooldown.get() > 0 || assistCooldown.get() == -1)) {
+            --assistTimer;
+            if (assistTimer <= 0) {
+                assisted = false;
+                assistTimer = assistCooldown.get();
+            }
+        }
+
+        if (mc.player.isGliding() && hasActiveRocket()) takingOff = true;
+        boolean needsEscape = escapeLava.get() && PlayerUtils.getDimension().equals(Dimension.Nether) && mc.player.isSubmergedIn(FluidTags.LAVA);
+
+        if (!needsEscape && inLava) {
+            inLava = false;
+            mc.options.jumpKey.setPressed(false);
+            if (lastPlayerPitch != -420.69f) {
+                mc.player.setPitch(lastPlayerPitch);
+                lastPlayerPitch = -420.69f;
+            }
+        }
+
+        if ((!takingOff && !assisted) || needsEscape) assistTakeoff();
+        else if (mc.player.isOnGround() || !mc.player.isGliding()) {
             discardCurrentRocket("");
             ticksBusy = 0;
             hoverTimer = 0;
             ticksFlying = 0;
+            justUsed = false;
             takingOff = false;
             firstRocket = true;
             rocketBoostSpeed = 1.5;
             if (!hoverMode.get().equals(HoverMode.Toggle)) isHovering = false;
+            if (mc.player.isOnGround() && disableOnLand.get()) {
+                toggle();
+                sendToggledMsg();
+            }
             return;
-        }else if (!takingOff && takeoff.get() && mc.player.isGliding()) {
-            justUsed = true;
-            takingOff = true;
-            useFireworkRocket("takeoff assist");
-            return;
-        }else if (mc.player.isGliding()) {
-            handleDurabilityChecks();
-            handleFireworkRocketChecks();
         }
 
-        if (mc.player.isGliding() && isHovering) {
+        if (!mc.player.isGliding()) return;
+
+        handleDurabilityChecks();
+        handleFireworkRocketChecks();
+        if (isHovering) {
             ++timer;
             ++hoverTimer;
             ++ticksFlying;
@@ -986,6 +1114,7 @@ public class RocketMan extends Module {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onReceivePacket(PacketEvent.Receive event) {
+        if (mc.getNetworkHandler() == null) return;
         if (mc.player == null || !mc.player.isGliding()) return;
         if (event.packet instanceof PlayerPositionLookS2CPacket) {
             ++setbackCounter;
