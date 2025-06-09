@@ -40,7 +40,6 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
 
     protected AbstractSignEditScreenMixin(Text title) { super(title); }
 
-
     // See SignatureSign.java && SignHistorian.java
     @Inject(method = "init", at = @At("TAIL"))
     public void stardustMixinInit(CallbackInfo ci) {
@@ -53,16 +52,8 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
         if (!signatureSign.isActive() && !signHistorian.isActive()) return;
 
         SignText restoration = signHistorian.getRestoration(this.blockEntity);
-        if (signHistorian.isActive() && restoration != null) {
-            List<String> msgs = Arrays.stream(restoration.getMessages(false)).map(Text::getString).toList();
-            String[] messages = new String[msgs.size()];
-            messages = msgs.toArray(messages);
-
-            ((AbstractSignEditScreenAccessor) this).setText(restoration);
-            ((AbstractSignEditScreenAccessor) this).setMessages(messages);
-
-            this.close();
-        } else if (signatureSign.isActive()) {
+        if ((!signHistorian.isActive() || restoration == null) && signatureSign.isActive()) {
+            if (signatureSign.getAutoConfirm()) return;
             SignText signature = signatureSign.getSignature(this.blockEntity);
             List<String> msgs = Arrays.stream(signature.getMessages(false)).map(Text::getString).toList();
             String[] messages = new String[msgs.size()];
@@ -72,10 +63,6 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
             ((AbstractSignEditScreenAccessor) this).setMessages(messages);
             if (signatureSign.needsDisabling()) {
                 signatureSign.disable();
-            }
-
-            if (signatureSign.getAutoConfirm()) {
-                this.close();
             }
 
             if ((signatureSign.isActive() && signatureSign.signFreedom.get())) {

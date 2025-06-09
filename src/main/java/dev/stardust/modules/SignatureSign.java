@@ -26,11 +26,16 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.client.font.TextRenderer;
 import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.block.entity.SignBlockEntity;
+import dev.stardust.mixin.accessor.ClientConnectionAccessor;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.player.Rotations;
 import meteordevelopment.meteorclient.systems.modules.Modules;
+import net.minecraft.network.packet.c2s.play.UpdateSignC2SPacket;
+import dev.stardust.mixin.accessor.AbstractSignEditScreenAccessor;
+import meteordevelopment.meteorclient.events.game.OpenScreenEvent;
+import net.minecraft.client.gui.screen.ingame.AbstractSignEditScreen;
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -345,6 +350,14 @@ public class SignatureSign extends Module {
             .build()
     );
 
+    private final Setting<Integer> packetDelay = settings.getDefaultGroup().add(
+        new IntSetting.Builder()
+            .name("packet-delay")
+            .description("How many ticks to delay before sending the UpdateSign packet. Lower values have a higher chance of being rejected by the AC.")
+            .range(0, 500).sliderRange(0, 50).defaultValue(20)
+            .build()
+    );
+
     private final Setting<Boolean> autoConfirm = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
             .name("auto-confirm")
@@ -387,6 +400,7 @@ public class SignatureSign extends Module {
     private int timer = 0;
     private int dyeSlot = -1;
     private int storyIndex = 0;
+    private int packetTimer = 0;
     private int lastIndexAmount = 0;
     private int rotationPriority = 69420;
     private boolean didDisableWaxAura = false;
@@ -400,6 +414,7 @@ public class SignatureSign extends Module {
     private final HashSet<SignBlockEntity> signsToWax = new HashSet<>();
     private final HashSet<SignBlockEntity> signsToColor = new HashSet<>();
     private final HashSet<SignBlockEntity> signsToGlowInk = new HashSet<>();
+    private final ArrayDeque<UpdateSignC2SPacket> packetQueue = new ArrayDeque<>();
 
 
     @Override
@@ -415,11 +430,13 @@ public class SignatureSign extends Module {
         storyText.clear();
         lastLines.clear();
         signsToWax.clear();
+        packetQueue.clear();
         signsToColor.clear();
         signsToGlowInk.clear();
 
         timer = 0;
         storyIndex = 0;
+        packetTimer = 0;
         lastIndexAmount = 0;
         rotationPriority = 69420;
         didDisableWaxAura = false;
@@ -895,9 +912,44 @@ public class SignatureSign extends Module {
     }
 
     @EventHandler
+    private void onScreenOpened(OpenScreenEvent event) {
+        if (!(event.screen instanceof AbstractSignEditScreen editScreen)) return;
+        SignBlockEntity sign = ((AbstractSignEditScreenAccessor) editScreen).getBlockEntity();
+
+        Modules mods = Modules.get();
+        if (mods == null) return;
+        SignHistorian sh = mods.get(SignHistorian.class);
+        if (sh.isActive() && sh.getRestoration(sign) != null) return;
+
+        if (autoConfirm.get()) {
+            event.cancel();
+            SignText signature = getSignature(sign);
+            List<String> msgs = Arrays.stream(signature.getMessages(false)).map(Text::getString).toList();
+            String[] messages = new String[msgs.size()];
+            messages = msgs.toArray(messages);
+
+            if (packetQueue.isEmpty()) packetTimer = 0;
+            packetQueue.addLast(new UpdateSignC2SPacket(
+                sign.getPos(), true, messages[0], messages[1], messages[2], messages[3]
+            ));
+        }
+    }
+
+    @EventHandler
     private void onTick(TickEvent.Pre event) {
         if (mc.player == null) return;
         if (mc.currentScreen != null) return;
+        if (mc.getNetworkHandler() == null) return;
+
+        if (!packetQueue.isEmpty()) {
+            ++packetTimer;
+            if (packetTimer >= packetDelay.get()) {
+                packetTimer = 0;
+                ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).invokeSendImmediately(
+                    packetQueue.removeFirst(), null, true
+                );
+            }
+        }
 
         if (timer == -1) {
             if (dyeSlot != -1) {

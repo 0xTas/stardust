@@ -48,6 +48,7 @@ import meteordevelopment.meteorclient.utils.Utils;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
 import meteordevelopment.meteorclient.renderer.ShapeMode;
+import dev.stardust.mixin.accessor.ClientConnectionAccessor;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.utils.player.Rotations;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -55,7 +56,10 @@ import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import meteordevelopment.meteorclient.utils.render.RenderUtils;
+import net.minecraft.network.packet.c2s.play.UpdateSignC2SPacket;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
+import dev.stardust.mixin.accessor.AbstractSignEditScreenAccessor;
+import meteordevelopment.meteorclient.events.game.OpenScreenEvent;
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import meteordevelopment.meteorclient.events.world.BlockUpdateEvent;
@@ -182,6 +186,14 @@ public class SignHistorian extends Module {
             .build()
     );
 
+    private final Setting<Integer> packetDelay = sgSigns.add(
+        new IntSetting.Builder()
+            .name("packet-delay")
+            .description("How many ticks to delay before sending the UpdateSign packet. Lower values have a higher chance of being rejected by the AC.")
+            .range(0, 500).sliderRange(0, 50).defaultValue(20)
+            .build()
+    );
+
     private final Setting<Boolean> contentBlacklist = sgBlacklist.add(
         new BoolSetting.Builder()
             .name("content-blacklist")
@@ -259,6 +271,7 @@ public class SignHistorian extends Module {
     private int dyeSlot = -1;
     private int pingTicks = 0;
     private int gracePeriod = 0;
+    private int packetTimer = 0;
     private int rotationPriority = 69420;
     private boolean didDisableWaxAura = false;
     private @Nullable BlockPos lastTargetedSign = null;
@@ -271,6 +284,7 @@ public class SignHistorian extends Module {
     private final HashSet<SignBlockEntity> signsToGlowInk = new HashSet<>();
     private final HashMap<Integer, Vec3d> trackedGriefers = new HashMap<>();
     private final HashSet<HostileEntity> approachingGriefers = new HashSet<>();
+    private final ArrayDeque<UpdateSignC2SPacket> packetQueue = new ArrayDeque<>();
     private final HashMap<SignBlockEntity, WoodType> woodTypeMap = new HashMap<>();
     private final HashMap<SignBlockEntity, DyeColor> signsToColor = new HashMap<>();
     private final HashMap<Integer, Pair<Boolean, Long>> grieferHadLineOfSight = new HashMap<>();
@@ -710,6 +724,7 @@ public class SignHistorian extends Module {
         signsToWax.clear();
         woodTypeMap.clear();
         serverSigns.clear();
+        packetQueue.clear();
         signsToColor.clear();
         modifiedSigns.clear();
         destroyedSigns.clear();
@@ -733,8 +748,8 @@ public class SignHistorian extends Module {
                 ), false);
                 mc.player.sendMessage(Text.of(
                     "§8<"+ StardustUtil.rCC()+"✨§8> §6§lWoodType§7§l: "+((AbstractSignBlock) sbe.getCachedState().getBlock()).getWoodType().name()
-                    +" | §3§lColor§7§l: "+sbe.getText(true).getColor().name()
-                    +" | §f§lGlow Ink§7§l: "+sbe.getText(true).isGlowing()
+                        +" | §3§lColor§7§l: "+sbe.getText(true).getColor().name()
+                        +" | §f§lGlow Ink§7§l: "+sbe.getText(true).isGlowing()
                 ), false);
                 return;
             }
@@ -781,6 +796,27 @@ public class SignHistorian extends Module {
     }
 
     @EventHandler
+    private void onScreenOpened(OpenScreenEvent event) {
+        if (!(event.screen instanceof AbstractSignEditScreen editScreen)) return;
+        SignBlockEntity sign = ((AbstractSignEditScreenAccessor) editScreen).getBlockEntity();
+
+
+        SignText restoration = getRestoration(sign);
+
+        if (restoration != null) {
+            event.cancel();
+            List<String> msgs = Arrays.stream(restoration.getMessages(false)).map(Text::getString).toList();
+            String[] messages = new String[msgs.size()];
+            messages = msgs.toArray(messages);
+
+            if (packetQueue.isEmpty()) packetTimer = 0;
+            packetQueue.addLast(new UpdateSignC2SPacket(
+                sign.getPos(), true, messages[0], messages[1], messages[2], messages[3]
+            ));
+        }
+    }
+
+    @EventHandler
     private void onTick(TickEvent.Post event) {
         if (mc.world == null) return;
         if (currentDim == null) currentDim = mc.world.getRegistryKey();
@@ -788,6 +824,16 @@ public class SignHistorian extends Module {
             serverSigns.clear();
             currentDim = mc.world.getRegistryKey();
             if (persistenceSetting.get()) initOrLoadFromSignFile();
+        }
+
+        if (!packetQueue.isEmpty() && mc.getNetworkHandler() != null) {
+            ++packetTimer;
+            if (packetTimer >= packetDelay.get()) {
+                packetTimer = 0;
+                ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).invokeSendImmediately(
+                    packetQueue.removeFirst(), null, true
+                );
+            }
         }
 
         BlockPos targeted = getTargetedSign();

@@ -4,6 +4,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import net.minecraft.block.entity.SignText;
 import org.spongepowered.asm.mixin.gen.Accessor;
+import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.client.gui.screen.ingame.AbstractSignEditScreen;
 
 @Mixin(AbstractSignEditScreen.class)
@@ -18,4 +19,7 @@ public interface AbstractSignEditScreenAccessor {
     @Mutable
     @Accessor("text")
     void setText(SignText text);
+
+    @Accessor("blockEntity")
+    SignBlockEntity getBlockEntity();
 }
