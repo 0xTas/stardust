@@ -1,5 +1,6 @@
 package dev.stardust;
 
+import dev.stardust.util.MsgUtil;
 import org.slf4j.Logger;
 import dev.stardust.modules.*;
 import dev.stardust.commands.*;
@@ -101,6 +102,7 @@ public class Stardust extends MeteorAddon {
                 .build()
         );
 
+        MsgUtil.initModulePrefixes();
         LOG.info("<✨> Stardust initialized.");
     }
 
