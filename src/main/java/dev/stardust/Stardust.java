@@ -1,5 +1,6 @@
 package dev.stardust;
 
+import dev.stardust.managers.PacketSpamManager;
 import org.slf4j.Logger;
 import dev.stardust.modules.*;
 import dev.stardust.commands.*;
@@ -34,6 +35,8 @@ public class Stardust extends MeteorAddon {
     public static Setting<Boolean> disableMeteorClientTelemetry = new BoolSetting.Builder().build();
     public static Setting<Boolean> antiInventoryPacketKick = new BoolSetting.Builder().build();
     public static Setting<IllegalDisconnectMethod> illegalDisconnectMethodSetting = new EnumSetting.Builder<IllegalDisconnectMethod>().defaultValue(IllegalDisconnectMethod.Slot).build();
+
+    private PacketSpamManager packetSpamManager;
 
     @Override
     public void onInitialize() {
@@ -122,6 +125,8 @@ public class Stardust extends MeteorAddon {
                 .defaultValue(false)
                 .build()
         );
+
+        packetSpamManager = new PacketSpamManager();
 
         MsgUtil.initModulePrefixes();
         LOG.info("<✨> Stardust initialized.");
