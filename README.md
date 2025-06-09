@@ -60,6 +60,7 @@ OldSigns functionality can be accessed in the ChatSigns module settings.
 | **Themed Category Icons**    | *Enable module category icons in your Meteor GUI settings to see a random Stardust/2b2t-themed icon for the Stardust modules category.* Randomly picks a new icon each time you launch your game!                                                                                                                                   |
 | **Disable Meteor Telemetry** | *Config setting to disable Meteor's periodic telemetry pings for their online player api.*                                                                                                                                                                                                                                          |
 | **Packet-spam Anti-kick**    | *Config setting to prevent you from getting kicked for sending too many invalid inventory interactions to the server.* As of June 2025, 2b2t kicks you for sending just a small handful of invalid QUICK_MOVE packets too quickly. This feature inspects these packets and cancels them if they are invalid, preventing some kicks. |
+| **ExpThrower Level Cap**     | *Adds settings to Meteor's built-int ExpThrower module to automatically stop throwing when a chosen experience level is reached.*                                                                                                                                                                                                   |
 
 <br>
 
