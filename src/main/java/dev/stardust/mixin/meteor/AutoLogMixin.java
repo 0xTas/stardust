@@ -48,6 +48,8 @@ public abstract class AutoLogMixin extends Module {
     @Unique
     private boolean didLog = false;
     @Unique
+    private long requestedDcAt = 0L;
+    @Unique
     @Nullable
     private Text disconnectReason = null;
     @Unique
@@ -73,8 +75,15 @@ public abstract class AutoLogMixin extends Module {
     }
 
     @Inject(method = "onTick",at = @At("HEAD"), cancellable = true)
-    private void preventNullPointerExceptions(CallbackInfo ci) {
+    private void mixinOnTick(CallbackInfo ci) {
         if (!Utils.canUpdate() || !isActive()) ci.cancel();
+        if (didLog && System.currentTimeMillis() - requestedDcAt >= 1337) {
+            Stardust.LOG.warn("[Stardust] Detected illegal disconnect failure, falling back on regular disconnect. Try adjusting your illegal disconnect method config setting.");
+            if (mc.getNetworkHandler() != null) mc.getNetworkHandler().onDisconnect(new DisconnectS2CPacket(disconnectReason));
+            disconnectReason = null;
+            didLog = false;
+            requestedDcAt = 0L;
+        }
     }
 
     @Inject(method = "disconnect(Lnet/minecraft/text/Text;)V", at = @At("HEAD"), cancellable = true, remap = true)
@@ -82,6 +91,7 @@ public abstract class AutoLogMixin extends Module {
         if (forceKick != null && forceKick.get()) {
             ci.cancel();
             didLog = true;
+            requestedDcAt = System.currentTimeMillis();
             disconnectReason = Text.literal("§8[§a§oAutoLog§8] §f" + reason.getString());
             StardustUtil.illegalDisconnect(true, Stardust.illegalDisconnectMethodSetting.get());
         }
