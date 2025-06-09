@@ -58,6 +58,6 @@ public abstract class AbstractSignBlockEntityRendererMixin implements BlockEntit
     @Unique
     private boolean isCodySign(SignBlockEntity sbe) {
         SignText frontText = sbe.getFrontText();
-        return Arrays.stream(frontText.getMessages(false)).anyMatch(msg -> msg.getString().contains("codysmile11"));
+        return Arrays.stream(frontText.getMessages(false)).anyMatch(msg -> msg.getString().contains("codysmile11") || msg.getString().toLowerCase().contains(" has been here :)"));
     }
 }
