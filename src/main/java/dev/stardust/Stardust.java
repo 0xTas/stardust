@@ -1,6 +1,5 @@
 package dev.stardust;
 
-import dev.stardust.managers.PacketSpamManager;
 import org.slf4j.Logger;
 import dev.stardust.modules.*;
 import dev.stardust.commands.*;
@@ -8,6 +7,7 @@ import dev.stardust.util.MsgUtil;
 import com.mojang.logging.LogUtils;
 import dev.stardust.util.StardustUtil;
 import net.fabricmc.loader.api.FabricLoader;
+import dev.stardust.managers.PacketSpamManager;
 import meteordevelopment.meteorclient.MeteorClient;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import meteordevelopment.meteorclient.settings.Setting;
