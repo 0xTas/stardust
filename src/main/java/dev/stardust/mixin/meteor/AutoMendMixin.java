@@ -1,9 +1,8 @@
 package dev.stardust.mixin.meteor;
 
-import net.minecraft.text.Text;
 import net.minecraft.item.Items;
+import dev.stardust.util.MsgUtil;
 import net.minecraft.item.ItemStack;
-import dev.stardust.util.StardustUtil;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -43,8 +42,6 @@ public abstract class AutoMendMixin extends Module {
     @Final
     private Setting<Boolean> autoDisable;
     @Shadow
-    protected abstract int getSlot();
-    @Shadow
     protected abstract int getEmptySlot();
 
     @Unique
@@ -63,10 +60,11 @@ public abstract class AutoMendMixin extends Module {
 
     @Unique
     private void replaceElytra() {
+        if (mc.player == null) return;
         for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
             ItemStack stack = mc.player.getInventory().getStack(n);
             if (stack.getItem() == Items.ELYTRA) {
-                if (Utils.hasEnchantment(stack, Enchantments.MENDING) && stack.getDamage() != 0) {
+                if (Utils.hasEnchantment(stack, Enchantments.MENDING) && stack.getDamage() > 0) {
                     InvUtils.move().from(n).toArmor(2);
                     didWearMending = true;
                     return;
@@ -77,17 +75,13 @@ public abstract class AutoMendMixin extends Module {
         if (!notified) {
             if (mendElytrasOnly != null && mendElytrasOnly.get()
                 && ignoreOffhand != null && ignoreOffhand.get() && autoDisable.get()) {
-                if (getSlot() == -1 && getElytraSlot() == -1) {
+                if (getDamagedElytraSlot() == -1) {
                     toggle();
                     sendToggledMsg();
                     if (didWearMending) {
-                        mc.player.sendMessage(
-                            Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§7Done mending elytras."), false
-                        );
+                        MsgUtil.sendModuleMsg("Repaired all elytras, disabling§a..§e!", this.name);
                     } else {
-                        mc.player.sendMessage(
-                            Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§7No damaged elytras in inventory."), false
-                        );
+                        MsgUtil.sendModuleMsg("No repairable elytras left in inventory, disabling§3..§5!", this.name);
                     }
                 }
             }
@@ -96,11 +90,12 @@ public abstract class AutoMendMixin extends Module {
     }
 
     @Unique
-    private int getElytraSlot() {
+    private int getDamagedElytraSlot() {
+        if (mc.player == null) return -1;
         for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
             ItemStack stack = mc.player.getInventory().getStack(n);
             if (stack.getItem() == Items.ELYTRA) {
-                if (Utils.hasEnchantment(stack, Enchantments.MENDING) && stack.getDamage() != 0) {
+                if (Utils.hasEnchantment(stack, Enchantments.MENDING) && stack.getDamage() > 0) {
                     return n;
                 }
             }
@@ -136,31 +131,33 @@ public abstract class AutoMendMixin extends Module {
 
     @Inject(method = "onTick", at = @At("HEAD"), cancellable = true)
     private void hijackOnTick(CallbackInfo ci) {
+        if (mc.player == null) return;
         if (wearMendElytras == null || !wearMendElytras.get()) return;
         ItemStack chest = mc.player.getEquippedStack(EquipmentSlot.CHEST);
-        if (chest.isEmpty() || chest.getItem() != Items.ELYTRA || !Utils.hasEnchantment(chest, Enchantments.MENDING) || chest.getDamage() == 0) {
+        if (chest.isEmpty() || chest.getItem() != Items.ELYTRA || !Utils.hasEnchantment(chest, Enchantments.MENDING) || chest.getDamage() <= 0) {
             replaceElytra();
         }
 
-        if ((ignoreOffhand != null && ignoreOffhand.get())) {
+        if (ignoreOffhand != null && ignoreOffhand.get()) {
             ci.cancel();
         } else if (mendElytrasOnly != null && mendElytrasOnly.get()) {
             ci.cancel();
             ItemStack offhand = mc.player.getOffHandStack();
-            if (offhand.isEmpty() || !Utils.hasEnchantment(offhand, Enchantments.MENDING) || offhand.getDamage() == 0) {
-                int slot = getElytraSlot();
+            if (offhand.isEmpty() || !Utils.hasEnchantment(offhand, Enchantments.MENDING) || offhand.getDamage() <= 0) {
+                int slot = getDamagedElytraSlot();
                 if (slot == -1) {
                     if (autoDisable.get()) {
                         if (didMove) {
-                            info("Repaired all elytras, disabling...");
+                            MsgUtil.sendModuleMsg("Repaired all elytras, disabling§a..§e!", this.name);
                             int emptySlot = getEmptySlot();
                             if (emptySlot != -1) {
                                 InvUtils.move().fromOffhand().to(emptySlot);
                             }
                         } else {
-                            info("No repairable elytras left in inventory, disabling...");
+                            MsgUtil.sendModuleMsg("No repairable elytras left in inventory, disabling§3..§5!", this.name);
                         }
                         toggle();
+                        sendToggledMsg();
                     }
                 } else {
                     InvUtils.move().from(slot).toOffhand();
