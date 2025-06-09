@@ -32,6 +32,7 @@ public class Stardust extends MeteorAddon {
     public static Setting<Boolean> directConnectButtonSetting = new BoolSetting.Builder().build();
     public static Setting<Boolean> illegalDisconnectButtonSetting = new BoolSetting.Builder().build();
     public static Setting<Boolean> disableMeteorClientTelemetry = new BoolSetting.Builder().build();
+    public static Setting<Boolean> antiInventoryPacketKick = new BoolSetting.Builder().build();
     public static Setting<IllegalDisconnectMethod> illegalDisconnectMethodSetting = new EnumSetting.Builder<IllegalDisconnectMethod>().defaultValue(IllegalDisconnectMethod.Slot).build();
 
     @Override
@@ -110,6 +111,14 @@ public class Stardust extends MeteorAddon {
             new BoolSetting.Builder()
                 .name("disable-meteor-telemetry")
                 .description("Disables sending periodic telemetry pings to meteorclient.com for their online player count api.")
+                .defaultValue(false)
+                .build()
+        );
+        // See PacketSpamManager.java
+        antiInventoryPacketKick = sgStardust.add(
+            new BoolSetting.Builder()
+                .name("anti-packet-spam-kick")
+                .description("Attempts to prevent you from getting kicked for sending too many invalid inventory packets.")
                 .defaultValue(false)
                 .build()
         );
