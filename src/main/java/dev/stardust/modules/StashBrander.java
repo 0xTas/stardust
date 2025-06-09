@@ -17,6 +17,8 @@ import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import dev.stardust.mixin.accessor.AnvilScreenHandlerAccessor;
+import meteordevelopment.meteorclient.systems.modules.Modules;
+import meteordevelopment.meteorclient.systems.modules.player.EXPThrower;
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -102,6 +104,14 @@ public class StashBrander extends Module {
             .build()
     );
 
+    private final Setting<Boolean> enableExpThrower = settings.getDefaultGroup().add(
+        new BoolSetting.Builder()
+            .name("enable-exp-thrower")
+            .description("Automatically enable the Exp Thrower module when no more items can be renamed.")
+            .defaultValue(false)
+            .build()
+    );
+
     private final Setting<Integer> tickRate = settings.getDefaultGroup().add(
         new IntSetting.Builder()
             .name("tick-rate")
@@ -118,10 +128,11 @@ public class StashBrander extends Module {
     // See WorldMixin.java
     public boolean shouldMute() { return muteAnvils.get(); }
 
-    private boolean hasValidItems() {
+    private boolean hasValidItems(AnvilScreenHandler handler) {
         if (mc.player == null) return false;
-        for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
-            ItemStack stack = mc.player.getInventory().getStack(n);
+        for (int n = 0; n < mc.player.getInventory().main.size() + ANVIL_OFFSET; n++) {
+            if (n == 2) continue; // ignore output stack
+            ItemStack stack = handler.getSlot(n).getStack();
             if ((blacklistMode.get() && !itemList.get().contains(stack.getItem()))
                 || (!blacklistMode.get() && itemList.get().contains(stack.getItem())))
             {
@@ -133,6 +144,7 @@ public class StashBrander extends Module {
     }
 
     private void noXP() {
+        if (mc.player == null) return;
         if (!notified) {
             mc.player.sendMessage(
                 Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNot enough experience§8§o..."), false
@@ -142,9 +154,11 @@ public class StashBrander extends Module {
         notified = true;
         if (closeOnDone.get()) mc.player.closeHandledScreen();
         if (disableOnDone.get()) this.toggle();
+        if (enableExpThrower.get() && !Modules.get().isActive(EXPThrower.class)) Modules.get().get(EXPThrower.class).toggle();
     }
 
     private void finished() {
+        if (mc.player == null) return;
         if (!notified) {
             mc.player.sendMessage(
                 Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNo more items to rename§8§o."), false
@@ -183,7 +197,7 @@ public class StashBrander extends Module {
         ItemStack input2 = anvil.getSlot(AnvilScreenHandler.INPUT_2_ID).getStack();
         ItemStack output = anvil.getSlot(AnvilScreenHandler.OUTPUT_ID).getStack();
 
-        if (!hasValidItems()) finished();
+        if (!hasValidItems(anvil)) finished();
         else if (input1.isEmpty() && input2.isEmpty()) {
             for (int n = ANVIL_OFFSET; n < mc.player.getInventory().main.size() + ANVIL_OFFSET; n++) {
                 ItemStack stack = anvil.getSlot(n).getStack();
