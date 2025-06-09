@@ -53,6 +53,7 @@
     "meteor.NametagsMixin",
     "meteor.OnlinePlayersMixin",
     "FireworkRocketEntityMixin",
+    "meteor.BetterTooltipsMixin",
     "meteor.accessor.CategoryAccessor",
     "accessor.ClientConnectionAccessor",
     "accessor.AnvilScreenHandlerAccessor",
