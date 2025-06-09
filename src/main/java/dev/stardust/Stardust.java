@@ -53,6 +53,7 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new RocketJump());
         Modules.get().add(new BannerData());
         Modules.get().add(new PagePirate());
+        Modules.get().add(new Archaeology());
         Modules.get().add(new MusicTweaks());
         Modules.get().add(new TreasureESP());
         Modules.get().add(new LoreLocator());
