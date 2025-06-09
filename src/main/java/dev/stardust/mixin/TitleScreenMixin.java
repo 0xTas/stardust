@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(TitleScreen.class)
 public abstract class TitleScreenMixin extends Screen {
     @Unique
-    private static final ServerInfo OLD_SERVER = new ServerInfo("2builders2tools", "2b2t.org", ServerInfo.ServerType.OTHER);
+    private static final ServerInfo OLD_SERVER = new ServerInfo("2b2t", "2b2t.org", ServerInfo.ServerType.OTHER);
 
     @Shadow
     private @Nullable SplashTextRenderer splashText;
