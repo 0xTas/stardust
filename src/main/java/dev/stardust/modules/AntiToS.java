@@ -26,7 +26,7 @@ public class AntiToS extends Module {
     private final SettingGroup sgBlacklist = settings.createGroup("Content Settings");
 
     public enum SignMode {
-        Censor, Replace
+        Censor, Replace, NoRender
     }
 
     public enum ChatMode {
@@ -40,7 +40,7 @@ public class AntiToS extends Module {
             .defaultValue(ChatMode.Censor)
             .build()
     );
-    private final Setting<SignMode> signMode = sgSources.add(
+    public final Setting<SignMode> signMode = sgSources.add(
         new EnumSetting.Builder<SignMode>()
             .name("sign-mode")
             .description("Censor or completely replace SignText that matches the filter.")

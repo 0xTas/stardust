@@ -45,19 +45,24 @@ public abstract class AbstractSignBlockEntityRendererMixin implements BlockEntit
     private void onRender(SignBlockEntity signBlockEntity, float f, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, int j, CallbackInfo ci) {
         Modules mods = Modules.get();
         if (mods == null) return;
+        AntiToS antiToS = mods.get(AntiToS.class);
         NoRender noRender = mods.get(NoRender.class);
-        if (!noRender.isActive()) return;
-
         var signSetting = noRender.settings.get("cody-signs");
         if (signSetting == null) return;
-        if ((boolean) signSetting.get() && isCodySign(signBlockEntity)) {
+        if (noRender.isActive() && (boolean) signSetting.get() && isCodySign(signBlockEntity)) {
             ci.cancel();
+        }
+
+        if (antiToS.isActive() && antiToS.signMode.get().equals(AntiToS.SignMode.NoRender)) {
+            if (antiToS.containsBlacklistedText(Arrays.stream(signBlockEntity.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining()))) {
+                ci.cancel();
+            }
         }
     }
 
     @Unique
     private boolean isCodySign(SignBlockEntity sbe) {
         SignText frontText = sbe.getFrontText();
-        return Arrays.stream(frontText.getMessages(false)).anyMatch(msg -> msg.getString().contains("codysmile11") || msg.getString().toLowerCase().contains(" has been here :)"));
+        return Arrays.stream(frontText.getMessages(false)).anyMatch(msg -> msg.getString().contains("codysmile11") || msg.getString().toLowerCase().contains("has been here :)"));
     }
 }
