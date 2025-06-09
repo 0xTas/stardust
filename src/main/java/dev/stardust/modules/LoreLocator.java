@@ -1,15 +1,18 @@
 package dev.stardust.modules;
 
 import java.util.Arrays;
+import java.util.Optional;
 import dev.stardust.Stardust;
 import net.minecraft.screen.*;
 import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.component.type.NbtComponent;
 import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.component.DataComponentTypes;
 import meteordevelopment.meteorclient.utils.Utils;
+import net.minecraft.entity.passive.TropicalFishEntity;
 import net.minecraft.component.type.FireworksComponent;
 import net.minecraft.client.network.ClientPlayerEntity;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -70,6 +73,14 @@ public class LoreLocator extends Module {
         new BoolSetting.Builder()
             .name("lag-rockets")
             .description("Highlight lag rockets.")
+            .defaultValue(false)
+            .build()
+    );
+
+    private final Setting<Boolean> illegalFish = sgRares.add(
+        new BoolSetting.Builder()
+            .name("illegal-fish")
+            .description("Highlight illegal tropical fish with black as one of their colors. These are no longer obtainable as of 1.21.")
             .defaultValue(false)
             .build()
     );
@@ -195,6 +206,24 @@ public class LoreLocator extends Module {
         if (lagRockets.get() && stack.contains(DataComponentTypes.FIREWORKS)) {
             FireworksComponent firework = stack.get(DataComponentTypes.FIREWORKS);
             if (firework.explosions().size() == 7) return true;
+        }
+
+        if (illegalFish.get() && stack.isOf(Items.TROPICAL_FISH_BUCKET)) {
+            NbtComponent nbtComponent = stack.getOrDefault(DataComponentTypes.BUCKET_ENTITY_DATA, NbtComponent.DEFAULT);
+            if (!nbtComponent.isEmpty()) {
+                Optional<TropicalFishEntity.Variant> optional = nbtComponent.get(TropicalFishEntity.Variant.CODEC.fieldOf("BucketVariantTag")).result();
+                if (optional.isPresent()) {
+                    TropicalFishEntity.Variant variant = optional.get();
+                    String string = "color.minecraft." + variant.baseColor();
+                    String string2 = "color.minecraft." + variant.patternColor();
+                    int i = TropicalFishEntity.COMMON_VARIANTS.indexOf(variant);
+                    if (i == -1) {
+                        if (string.contains("black") || string2.contains("black")) {
+                            return true;
+                        }
+                    }
+                }
+            }
         }
 
         if (writtenBooks.get() && stack.getItem() == Items.WRITTEN_BOOK) return true;
