@@ -24,7 +24,6 @@
     "ElytraSoundInstanceMixin",
     "meteor.ModulesScreenMixin",
     "AbstractSignEditScreenMixin",
-    "AbstractSignBlockEntityRendererMixin",
     "accessor.AnvilScreenAccessor",
     "accessor.GameOptionsAccessor",
     "accessor.MusicTrackerAccessor",
@@ -32,6 +31,7 @@
     "accessor.SourceManagerAccessor",
     "accessor.BookEditScreenAccessor",
     "accessor.BookScreenContentsAccessor",
+    "AbstractSignBlockEntityRendererMixin",
     "accessor.AbstractSignEditScreenAccessor"
   ],
   "injectors": {

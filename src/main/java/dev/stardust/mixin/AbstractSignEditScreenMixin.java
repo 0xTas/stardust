@@ -32,7 +32,7 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
     public abstract void close();
     @Shadow
     @Final
-    private SignBlockEntity blockEntity;
+    protected SignBlockEntity blockEntity;
     @Shadow
     private @Nullable SelectionManager selectionManager;
     @Shadow
