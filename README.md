@@ -26,6 +26,7 @@ It contains original modules to enhance your experience on Old Server, with a fo
 | **AutoDoors**        | *Automatically interacts with doors.* Includes an insufferable door spammer mode as well (complete with client-side mute option).                                                                                                                     |
 | **AutoSmith**        | *Automatically upgrades gear or trims armor sets when interacting with smithing tables.*                                                                                                                                                              |
 | **AntiToS**          | *Censors player-generated text on render, like signs, books, chat, and more, according to a customizable content blacklist.*                                                                                                                          |
+| **Archaeology**      | *ESP / Notifications for archaeological dig sites, & automatic brushing of targeted suspicious blocks.* Also prevents accidental breakage of suspicious blocks.                                                                                       |
 | **LoreLocator**      | *Slot highlighter for rare, unique, and anomalous items.* Capable of highlighting renamed items, items with illegal enchants, zero durability items, and more.                                                                                        |
 | **AxolotlTools**     | *Variant ESP, auto-collector & auto-breeder for axolotls.* Can also catch buckets of tropical fish, with or without a farm setup. I used this to get blue axolotls on 2b2t because interacting with them normally pisses me off.                      |
 | **AutoDrawDistance** | *Automatically adjusts your render distance to maintain an FPS target.* Some biomes/areas can drop my fps by half, so I occasionally find this useful.                                                                                                |
@@ -49,14 +50,15 @@ OldSigns functionality can be accessed in the ChatSigns module settings.
 
 #### Miscellaneous
 
-| Feature                   | Description                                                                                                                                                                                                             |
-|---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Illegal Disconnect**    | *Adds "Illegal Disconnect" functionality to Meteor's built-in AutoLog module.* Enable this in the AutoLog module's settings. Also adds a config setting to put a dedicated Illegal Disconnect button on the pause menu. |
-| **Click-to-Come**         | *When using Meteor's Freecam module, click on a block or entity to Baritone path there.* Enable this in the Freecam module's settings.                                                                                  |
-| **Greeter**               | *Adds Greeter-style join/leave notifications to Meteor's built-in Notifier module.*                                                                              |
-| **Elytra Mending**        | *Tweaks Meteor's built-in AutoMend module to allow automatically equipping damaged elytras for mending.* This can be used in conjunction with offhand mending, or exclusively by enabling the "ignore offhand" setting. |
-| **Title Screen Tweaks**   | *2b2t-themed changes to the title screen.* Adds config settings to make the splash texts green, to cycle them randomly, and to add a 2b2t direct-connect button to the title screen.                                    |
-| **Themed Category Icons** | *Enable module category icons in your Meteor GUI settings to see a random Stardust/2b2t-themed icon for the Stardust modules category.* Randomly picks a new icon each time you launch your game!                       |
+| Feature                      | Description                                                                                                                                                                                                             |
+|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Illegal Disconnect**       | *Adds "Illegal Disconnect" functionality to Meteor's built-in AutoLog module.* Enable this in the AutoLog module's settings. Also adds a config setting to put a dedicated Illegal Disconnect button on the pause menu. |
+| **Click-to-Come**            | *When using Meteor's Freecam module, click on a block or entity to Baritone path there.* Enable this in the Freecam module's settings.                                                                                  |
+| **Greeter**                  | *Adds Greeter-style join/leave notifications to Meteor's built-in Notifier module.*                                                                                                                                     |
+| **Elytra Mending**           | *Tweaks Meteor's built-in AutoMend module to allow automatically equipping damaged elytras for mending.* This can be used in conjunction with offhand mending, or exclusively by enabling the "ignore offhand" setting. |
+| **Title Screen Tweaks**      | *2b2t-themed changes to the title screen.* Adds config settings to make the splash texts green, to cycle them randomly, and to add a 2b2t direct-connect button to the title screen.                                    |
+| **Themed Category Icons**    | *Enable module category icons in your Meteor GUI settings to see a random Stardust/2b2t-themed icon for the Stardust modules category.* Randomly picks a new icon each time you launch your game!                       |
+| **Disable Meteor Telemetry** | *Config setting to disable Meteor's periodic telemetry pings for their online player api.*                                                                                                                              |
 
 <br>
 

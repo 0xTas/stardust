@@ -31,6 +31,7 @@ public class Stardust extends MeteorAddon {
     public static Setting<Boolean> rotateSplashTextSetting = new BoolSetting.Builder().build();
     public static Setting<Boolean> directConnectButtonSetting = new BoolSetting.Builder().build();
     public static Setting<Boolean> illegalDisconnectButtonSetting = new BoolSetting.Builder().build();
+    public static Setting<Boolean> disableMeteorClientTelemetry = new BoolSetting.Builder().build();
     public static Setting<IllegalDisconnectMethod> illegalDisconnectMethodSetting = new EnumSetting.Builder<IllegalDisconnectMethod>().defaultValue(IllegalDisconnectMethod.Slot).build();
 
     @Override
@@ -96,11 +97,20 @@ public class Stardust extends MeteorAddon {
                 .defaultValue(false)
                 .build()
         );
+        // See StardustUtil.java
         illegalDisconnectMethodSetting = sgStardust.add(
             new EnumSetting.Builder<IllegalDisconnectMethod>()
                 .name("illegal-disconnect-method")
                 .description("The method to use to cause the server to kick you.")
                 .defaultValue(IllegalDisconnectMethod.Interact)
+                .build()
+        );
+        // See OnlinePlayersMixin.java
+        disableMeteorClientTelemetry = sgStardust.add(
+            new BoolSetting.Builder()
+                .name("disable-meteor-telemetry")
+                .description("Disables sending periodic telemetry pings to meteorclient.com for their online player count api.")
+                .defaultValue(false)
                 .build()
         );
 
