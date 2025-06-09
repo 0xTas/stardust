@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import meteordevelopment.meteorclient.settings.Setting;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -47,30 +48,34 @@ public abstract class NametagsMixin extends Module {
         );
     }
 
-    @Inject(method = "renderNametagPlayer", at = @At(value = "INVOKE", target = "Lmeteordevelopment/meteorclient/systems/modules/render/Nametags;drawBg(DDDD)V"))
-    private void injectDefaultFontForPlayerNametags(CallbackInfo ci, @Local LocalRef<TextRenderer> text) {
+    @Inject(method = "renderNametagPlayer", at = @At(value = "INVOKE", target = "Lmeteordevelopment/meteorclient/utils/render/NametagUtils;begin(Lorg/joml/Vector3d;)V"))
+    private void injectDefaultFontForPlayerNametags(CallbackInfo ci, @Local LocalRef<TextRenderer> text, @Local(argsOnly = true) LocalBooleanRef shadow) {
         if (forceDefaultFont != null && forceDefaultFont.get()) {
+            shadow.set(false);
             text.set(VanillaTextRenderer.INSTANCE);
         }
     }
 
-    @Inject(method = "renderNametagItem", at = @At(value = "INVOKE", target = "Lmeteordevelopment/meteorclient/systems/modules/render/Nametags;drawBg(DDDD)V"))
-    private void injectDefaultFontForItemNametags(CallbackInfo ci, @Local LocalRef<TextRenderer> text) {
+    @Inject(method = "renderNametagItem", at = @At(value = "INVOKE", target = "Lmeteordevelopment/meteorclient/utils/render/NametagUtils;begin(Lorg/joml/Vector3d;)V"))
+    private void injectDefaultFontForItemNametags(CallbackInfo ci, @Local LocalRef<TextRenderer> text, @Local(argsOnly = true) LocalBooleanRef shadow) {
         if (forceDefaultFont != null && forceDefaultFont.get()) {
+            shadow.set(false);
             text.set(VanillaTextRenderer.INSTANCE);
         }
     }
 
-    @Inject(method = "renderGenericNametag", at = @At(value = "INVOKE", target = "Lmeteordevelopment/meteorclient/systems/modules/render/Nametags;drawBg(DDDD)V"))
-    private void injectDefaultFontForGenericNametags(CallbackInfo ci, @Local LocalRef<TextRenderer> text) {
+    @Inject(method = "renderGenericNametag", at = @At(value = "INVOKE", target = "Lmeteordevelopment/meteorclient/utils/render/NametagUtils;begin(Lorg/joml/Vector3d;)V"))
+    private void injectDefaultFontForGenericNametags(CallbackInfo ci, @Local LocalRef<TextRenderer> text, @Local(argsOnly = true) LocalBooleanRef shadow) {
         if (forceDefaultFont != null && forceDefaultFont.get()) {
+            shadow.set(false);
             text.set(VanillaTextRenderer.INSTANCE);
         }
     }
 
-    @Inject(method = "renderTntNametag", at = @At(value = "INVOKE", target = "Lmeteordevelopment/meteorclient/systems/modules/render/Nametags;drawBg(DDDD)V"))
-    private void injectDefaultFontForTNTNametags(CallbackInfo ci, @Local LocalRef<TextRenderer> text) {
+    @Inject(method = "renderTntNametag", at = @At(value = "INVOKE", target = "Lmeteordevelopment/meteorclient/utils/render/NametagUtils;begin(Lorg/joml/Vector3d;)V"))
+    private void injectDefaultFontForTNTNametags(CallbackInfo ci, @Local LocalRef<TextRenderer> text, @Local(argsOnly = true) LocalBooleanRef shadow) {
         if (forceDefaultFont != null && forceDefaultFont.get()) {
+            shadow.set(false);
             text.set(VanillaTextRenderer.INSTANCE);
         }
     }
