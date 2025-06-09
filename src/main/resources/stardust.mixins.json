@@ -51,6 +51,7 @@
     "meteor.NotifierMixin",
     "meteor.NoRenderMixin",
     "meteor.NametagsMixin",
+    "meteor.ExpThrowerMixin",
     "meteor.OnlinePlayersMixin",
     "FireworkRocketEntityMixin",
     "meteor.BetterTooltipsMixin",
