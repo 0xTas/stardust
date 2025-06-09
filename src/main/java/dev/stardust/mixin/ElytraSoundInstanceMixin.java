@@ -12,7 +12,6 @@ import net.minecraft.client.sound.MovingSoundInstance;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/

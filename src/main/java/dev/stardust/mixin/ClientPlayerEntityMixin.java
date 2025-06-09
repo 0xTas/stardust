@@ -11,7 +11,6 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
@@ -19,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ClientPlayerEntityMixin {
 
     // See RocketMan.java
-    @Inject(method = "playSound(Lnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FF)V", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "playSoundToPlayer", at = @At("HEAD"), cancellable = true)
     private void mixinPlaySound(SoundEvent sound, SoundCategory category, float volume, float pitch, CallbackInfo ci) {
         Modules modules = Modules.get();
         if (modules == null) return;

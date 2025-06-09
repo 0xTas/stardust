@@ -32,7 +32,6 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.player.Rotations;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
@@ -122,7 +121,7 @@ public class SignatureSign extends Module {
                     restoreValidInput(1);
                     if (mc.player != null) {
                         mc.player.sendMessage(
-                            Text.of("§8<§4✨§8> §4Input too long§7..")
+                            Text.of("§8<§4✨§8> §4Input too long§7.."), false
                         );
                     }
                 } else {
@@ -163,8 +162,8 @@ public class SignatureSign extends Module {
 
     private final Setting<String> line2ModeFront = sgLine2Front.add(
         new ProvidedStringSetting.Builder()
-            .name("Line 2 Mode")
-            .description("line-2-template-mode")
+            .name("line-2-mode")
+            .description("Line 2 template mode")
             .defaultValue("Stardust")
             .supplier(() -> lineModes)
             .visible(() -> !storyMode.get())
@@ -181,7 +180,7 @@ public class SignatureSign extends Module {
                     restoreValidInput(2);
                     if (mc.player != null) {
                         mc.player.sendMessage(
-                            Text.of("§8<§4✨§8> §4Input too long§7..")
+                            Text.of("§8<§4✨§8> §4Input too long§7.."), false
                         );
                     }
                 } else {
@@ -240,7 +239,7 @@ public class SignatureSign extends Module {
                     restoreValidInput(3);
                     if (mc.player != null) {
                         mc.player.sendMessage(
-                            Text.of("§8<§4✨§8> §4Input too long§7..")
+                            Text.of("§8<§4✨§8> §4Input too long§7.."), false
                         );
                     }
                 } else {
@@ -299,7 +298,7 @@ public class SignatureSign extends Module {
                     restoreValidInput(4);
                     if (mc.player != null) {
                         mc.player.sendMessage(
-                            Text.of("§8<§4✨§8> §4Input too long§7..")
+                            Text.of("§8<§4✨§8> §4Input too long§7.."), false
                         );
                     }
                 } else {
@@ -311,7 +310,7 @@ public class SignatureSign extends Module {
 
     private final Setting<Integer> line4FileLineFront = sgLine4Front.add(
         new IntSetting.Builder()
-            .name("Line-4-file-line")
+            .name("line-4-file-line")
             .description("Which line of .minecraft/meteor-client/autosign.txt to use.")
             .range(1, 1000)
             .sliderRange(1, 420)
@@ -575,7 +574,7 @@ public class SignatureSign extends Module {
             if (inputTooLong(signText.get(i))) {
                 if (mc.player != null) {
                     mc.player.sendMessage(
-                        Text.of("§8<§4✨§8> §7§oLine §4§o"+(i+1)+" §7§owon't render fully due to length..")
+                        Text.of("§8<§4✨§8> §7§oLine §4§o"+(i+1)+" §7§owon't render fully due to length.."), false
                     );
                 }
             }
@@ -600,13 +599,13 @@ public class SignatureSign extends Module {
             try {
                 if (file.createNewFile()) {
                     if (mc.player != null) {
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created autosign.txt in meteor-client folder."));
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created autosign.txt in meteor-client folder."), false);
 
                         Text msg = Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Click §2§lhere §r§7to open the folder.");
                         Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, meteorFolder.toFile().getAbsolutePath()));
 
                         MutableText txt = msg.copyContentOnly().setStyle(style);
-                        mc.player.sendMessage(txt);
+                        mc.player.sendMessage(txt, false);
                     }
                 }
             } catch (Exception err) {
@@ -637,13 +636,13 @@ public class SignatureSign extends Module {
             try {
                 if (file.createNewFile()) {
                     if (mc.player != null) {
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created storysign.txt in meteor-client folder."));
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created storysign.txt in meteor-client folder."), false);
 
                         Text msg = Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Click §2§lhere §r§7to open the folder.");
                         Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, meteorFolder.toFile().getAbsolutePath()));
 
                         MutableText txt = msg.copyContentOnly().setStyle(style);
-                        mc.player.sendMessage(txt);
+                        mc.player.sendMessage(txt, false);
                     }
                 }
             } catch (Exception err) {
@@ -710,7 +709,7 @@ public class SignatureSign extends Module {
             lastLines.addAll(storyLines);
             if (mc.player != null) {
                 mc.player.sendMessage(
-                    Text.of("§8<"+StardustUtil.rCC()+"✨§8> §7§oSign story complete.")
+                    Text.of("§8<"+StardustUtil.rCC()+"✨§8> §7§oSign story complete."), false
                 );
                 mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 0.77f, 0.77f);
             }

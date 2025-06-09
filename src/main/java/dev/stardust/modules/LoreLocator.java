@@ -1,24 +1,16 @@
 package dev.stardust.modules;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import dev.stardust.Stardust;
 import net.minecraft.screen.*;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.Registries;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.item.EnchantedBookItem;
-import net.minecraft.item.FireworkRocketItem;
-import net.minecraft.enchantment.Enchantment;
+import net.minecraft.component.ComponentMap;
 import net.minecraft.enchantment.Enchantments;
 import meteordevelopment.meteorclient.settings.*;
+import net.minecraft.component.DataComponentTypes;
 import meteordevelopment.meteorclient.utils.Utils;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.component.type.FireworksComponent;
 import net.minecraft.client.network.ClientPlayerEntity;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
@@ -58,10 +50,10 @@ public class LoreLocator extends Module {
             .build()
     );
 
-    private final Setting<Boolean> negativeDurability = sgRares.add(
+    private final Setting<Boolean> zeroDurability = sgRares.add(
         new BoolSetting.Builder()
-            .name("negative-durability")
-            .description("Highlight items with illegal negative durability values.")
+            .name("zero-durability")
+            .description("Highlight items with 0 durability (all negative durability items became 0 durability items in 1.21.)")
             .defaultValue(true)
             .build()
     );
@@ -74,11 +66,11 @@ public class LoreLocator extends Module {
             .build()
     );
 
-    private final Setting<Boolean> fd0 = sgRares.add(
+    private final Setting<Boolean> lagRockets = sgRares.add(
         new BoolSetting.Builder()
-            .name("flight-duration-0")
-            .description("Highlight firework rockets with no flight duration value (idk if these still exist.)")
-            .defaultValue(true)
+            .name("lag-rockets")
+            .description("Highlight lag rockets.")
+            .defaultValue(false)
             .build()
     );
 
@@ -138,6 +130,16 @@ public class LoreLocator extends Module {
             .build()
     );
 
+    private int enchantmentsCount(ItemStack stack) {
+        int count = 0;
+        if (!stack.isEmpty()) {
+            count = stack.getItem() == Items.ENCHANTED_BOOK
+                ? stack.get(DataComponentTypes.STORED_ENCHANTMENTS).getEnchantments().size()
+                : stack.getEnchantments().getSize();
+        }
+        return count;
+    }
+
     private boolean shouldIgnoreCurrentScreenHandler(ClientPlayerEntity player) {
         if (mc.currentScreen == null) return true;
         if (player.currentScreenHandler == null) return true;
@@ -154,20 +156,15 @@ public class LoreLocator extends Module {
         if (stack.isEmpty() || shouldIgnoreCurrentScreenHandler(mc.player)) return false;
 
         if (Utils.hasItems(stack)) {
-            NbtCompound nbt = stack.getSubNbt("BlockEntityTag");
-
-            if (nbt != null) {
-                DefaultedList<ItemStack> stacks = DefaultedList.ofSize(27, ItemStack.EMPTY);
-                Inventories.readNbt(nbt, stacks);
-
-                for (ItemStack s : stacks) {
-                    if (shouldHighlightSlot(s)) return true;
-                }
+            ItemStack[] stacks = new ItemStack[27];
+            Utils.getItemsInContainerItem(stack, stacks);
+            for (ItemStack s : stacks) {
+                if (shouldHighlightSlot(s)) return true;
             }
         }
 
         if (!metadataSearch.get().trim().isEmpty()) {
-            NbtCompound metadata = stack.getNbt();
+            ComponentMap metadata = stack.getComponents();
             String query = metadataSearch.get().toLowerCase();
 
             if (splitQueries.get() && query.contains(",")) {
@@ -191,64 +188,49 @@ public class LoreLocator extends Module {
             }
         }
 
-        if (!renamedShulks.get() && stack.hasCustomName()) {
+        if (!renamedShulks.get() && stack.contains(DataComponentTypes.CUSTOM_NAME)) {
             if (stack.getItem() == Items.SHULKER_BOX || AutoDyeShulkers.isColoredShulker(stack.getItem())) return false;
         }
 
-        if (renamedItems.get() && stack.hasCustomName()) return true;
-        if (writtenBooks.get() && stack.getItem() == Items.WRITTEN_BOOK) return true;
-        if (petrifiedSlabs.get() && stack.getItem() == Items.PETRIFIED_OAK_SLAB) return true;
-
-        if (fd0.get() && stack.getItem() == Items.FIREWORK_ROCKET) {
-            NbtCompound nbt = stack.getSubNbt(FireworkRocketItem.FIREWORKS_KEY);
-            if (nbt == null || !nbt.contains(FireworkRocketItem.FLIGHT_KEY, NbtElement.NUMBER_TYPE)) return true;
-            else if (nbt.getByte("Flight") != 1 && nbt.getByte("Flight") != 2 && nbt.getByte("Flight") != 3) return true;
+        if (lagRockets.get() && stack.contains(DataComponentTypes.FIREWORKS)) {
+            FireworksComponent firework = stack.get(DataComponentTypes.FIREWORKS);
+            if (firework.explosions().size() == 7) return true;
         }
 
-        if (negativeDurability.get() && stack.isDamageable()) {
-            if (stack.getDamage() > stack.getMaxDamage() || stack.getDamage() < 0 || stack.getMaxDamage() < 0) return true;
+        if (writtenBooks.get() && stack.getItem() == Items.WRITTEN_BOOK) return true;
+        if (petrifiedSlabs.get() && stack.getItem() == Items.PETRIFIED_OAK_SLAB) return true;
+        if (renamedItems.get() && stack.contains(DataComponentTypes.CUSTOM_NAME)) return true;
+
+        if (zeroDurability.get() && stack.isDamageable()) {
+            if (stack.getDamage() == stack.getMaxDamage()) return true;
         }
 
         if (illegalEnchants.get() && (stack.getItem() == Items.ENCHANTED_BOOK || stack.hasEnchantments())) {
-            if (stack.getItem() == Items.SHEARS && EnchantmentHelper.hasSilkTouch(stack)) {
-                return EnchantmentHelper.get(stack).size() == 1 || !onlySilkyShears.get();
+            int enchantmentsCount = enchantmentsCount(stack);
+            if (stack.getItem() == Items.SHEARS && Utils.hasEnchantment(stack, Enchantments.SILK_TOUCH)) {
+                return enchantmentsCount == 1 || !onlySilkyShears.get();
             }
 
-            NbtList nbt;
             if (stack.getItem() == Items.ENCHANTED_BOOK) {
-                int enchants = EnchantmentHelper.get(stack).size();
-                if (enchants == 0 || enchants > 7) return true;
-                nbt = EnchantedBookItem.getEnchantmentNbt(stack);
-            } else {
-                nbt = stack.getEnchantments();
+                if (enchantmentsCount == 0 || enchantmentsCount > 7) return true;
             }
-            if (nbt == null || nbt.isEmpty()) return true;
 
-            boolean hasMending = false;
-            boolean hasInfinity = false;
-            boolean hasProtection = false;
-            HashMap<Enchantment, Integer> dupes = new HashMap<>();
-            for (int n = 0; n < nbt.size(); n++) {
-                if (hasMending && hasInfinity) break;
-                NbtCompound comp = nbt.getCompound(n);
-                Enchantment enchant = Registries.ENCHANTMENT.get(EnchantmentHelper.getIdFromNbt(comp));
-                if (enchant == null) return true;
-                if (enchant == Enchantments.MENDING) hasMending = true;
-                if (enchant == Enchantments.INFINITY) hasInfinity = true;
-                if (enchant == Enchantments.PROTECTION || enchant == Enchantments.PROJECTILE_PROTECTION
-                    || enchant == Enchantments.BLAST_PROTECTION || enchant == Enchantments.FIRE_PROTECTION) {
-                    if (!hasProtection) hasProtection = true;
-                    else return true;
-                }
-
-                if (dupes.containsKey(enchant)) {
-                    dupes.put(enchant, dupes.get(enchant) + 1);
-                } else {
-                    dupes.put(enchant, 1);
-                }
+            boolean hasProtection = Utils.hasEnchantment(stack, Enchantments.PROTECTION);
+            if (Utils.hasEnchantment(stack, Enchantments.FIRE_PROTECTION)) {
+                if (!hasProtection) hasProtection = true;
+                else return true;
             }
-            if (dupes.values().stream().anyMatch(n -> n > 1)) return true;
-            if (hasMending && hasInfinity) return nbt.size() == 2 || !onlyInfinityMending.get();
+            if (Utils.hasEnchantment(stack, Enchantments.BLAST_PROTECTION)) {
+                if (!hasProtection) hasProtection = true;
+                else return true;
+            }
+            if (Utils.hasEnchantment(stack, Enchantments.PROJECTILE_PROTECTION)) {
+                if (hasProtection) return true;
+            }
+
+            if (Utils.hasEnchantment(stack, Enchantments.INFINITY) && Utils.hasEnchantment(stack, Enchantments.MENDING)) {
+                return enchantmentsCount == 2 || !onlyInfinityMending.get();
+            }
         }
 
         return false;

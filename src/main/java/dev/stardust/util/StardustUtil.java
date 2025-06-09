@@ -1,7 +1,7 @@
 package dev.stardust.util;
 
-import java.awt.*;
 import java.io.File;
+import java.util.UUID;
 import java.time.Instant;
 import java.util.Optional;
 import dev.stardust.Stardust;
@@ -11,20 +11,23 @@ import net.minecraft.text.Style;
 import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.ClickEvent;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.MutableText;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.network.packet.Packet;
-import dev.stardust.mixin.ItemStackAccessor;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.enchantment.Enchantments;
+import com.mojang.authlib.properties.Property;
 import net.minecraft.network.packet.c2s.play.*;
 import io.netty.util.internal.ThreadLocalRandom;
 import meteordevelopment.meteorclient.utils.Utils;
-import dev.stardust.mixin.ClientConnectionAccessor;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ProfileComponent;
+import dev.stardust.mixin.accessor.ClientConnectionAccessor;
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.minecraft.network.encryption.NetworkEncryptionUtils;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
+import net.minecraft.network.packet.c2s.common.ClientOptionsC2SPacket;
 import meteordevelopment.meteorclient.systems.modules.misc.AutoReconnect;
 import meteordevelopment.meteorclient.mixin.ClientPlayNetworkHandlerAccessor;
 
@@ -122,10 +125,14 @@ public class StardustUtil {
         Items.MUSIC_DISC_BLOCKS.getDefaultStack(),
         Items.MUSIC_DISC_MELLOHI.getDefaultStack(),
         Items.MUSIC_DISC_PIGSTEP.getDefaultStack(),
+        Items.MUSIC_DISC_CREATOR.getDefaultStack(),
+        Items.MUSIC_DISC_PRECIPICE.getDefaultStack(),
         Items.MUSIC_DISC_OTHERSIDE.getDefaultStack(),
+        Items.MUSIC_DISC_CREATOR_MUSIC_BOX.getDefaultStack(),
     };
     private static final ItemStack[] doorIcons = {
         Items.OAK_DOOR.getDefaultStack(),
+        Items.IRON_DOOR.getDefaultStack(),
         Items.BIRCH_DOOR.getDefaultStack(),
         Items.BAMBOO_DOOR.getDefaultStack(),
         Items.CHERRY_DOOR.getDefaultStack(),
@@ -133,14 +140,21 @@ public class StardustUtil {
         Items.ACACIA_DOOR.getDefaultStack(),
         Items.SPRUCE_DOOR.getDefaultStack(),
         Items.WARPED_DOOR.getDefaultStack(),
+        Items.COPPER_DOOR.getDefaultStack(),
         Items.CRIMSON_DOOR.getDefaultStack(),
         Items.MANGROVE_DOOR.getDefaultStack(),
         Items.DARK_OAK_DOOR.getDefaultStack(),
+        Items.EXPOSED_COPPER_DOOR.getDefaultStack(),
+        Items.OXIDIZED_COPPER_DOOR.getDefaultStack(),
+        Items.WEATHERED_COPPER_DOOR.getDefaultStack()
     };
     private static final ItemStack[] menuIcons = {
         Items.CAKE.getDefaultStack(),
+        Items.SPAWNER.getDefaultStack(),
         Items.BEDROCK.getDefaultStack(),
         Items.GOAT_HORN.getDefaultStack(),
+        Items.HONEYCOMB.getDefaultStack(),
+        Items.LODESTONE.getDefaultStack(),
         Items.DRAGON_EGG.getDefaultStack(),
         Items.FILLED_MAP.getDefaultStack(),
         Items.PINK_TULIP.getDefaultStack(),
@@ -150,10 +164,12 @@ public class StardustUtil {
         Items.PINK_PETALS.getDefaultStack(),
         Items.WARPED_SIGN.getDefaultStack(),
         Items.CHERRY_SIGN.getDefaultStack(),
+        Items.WIND_CHARGE.getDefaultStack(),
         Items.WRITTEN_BOOK.getDefaultStack(),
         Items.DAMAGED_ANVIL.getDefaultStack(),
         Items.CHERRY_SAPLING.getDefaultStack(),
         Items.JACK_O_LANTERN.getDefaultStack(),
+        Items.KNOWLEDGE_BOOK.getDefaultStack(),
         Items.FIREWORK_ROCKET.getDefaultStack(),
         Items.TOTEM_OF_UNDYING.getDefaultStack(),
         Items.LIME_SHULKER_BOX.getDefaultStack(),
@@ -161,71 +177,59 @@ public class StardustUtil {
         Items.FLOWERING_AZALEA.getDefaultStack(),
         Items.PINK_SHULKER_BOX.getDefaultStack(),
         Items.GILDED_BLACKSTONE.getDefaultStack(),
+        Items.OMINOUS_TRIAL_KEY.getDefaultStack(),
         Items.HEART_POTTERY_SHERD.getDefaultStack(),
         Items.LIGHT_BLUE_SHULKER_BOX.getDefaultStack(),
         Items.ENCHANTED_GOLDEN_APPLE.getDefaultStack(),
         Items.HEARTBREAK_POTTERY_SHERD.getDefaultStack(),
+        Items.EYE_ARMOR_TRIM_SMITHING_TEMPLATE.getDefaultStack(),
         discIcons[ThreadLocalRandom.current().nextInt(discIcons.length)],
         doorIcons[ThreadLocalRandom.current().nextInt(doorIcons.length)],
         getCustomIcons()[ThreadLocalRandom.current().nextInt(getCustomIcons().length)]
     };
 
     private static ItemStack[] getCustomIcons() {
+        // Encoded profile textures taken from illegal player head items on 2b2t.org (except for mine.)
+        final String tasHeadTexture = "ewogICJ0aW1lc3RhbXAiIDogMTcyODQwNzM3MDc3MiwKICAicHJvZmlsZUlkIiA6ICJjZTA5ODE3NzBkMjc0NmY1YTM3ODUxODg5NzcxYmEyNyIsCiAgInByb2ZpbGVOYW1lIiA6ICIweFRhcyIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS8yZGNlNGNlNWVhOWJjNWI1OTI1MmJlNDk1YTA5ZTQ0ZWFmMzc5NmRmNDY5OTU2MTdmZGQ4ZjFmMTBkNjU0ZjQyIgogICAgfQogIH0KfQ==";
+        final String popbobHeadTexture = "eyJ0aW1lc3RhbXAiOjE0MTYwOTQxOTU4NTYsInByb2ZpbGVJZCI6IjBmNzVhODFkNzBlNTQzYzViODkyZjMzYzUyNDI4NGYyIiwicHJvZmlsZU5hbWUiOiJwb3Bib2IiLCJpc1B1YmxpYyI6dHJ1ZSwidGV4dHVyZXMiOnsiU0tJTiI6eyJ1cmwiOiJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzEyNTY4ODQ4NWI3MjUxMWFmOWY4NzVjZjQ4NjlmNjYxOTkwNWU2ZjJjNzc3NGIyMjYxNTJjYTY3ODIzODFlNiJ9fX0=";
+        final String pyrobyteHeadTexture = "eyJ0aW1lc3RhbXAiOjE0MTYwOTQxOTUxOTUsInByb2ZpbGVJZCI6IjY4YjFiYjExY2ZhMzRlMTZhMDFkYjZkZGRhMGExMDgzIiwicHJvZmlsZU5hbWUiOiJQeXJvYnl0ZSIsImlzUHVibGljIjp0cnVlLCJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzhjZTMwODMxYjU1YTI0MTFjMGYzMTI2ZDVhNThlMzE2NDZkNGE4YjZmMzYxZjcyMzc5ZGY0ZTY5OTE0OTkifX19";
+        final String iTristanHeadTexture = "ewogICJ0aW1lc3RhbXAiIDogMTcyODUwMDk2NjEwMywKICAicHJvZmlsZUlkIiA6ICI4ZDNmYTEyMmFjNGI0YjM1OGI1MzM5Mjc5NGJkZDU2MSIsCiAgInByb2ZpbGVOYW1lIiA6ICJUaGVTZW5wYWlPZjJiMnQiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTcxNTFkNzliMDQzZWY5N2FkMjhhMjc5NDVmODY3OGRmMmE3OGU2NGE1MmQxYzkzMDgwNTdhMjFmMDQyMDNlNCIKICAgIH0KICB9Cn0=";
+        final String hausemasterHeadTexture = "eyJ0aW1lc3RhbXAiOjE0MTYwOTQxOTU2NjIsInByb2ZpbGVJZCI6IjhmMmNlNDUzY2VmMjRiM2ViNjg2ZGMyMWI1MTlhMGExIiwicHJvZmlsZU5hbWUiOiJIYXVzZW1hc3RlciIsImlzUHVibGljIjp0cnVlLCJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGJiY2IyZTE5OTdjN2NiMWJkZjU2MTNkMTMyZWVjNmQ2NzEzM2EyMTYyMWUwZmFlMTU3YTZhZDhmOWIyIn19fQ==";
+        final String jackTheRippaHeadTexture = "eyJ0aW1lc3RhbXAiOjE0MTYwOTQxOTUxOTMsInByb2ZpbGVJZCI6IjdmMTk3NjE4MzJjMjQ4NzY4NDFiY2VhMjliZDU4Y2FlIiwicHJvZmlsZU5hbWUiOiJKYWNrdGhlcmlwcGEiLCJpc1B1YmxpYyI6dHJ1ZSwidGV4dHVyZXMiOnsiU0tJTiI6eyJ1cmwiOiJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzExYjk0OWE2MWZhNGNjOGZmZjNkM2I0OTY4MmQyZjk2ZjQxMThmOTI4ZDg2MjIyMmVmNjU2ZTMyYTVmMTIifX19";
+        final String cytoToxicTCellHeadTexture = "eyJ0aW1lc3RhbXAiOjE0MDY0MTc0NTE1MDgsInByb2ZpbGVJZCI6ImE0YTVlYmM0OWY0ZTQ3OTVhMjUzN2I4YjA1M2ZiMTdmIiwicHJvZmlsZU5hbWUiOiJDeXRvdG94aWNUY2VsbCIsImlzUHVibGljIjp0cnVlLCJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTlkMWU2YzRmNjFkZmNmZGE2NDE3MjJmNjU3NzJiMTI3YmI0NDFkMGViMjU4YTM2Y2MxOTEzYmU3NTkyNGIxIn19fQ==";
+
+        // Get textures for the current player's head item
+        Optional<Property> currentPlayerProfileProperties = mc.getGameProfile().getProperties().get("textures").stream().findFirst();
+
+        String currentPlayerHeadTexture;
+        if (currentPlayerProfileProperties.isPresent()) {
+            currentPlayerHeadTexture = currentPlayerProfileProperties.get().value();
+        } else {
+            currentPlayerHeadTexture = "ewogICJ0aW1lc3RhbXAiIDogMTcyODQ5NzQxNzUwNCwKICAicHJvZmlsZUlkIiA6ICJkMDUwMzNmYzM3N2Q0OGU1ODFiMGJhYTY0NDBmNTIyOCIsCiAgInByb2ZpbGVOYW1lIiA6ICJQYXVsc3RldmUwMDciLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTk1YmQzOWQ5M2ZiYjI4NGVhNGEzYmJiMTljNzRlNTUxOGQwODRiNmZiMGQ5YjE1ZWQ2YzU2NzdmMDhkY2FhYyIKICAgIH0KICB9Cn0=";
+        }
+
+        String[] playerHeadTextures = {
+            currentPlayerHeadTexture, tasHeadTexture, popbobHeadTexture, pyrobyteHeadTexture,
+            iTristanHeadTexture, hausemasterHeadTexture, jackTheRippaHeadTexture, cytoToxicTCellHeadTexture
+        };
+
+        ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD);
+        GameProfile profile = new GameProfile(UUID.randomUUID(), "Stardust");
+        ProfileComponent profileComponent = new ProfileComponent(profile);
+
+        // Apply a player head texture to the ItemStack
+        profileComponent.properties().put(
+            "textures",
+            new Property(
+                "textures", // Select a random player head texture from the playerHeadTextures array.
+                playerHeadTextures[ThreadLocalRandom.current().nextInt(playerHeadTextures.length)],""
+            )
+        );
+        playerHead.set(DataComponentTypes.PROFILE, profileComponent);
+
         ItemStack enchantedPick = new ItemStack(
-            ThreadLocalRandom.current().nextInt(2) == 0 ? Items.WOODEN_PICKAXE : Items.GOLDEN_PICKAXE);
-        enchantedPick.addEnchantment(Enchantments.MENDING, 1);
-
-        var stardustPick = ThreadLocalRandom.current().nextInt(2) == 0 ? Items.NETHERITE_PICKAXE : Items.DIAMOND_PICKAXE;
-        NbtCompound stardustNbt = stardustPick.getDefaultStack().getNbt();
-        if (stardustNbt != null) stardustNbt.putInt("Damage", 32769);
-        ItemStack stardust = ItemStackAccessor.invokeInit(
-            stardustPick, 1,
-            stardustNbt == null ? Optional.empty() : Optional.of(stardustNbt)
-        );
-        stardust.setCustomName(Text.literal("Stardust"));
-        stardust.addEnchantment(Enchantments.MENDING, 1);
-
-        var meteoritePick = ThreadLocalRandom.current().nextInt(2) == 0 ? Items.NETHERITE_PICKAXE : Items.DIAMOND_PICKAXE;
-        NbtCompound meteoriteNbt = meteoritePick.getDefaultStack().getNbt();
-        if (meteoriteNbt != null) meteoriteNbt.putInt("Damage", -32769);
-        ItemStack meteorite = ItemStackAccessor.invokeInit(
-            meteoritePick, 69,
-            meteoriteNbt == null ? Optional.empty() : Optional.of(meteoriteNbt)
-        );
-        meteorite.setCustomName(Text.literal("Meteorite"));
-        meteorite.addEnchantment(Enchantments.MENDING, 1);
-
-        ItemStack[] pickaxes = new ItemStack[]{enchantedPick, stardust, meteorite};
-
-        var helmet = ThreadLocalRandom.current().nextInt(2) == 0 ?
-            Items.DIAMOND_HELMET : Items.GOLDEN_HELMET;
-        var chestplate = ThreadLocalRandom.current().nextInt(2) == 0 ?
-            Items.DIAMOND_CHESTPLATE : Items.GOLDEN_CHESTPLATE;
-        var pants = ThreadLocalRandom.current().nextInt(2) == 0 ?
-            Items.DIAMOND_LEGGINGS : Items.GOLDEN_LEGGINGS;
-        var shoes = ThreadLocalRandom.current().nextInt(2) == 0 ?
-            Items.DIAMOND_BOOTS : Items.GOLDEN_BOOTS;
-
-        ItemStack stackedHelmets = new ItemStack(helmet, 69);
-        ItemStack stackedChestplates = new ItemStack(chestplate, 69);
-        ItemStack stackedLeggings = new ItemStack(pants, 69);
-        ItemStack stackedBoots = new ItemStack(shoes, 69);
-        stackedHelmets.addEnchantment(Enchantments.MENDING, 1);
-        stackedChestplates.addEnchantment(Enchantments.MENDING, 1);
-        stackedLeggings.addEnchantment(Enchantments.MENDING, 1);
-        stackedBoots.addEnchantment(Enchantments.MENDING, 1);
-        ItemStack[] stackedArmor = new ItemStack[]{stackedHelmets, stackedChestplates, stackedLeggings, stackedBoots};
-
-        ItemStack sword32k = new ItemStack(
-            ThreadLocalRandom.current().nextInt(2) == 0 ? Items.DIAMOND_SWORD : Items.WOODEN_SWORD);
-        sword32k.addEnchantment(Enchantments.SHARPNESS, 32767);
-
-        ItemStack illegalBow = new ItemStack(Items.BOW);
-        illegalBow.addEnchantment(Enchantments.MENDING, 1);
-        illegalBow.addEnchantment(Enchantments.INFINITY, 1);
-
-        ItemStack bindingPumpkin = new ItemStack(Items.CARVED_PUMPKIN);
-        bindingPumpkin.addEnchantment(Enchantments.BINDING_CURSE, 1);
+            ThreadLocalRandom.current().nextInt(2) == 0 ? Items.DIAMOND_PICKAXE : Items.NETHERITE_PICKAXE);
+        enchantedPick.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
 
         ItemStack[] enchantedGlass = new ItemStack[] {
             Items.GLASS.getDefaultStack(),
@@ -239,19 +243,28 @@ public class StardustUtil {
         };
 
         for (ItemStack g : enchantedGlass) {
-            g.addEnchantment(Enchantments.MENDING, 1);
+            g.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
         }
 
         ItemStack cgiElytra = new ItemStack(Items.ELYTRA);
-        cgiElytra.addEnchantment(Enchantments.MENDING, 420);
+        cgiElytra.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
+
+        ItemStack sword32k = new ItemStack(
+            ThreadLocalRandom.current().nextInt(2) == 0 ? Items.DIAMOND_SWORD : Items.WOODEN_SWORD);
+        sword32k.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
+
+        ItemStack illegalBow = new ItemStack(Items.BOW);
+        illegalBow.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
+
+        ItemStack bindingPumpkin = new ItemStack(Items.CARVED_PUMPKIN);
+        bindingPumpkin.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
 
         ItemStack ripTridentFly = new ItemStack(Items.TRIDENT);
-        ripTridentFly.addEnchantment(Enchantments.RIPTIDE, 3);
+        ripTridentFly.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
 
         return new ItemStack[] {
-            sword32k, illegalBow, bindingPumpkin, cgiElytra, ripTridentFly,
-            pickaxes[ThreadLocalRandom.current().nextInt(pickaxes.length)],
-            stackedArmor[ThreadLocalRandom.current().nextInt(stackedArmor.length)],
+            playerHead,
+            enchantedPick, sword32k, illegalBow, bindingPumpkin, cgiElytra, ripTridentFly,
             enchantedGlass[ThreadLocalRandom.current().nextInt(enchantedGlass.length)]
         };
     }
@@ -264,13 +277,13 @@ public class StardustUtil {
                 if (file.createNewFile()) {
                     if (mc.player != null) {
                         mc.player.sendMessage(
-                            Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created "+file.getName()+" in meteor-client folder.")
+                            Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created "+file.getName()+" in meteor-client folder."), false
                         );
                         Text msg = Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Click §2§lhere §r§7to open the file.");
                         Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()));
 
                         MutableText txt = msg.copyContentOnly().setStyle(style);
-                        mc.player.sendMessage(txt);
+                        mc.player.sendMessage(txt, false);
                     }
                     return true;
                 }
@@ -285,32 +298,22 @@ public class StardustUtil {
     public static void openFile(MinecraftClient mc, String fileName) {
         File file = FabricLoader.getInstance().getGameDir().resolve(fileName).toFile();
 
-        if (Desktop.isDesktopSupported()) {
-            EventQueue.invokeLater(() -> {
-                try {
-                    Desktop.getDesktop().open(file);
-                }catch (Exception err) {
-                    Stardust.LOG.error("[Stardust] Failed to open "+ file.getAbsolutePath() +"! - Why:\n"+err);
-                }
-            });
-        } else {
-            try {
-                Runtime runtime = Runtime.getRuntime();
-                if (System.getenv("OS") == null) return;
-                if (System.getenv("OS").contains("Windows")) {
-                    runtime.exec("rundll32 url.dll, FileProtocolHandler " + file.getAbsolutePath());
-                }else {
-                    runtime.exec("xdg-open " + file.getAbsolutePath());
-                }
-            } catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Failed to open "+ file.getAbsolutePath() +"! - Why:\n"+err);
-                if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open "+file.getName()+"§7."));
+        try {
+            Runtime runtime = Runtime.getRuntime();
+            if (System.getenv("OS") == null) return;
+            if (System.getenv("OS").contains("Windows")) {
+                runtime.exec(new String[]{"rundll32", "url.dll,", "FileProtocolHandler", file.getAbsolutePath()});
+            }else {
+                runtime.exec(new String[]{"xdg-open", file.getAbsolutePath()});
             }
+        } catch (Exception err) {
+            Stardust.LOG.error("Failed to open "+ file.getAbsolutePath() +"! - Why:\n"+err);
+            if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open "+file.getName()+"§7."), false);
         }
     }
 
     public enum IllegalDisconnectMethod {
-        Slot, Chat, Interact, Movement, SequenceBreak
+        Slot, Chat, Interact, Movement, SequenceBreak, InvalidSettings
     }
 
     public static void illegalDisconnect(boolean disableAutoReconnect, IllegalDisconnectMethod illegalDisconnectMethod) {
@@ -328,11 +331,18 @@ public class StardustUtil {
                 ((ClientPlayNetworkHandlerAccessor) mc.getNetworkHandler()).getLastSeenMessagesCollector().collect().update()
             );
             case Interact -> illegalPacket = PlayerInteractEntityC2SPacket.interact(mc.player, false, Hand.MAIN_HAND);
-            case Movement -> illegalPacket = new PlayerMoveC2SPacket.PositionAndOnGround(Double.NaN, 69, Double.NaN, false);
-            case SequenceBreak -> illegalPacket = new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, -420);
+            case Movement -> illegalPacket = new PlayerMoveC2SPacket.PositionAndOnGround(Double.NaN, 69, Double.NaN, false, false);
+            case SequenceBreak -> illegalPacket = new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, -420, 13.37F, 69.69F);
+            case InvalidSettings -> illegalPacket = new ClientOptionsC2SPacket(new SyncedClientOptions(
+                mc.options.language, -69,
+                mc.options.getChatVisibility().getValue(), mc.options.getChatColors().getValue(),
+                mc.options.getSyncedOptions().playerModelParts(), mc.options.getMainArm().getValue(),
+                mc.options.getSyncedOptions().filtersText(), mc.options.getAllowServerListing().getValue(),
+                mc.options.getSyncedOptions().particleStatus()
+            ));
         }
         if (illegalPacket != null) ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).invokeSendImmediately(
-            illegalPacket, null
+            illegalPacket, null, true
         );
     }
 

@@ -16,9 +16,9 @@ import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.client.util.SelectionManager;
 import org.spongepowered.asm.mixin.injection.Inject;
 import meteordevelopment.meteorclient.systems.modules.Modules;
+import dev.stardust.mixin.accessor.AbstractSignEditScreenAccessor;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.gui.screen.ingame.AbstractSignEditScreen;
-
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>

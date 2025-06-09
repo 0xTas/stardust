@@ -1,11 +1,7 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
 
-name: Java CI with Gradle
+name: Build Pull Request Artifacts
 
 on: [pull_request]
 
@@ -15,23 +11,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Wrapper Validation
+        uses: gradle/actions/wrapper-validation@v3
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Dependency Caching # Taken from github.com/FlorianMichael/BaseProject
+        uses: actions/cache@v4
+        with:
+            path: |
+                ~/.gradle/caches
+                ~/.gradle/wrapper
+            key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+            restore-keys: |
+                ${{ runner.os }}-gradle-
 
-    # Configure Gradle for optimal use in GiHub Actions, including caching of downloaded dependencies.
-    # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
+      - name: Build with Gradle
+        run: ./gradlew build -Pcommit=${{ github.sha }}
 
-    - name: Build with Gradle Wrapper
-      run: ./gradlew build
-
-    - name: Upload PR Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: pull-request-build
-        path: build/libs/
+      - name: Upload PR Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Artifacts
+          path: build/libs/

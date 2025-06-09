@@ -7,6 +7,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.Direction;
+import org.jetbrains.annotations.NotNull;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.util.hit.BlockHitResult;
 import meteordevelopment.meteorclient.settings.*;
@@ -15,7 +16,6 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import meteordevelopment.meteorclient.events.entity.player.PlayerMoveEvent;
-
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -34,7 +34,7 @@ public class AutoDoors extends Module {
 
     private final Setting<DoorModes> modeSetting = settings.getDefaultGroup().add(
         new EnumSetting.Builder<DoorModes>()
-            .name("Mode")
+            .name("mode")
             .description("Which mode to operate in.")
             .defaultValue(DoorModes.Classic)
             .build()
@@ -115,7 +115,7 @@ public class AutoDoors extends Module {
 
     private final Setting<Boolean> useTrapdoors = settings.getDefaultGroup().add(
         new BoolSetting.Builder()
-            .name("Trapdoors")
+            .name("trapdoors")
             .description("Interact with trapdoors (only works when not on ladders.)")
             .defaultValue(false)
             .build()
@@ -142,6 +142,23 @@ public class AutoDoors extends Module {
 
     private void interactDoor(BlockPos pos, Direction direction) {
         if (mc.player == null) return;
+        if (mc.interactionManager == null) return;
+        Direction side = getDirection(pos, direction);
+        mc.interactionManager.interactBlock(
+            mc.player,
+            Hand.MAIN_HAND,
+            new BlockHitResult(new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), side, pos, true)
+        );
+
+        if (silentSwing.get() && ninjaSwing.get()) return;
+        if (!silentSwing.get() && ninjaSwing.get()) {
+            ((LivingEntity) mc.player).swingHand(Hand.MAIN_HAND);
+        }else if (silentSwing.get() && !ninjaSwing.get()) {
+            if (mc.getNetworkHandler() != null) mc.getNetworkHandler().sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
+        }else mc.player.swingHand(Hand.MAIN_HAND);
+    }
+
+    private @NotNull Direction getDirection(BlockPos pos, Direction direction) {
         Vec3d pPos = mc.player.getPos();
 
         Direction side;
@@ -172,20 +189,27 @@ public class AutoDoors extends Module {
             }
             default -> side = Direction.DOWN;
         }
+        return side;
+    }
 
-        if (mc.interactionManager == null) return;
-        mc.interactionManager.interactBlock(
-            mc.player,
-            Hand.MAIN_HAND,
-            new BlockHitResult(new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), side, pos, true)
-        );
 
-        if (silentSwing.get() && ninjaSwing.get()) return;
-        if (!silentSwing.get() && ninjaSwing.get()) {
-            ((LivingEntity) mc.player).swingHand(Hand.MAIN_HAND);
-        }else if (silentSwing.get() && !ninjaSwing.get()) {
-            if (mc.getNetworkHandler() != null) mc.getNetworkHandler().sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
-        }else mc.player.swingHand(Hand.MAIN_HAND);
+    private static @NotNull Direction getMovementDirection(PlayerMoveEvent event) {
+        double velocityX = event.movement.x;
+        double velocityY = event.movement.y;
+        double velocityZ = event.movement.z;
+
+        double directionRadians = Math.atan2(-velocityZ, velocityX);
+        double directionDegrees = Math.toDegrees(directionRadians);
+        double normalizedDegrees = (directionDegrees + 360) % 360;
+
+        Direction movementDirection;
+        if (normalizedDegrees >= 45 && normalizedDegrees < 135) movementDirection = Direction.NORTH;
+        else if (normalizedDegrees >= 135 && normalizedDegrees < 225) movementDirection = Direction.WEST;
+        else if (normalizedDegrees >= 225 && normalizedDegrees < 315) movementDirection = Direction.SOUTH;
+        else if (normalizedDegrees >= 315 || normalizedDegrees < 45) movementDirection = Direction.EAST;
+        else if (velocityY > 0) movementDirection = Direction.UP;
+        else movementDirection = Direction.DOWN;
+        return movementDirection;
     }
 
     private boolean scanForSwitches(BlockPos pos, Block block, Boolean open, Direction moving, Direction side, int n) {
@@ -290,21 +314,7 @@ public class AutoDoors extends Module {
             && pPos.z <= this.lastBlock.z + .1337 && pPos.z >= this.lastBlock.z - .1337) return;
 
         this.lastBlock = pPos;
-        double velocityX = event.movement.x;
-        double velocityY = event.movement.y;
-        double velocityZ = event.movement.z;
-
-        double directionRadians = Math.atan2(-velocityZ, velocityX);
-        double directionDegrees = Math.toDegrees(directionRadians);
-        double normalizedDegrees = (directionDegrees + 360) % 360;
-
-        Direction movementDirection;
-        if (normalizedDegrees >= 45 && normalizedDegrees < 135) movementDirection = Direction.NORTH;
-        else if (normalizedDegrees >= 135 && normalizedDegrees < 225) movementDirection = Direction.WEST;
-        else if (normalizedDegrees >= 225 && normalizedDegrees < 315) movementDirection = Direction.SOUTH;
-        else if (normalizedDegrees >= 315 || normalizedDegrees < 45) movementDirection = Direction.EAST;
-        else if (velocityY > 0) movementDirection = Direction.UP;
-        else movementDirection = Direction.DOWN;
+        Direction movementDirection = getMovementDirection(event);
 
         BlockPos frontPos;
         BlockPos behindPos;
@@ -364,7 +374,7 @@ public class AutoDoors extends Module {
         }
         Block doorAboveFront = mc.world.getBlockState(frontPos.up()).getBlock();
         Block doorAboveBack = mc.world.getBlockState(behindPos.up()).getBlock();
-        if (useFenceGates.get() && autoOpen.get() && (doorInFront instanceof FenceGateBlock || doorAboveFront instanceof FenceGateBlock)) {
+        if (useFenceGates.get() && doorInFront instanceof FenceGateBlock || doorAboveFront instanceof FenceGateBlock && autoOpen.get()) {
             try {
                 if (!frontState.get(FenceGateBlock.OPEN)) {
                     interactDoor(frontPos, movementDirection);
@@ -424,7 +434,7 @@ public class AutoDoors extends Module {
                 }
             } catch (IllegalArgumentException ignored) {}
         }
-        if (useFenceGates.get() && (doorBehind instanceof FenceGateBlock || doorAboveBack instanceof FenceGateBlock)) {
+        if (useFenceGates.get() && doorBehind instanceof FenceGateBlock || doorAboveBack instanceof FenceGateBlock) {
             try {
                 if (behindState.get(FenceGateBlock.OPEN)) {
                     interactDoor(behindPos, movementDirection);

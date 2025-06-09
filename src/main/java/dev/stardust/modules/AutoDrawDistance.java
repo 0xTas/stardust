@@ -5,17 +5,16 @@ import net.minecraft.text.Text;
 import dev.stardust.util.StardustUtil;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
-import dev.stardust.mixin.GameOptionsAccessor;
 import net.minecraft.client.option.GameOptions;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.client.option.SimpleOption;
+import dev.stardust.mixin.accessor.GameOptionsAccessor;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.IntSetting;
 import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.mixininterface.IChatHud;
-
 
 /**
  * @author Tas [@0xTas] <root@0xTas.dev>
@@ -92,14 +91,12 @@ public class AutoDrawDistance extends Module {
     private boolean sweetSpot = false;
     private final IntArrayList fpsData = new IntArrayList();
 
-
     private void updateDrawDistance(int distance) {
-        boolean bl = mc.is64Bit();
-        boolean bl2 = bl && Runtime.getRuntime().maxMemory() >= 1000000000L;
+        boolean bl = Runtime.getRuntime().maxMemory() >= 1000000000L;
         SimpleOption<Integer> viewDistance = new SimpleOption<>(
             "options.renderDistance", SimpleOption.emptyTooltip(),
-            (optionText, value) -> GameOptions.getGenericValueText(optionText, Text.translatable("options.chunks", value)), // yikes
-            new SimpleOption.ValidatingIntSliderCallbacks(2, bl2 ? 32 : 16),
+            (optionText, value) -> GameOptions.getGenericValueText(optionText, Text.translatable("options.chunks", value)),
+            new SimpleOption.ValidatingIntSliderCallbacks(2, bl ? 32 : 16),
             distance, value -> MinecraftClient.getInstance().worldRenderer.scheduleTerrainUpdate());
 
         ((GameOptionsAccessor) mc.options).setViewDistance(viewDistance);

@@ -8,14 +8,15 @@ import net.minecraft.item.ItemStack;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.sound.SoundEvents;
 import meteordevelopment.orbit.EventHandler;
-import dev.stardust.mixin.AnvilScreenAccessor;
 import net.minecraft.screen.AnvilScreenHandler;
 import meteordevelopment.meteorclient.settings.*;
-import dev.stardust.mixin.AnvilScreenHandlerAccessor;
+import net.minecraft.component.DataComponentTypes;
+import dev.stardust.mixin.accessor.AnvilScreenAccessor;
 import net.minecraft.client.gui.screen.ingame.AnvilScreen;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import dev.stardust.mixin.accessor.AnvilScreenHandlerAccessor;
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -25,7 +26,7 @@ public class StashBrander extends Module {
 
     private final Setting<List<Item>> itemList = settings.getDefaultGroup().add(
         new ItemListSetting.Builder()
-            .name("Items")
+            .name("items")
             .description("Items to automatically rename (or exclude from being renamed, if blacklist mode is enabled.)")
             .build()
     );
@@ -38,7 +39,7 @@ public class StashBrander extends Module {
             .onChanged(name -> {
                 if (name.length() > AnvilScreenHandler.MAX_NAME_LENGTH) {
                     if (mc.player != null) mc.player.sendMessage(
-                        Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §4§oCustom name exceeds max accepted length§8§o!")
+                        Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §4§oCustom name exceeds max accepted length§8§o!"), false
                     );
                 }
             })
@@ -124,7 +125,7 @@ public class StashBrander extends Module {
             if ((blacklistMode.get() && !itemList.get().contains(stack.getItem()))
                 || (!blacklistMode.get() && itemList.get().contains(stack.getItem())))
             {
-                if (itemName.get().isBlank() && stack.hasCustomName()) return true;
+                if (itemName.get().isBlank() && stack.contains(DataComponentTypes.CUSTOM_NAME)) return true;
                 else if (!stack.getName().getString().equals(itemName.get())) return true;
             }
         }
@@ -134,7 +135,7 @@ public class StashBrander extends Module {
     private void noXP() {
         if (!notified) {
             mc.player.sendMessage(
-                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNot enough experience§8§o...")
+                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNot enough experience§8§o..."), false
             );
             if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
         }
@@ -146,7 +147,7 @@ public class StashBrander extends Module {
     private void finished() {
         if (!notified) {
             mc.player.sendMessage(
-                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNo more items to rename§8§o.")
+                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNo more items to rename§8§o."), false
             );
             if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
         }
@@ -186,9 +187,9 @@ public class StashBrander extends Module {
         else if (input1.isEmpty() && input2.isEmpty()) {
             for (int n = ANVIL_OFFSET; n < mc.player.getInventory().main.size() + ANVIL_OFFSET; n++) {
                 ItemStack stack = anvil.getSlot(n).getStack();
-                if (stack.hasCustomName() && !renameNamed.get()) continue;
+                if (stack.contains(DataComponentTypes.CUSTOM_NAME) && !renameNamed.get()) continue;
                 else if (stack.getName().getString().equals(itemName.get())) continue;
-                else if (itemName.get().isBlank() && !stack.hasCustomName()) continue;
+                else if (itemName.get().isBlank() && !stack.contains(DataComponentTypes.CUSTOM_NAME)) continue;
 
                 if ((blacklistMode.get() && !itemList.get().contains(stack.getItem()))
                     || (!blacklistMode.get() && itemList.get().contains(stack.getItem())))
@@ -197,7 +198,7 @@ public class StashBrander extends Module {
                     ((AnvilScreenAccessor) anvilScreen).getNameField().setText(itemName.get());
                     ItemStack check = anvil.getSlot(AnvilScreenHandler.OUTPUT_ID).getStack();
                     if (itemList.get().contains(check.getItem())) {
-                        if (check.getName().getString().equals(itemName.get()) || (itemName.get().isBlank() && stack.hasCustomName())) {
+                        if (check.getName().getString().equals(itemName.get()) || (itemName.get().isBlank() && stack.contains(DataComponentTypes.CUSTOM_NAME))) {
                             int cost = ((AnvilScreenHandlerAccessor) anvil).getLevelCost().get();
                             if (mc.player.experienceLevel >= cost) {
                                 InvUtils.shiftClick().slotId(AnvilScreenHandler.OUTPUT_ID);
@@ -210,7 +211,7 @@ public class StashBrander extends Module {
             }
             finished();
         } else if (!output.isEmpty() && itemList.get().contains(output.getItem())) {
-            if (output.getName().getString().equals(itemName.get()) || (itemName.get().isBlank() && input1.hasCustomName())) {
+            if (output.getName().getString().equals(itemName.get()) || (itemName.get().isBlank() && input1.contains(DataComponentTypes.CUSTOM_NAME))) {
                 int cost = ((AnvilScreenHandlerAccessor) anvil).getLevelCost().get();
                 if (mc.player.experienceLevel >= cost) {
                     InvUtils.shiftClick().slotId(AnvilScreenHandler.OUTPUT_ID);

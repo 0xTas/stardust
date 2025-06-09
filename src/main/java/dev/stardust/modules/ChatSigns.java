@@ -46,11 +46,12 @@ import meteordevelopment.meteorclient.renderer.ShapeMode;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.mixininterface.IChatHud;
+import dev.stardust.mixin.accessor.DisconnectS2CPacketAccessor;
 import meteordevelopment.meteorclient.utils.render.RenderUtils;
-import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.events.world.ChunkDataEvent;
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
+import net.minecraft.network.packet.s2c.common.DisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.meteorclient.systems.modules.render.blockesp.ESPBlockData;
@@ -76,6 +77,7 @@ public class ChatSigns extends Module {
     private final SettingGroup formatGroup = settings.createGroup("Formatting", true);
     private final SettingGroup oldSignGroup = settings.createGroup("OldSigns Settings", true);
     private final SettingGroup blacklistGroup = settings.createGroup("SignText Blacklist", true);
+    private final SettingGroup autoLogGroup = settings.createGroup("SignBoard AutoLog", true);
 
     private final Setting<ChatMode> chatMode = modesGroup.add(
         new EnumSetting.Builder<ChatMode>()
@@ -117,7 +119,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Boolean> showOldSigns  = oldSignGroup.add(
         new BoolSetting.Builder()
-            .name("show-possibly-old-signs*")
+            .name("show-old-signs*")
             .description("*will show signs placed before 1.8, AND after 1.19. Use your best judgment to determine what's legit.")
             .defaultValue(false)
             .build()
@@ -126,7 +128,7 @@ public class ChatSigns extends Module {
     private final Setting<Boolean> onlyOldSigns = oldSignGroup.add(
         new BoolSetting.Builder()
             .name("only-show-old-signs")
-            .description("Only display text from signs that are either really old, or brand new.")
+            .description("Only display text from signs that are either really old, or really new.")
             .defaultValue(false)
             .visible(showOldSigns::get)
             .build()
@@ -134,7 +136,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Boolean> ignoreNether = oldSignGroup.add(
         new BoolSetting.Builder()
-            .name("ignore-nether")
+            .name("ignore -nether")
             .description("Ignore potentially-old signs in the nether (near highways they're all certainly new.)")
             .visible(showOldSigns::get)
             .defaultValue(true)
@@ -235,13 +237,13 @@ public class ChatSigns extends Module {
 
     private final Setting<Integer> clickESPTimeout = formatGroup.add(
         new IntSetting.Builder()
-            .name("clickESP-timeout-(Seconds)")
+            .name("clickESP-timeout-seconds")
             .description("Automatic timeout for active ClickESP entries. Set to 0 in order to disable timeout.")
             .range(0, 1200).sliderRange(0, 120).defaultValue(30)
             .build()
     );
 
-    private final Setting<Boolean> signBoardAutoLog = settings.getDefaultGroup().add(
+    private final Setting<Boolean> signBoardAutoLog = autoLogGroup.add(
         new BoolSetting.Builder()
             .name("signBoard-autoLog")
             .description("Disconnect from the server when you render a cluster of signs.")
@@ -249,7 +251,15 @@ public class ChatSigns extends Module {
             .build()
     );
 
-    private final Setting<Integer> signBoardAutoLogAmount = settings.getDefaultGroup().add(
+    private final Setting<Boolean> forceKick = autoLogGroup.add(
+        new BoolSetting.Builder()
+            .name("force-kick")
+            .description("Forces the server to kick you by sending an illegal packet.")
+            .defaultValue(false)
+            .build()
+    );
+
+    private final Setting<Integer> signBoardAutoLogAmount = autoLogGroup.add(
         new IntSetting.Builder()
             .name("signBoard-autoLog-amount")
             .description("The amount of signs to trigger a disconnect.")
@@ -267,9 +277,9 @@ public class ChatSigns extends Module {
                     this.blacklisted.clear();
                     initBlacklistText();
                     if (mc.player != null) {
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."));
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."));
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Toggle the module after updating the blacklist's contents."));
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."), false);
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."), false);
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Toggle the module after updating the blacklist's contents."), false);
                     }
                 }
             })
@@ -303,6 +313,7 @@ public class ChatSigns extends Module {
     private int timer = 0;
     private int chatTimer = 0;
     private int clusterAmount = 0;
+    @Nullable private Text disconnectReason = null;
     @Nullable private BlockPos lastFocusedSign = null;
     private final HashSet<BlockPos> posSet = new HashSet<>();
     private final HashSet<BlockPos> oldSet = new HashSet<>();
@@ -322,7 +333,7 @@ public class ChatSigns extends Module {
         int viewDistance = mc.options.getViewDistance().getValue();
 
         double maxRangeBlocks = viewDistance * 16;
-        HitResult trace = mc.getCameraEntity().raycast(maxRangeBlocks, mc.getTickDelta(), false);
+        HitResult trace = mc.getCameraEntity().raycast(maxRangeBlocks, 0F, false);
         if (trace != null) {
             BlockPos pos = ((BlockHitResult) trace).getBlockPos();
             if (mc.world.getBlockEntity(pos) instanceof SignBlockEntity) return pos;
@@ -410,7 +421,7 @@ public class ChatSigns extends Module {
                 else if (block instanceof WallSignBlock wallSignBlock) woodType = wallSignBlock.getWoodType();
 
                 if (woodType == WoodType.OAK) {
-                    NbtCompound metadata = sign.toInitialChunkDataNbt();
+                    NbtCompound metadata = sign.createNbt(mc.world.getRegistryManager());
                     if (!metadata.toString().contains("{\"extra\":[") && !lines.isEmpty()) {
                         String testString = String.join(" ", lines);
                         Matcher fullYearsMatcher = fullYearsPattern.matcher(testString);
@@ -640,6 +651,11 @@ public class ChatSigns extends Module {
         return new Vec3d(offsetX, offsetY, offsetZ);
     }
 
+    private void doForceKick(Text reason) {
+        disconnectReason = reason;
+        StardustUtil.illegalDisconnect(true, Stardust.illegalDisconnectMethodSetting.get());
+    }
+
     @Override
     public void onActivate() {
         if (mc.player == null || mc.world == null) return;
@@ -679,12 +695,18 @@ public class ChatSigns extends Module {
         chunkCache.clear();
         blacklisted.clear();
         signMessages.clear();
+        lastFocusedSign = null;
+        disconnectReason = null;
         signsToHighlight.clear();
     }
 
     @EventHandler
     private void onPacketReceived(PacketEvent.Receive event) {
-        if (!(event.packet instanceof PlayerRespawnS2CPacket)) return;
+        if (disconnectReason != null && event.packet instanceof DisconnectS2CPacket packet) {
+            ((DisconnectS2CPacketAccessor)(Object) packet).setReason(disconnectReason);
+            signBoardAutoLog.set(false);
+            return;
+        }else if (!(event.packet instanceof PlayerRespawnS2CPacket)) return;
         posSet.clear();
         oldSet.clear();
         chunkCache.clear();
@@ -696,19 +718,24 @@ public class ChatSigns extends Module {
         if (mc.world == null || mc.player == null) return;
 
         if (chatMode.get() != ChatMode.Targeted) {
-            List<SignBlockEntity> signs = getNearbySigns(event.chunk);
+            List<SignBlockEntity> signs = getNearbySigns(event.chunk());
 
-            chatSigns(signs, event.chunk, mc);
+            chatSigns(signs, event.chunk(), mc);
         }
     }
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         if (signBoardAutoLog.get() && clusterAmount >= signBoardAutoLogAmount.get()) {
-            mc.getNetworkHandler().onDisconnect(
-                new DisconnectS2CPacket(Text.literal("§8[§a§oChatSigns§8] §7Disconnected you because you rendered a cluster of §a§o"+ clusterAmount + " §7signs§a!"))
-            );
-            toggle();
+            Text reason = Text.literal("§8[§a§oChatSigns§8] §7Disconnected you because you rendered a cluster of §a§o"+ clusterAmount + " §7signs§a!");
+            if (forceKick.get()) {
+                doForceKick(reason);
+            } else {
+                signBoardAutoLog.set(false);
+                StardustUtil.disableAutoReconnect();
+                mc.getNetworkHandler().onDisconnect(new DisconnectS2CPacket(reason));
+            }
+            return;
         }
 
         if (chatMode.get() == ChatMode.ESP) return;

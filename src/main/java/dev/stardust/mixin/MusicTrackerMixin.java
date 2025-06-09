@@ -5,9 +5,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import net.minecraft.client.sound.MusicTracker;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import dev.stardust.mixin.accessor.MusicTrackerAccessor;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>

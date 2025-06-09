@@ -1,6 +1,7 @@
 package dev.stardust.mixin;
 
 import java.util.List;
+import net.minecraft.util.Identifier;
 import dev.stardust.modules.MusicTweaks;
 import net.minecraft.client.sound.Sound;
 import net.minecraft.sound.SoundCategory;
@@ -15,7 +16,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.minecraft.util.math.floatprovider.ConstantFloatProvider;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -58,7 +58,7 @@ public abstract class WeightedSoundSetMixin implements SoundContainer<Sound> {
 
         cir.setReturnValue(
             new Sound(
-                soundIDs.get(ThreadLocalRandom.current().nextInt(soundIDs.size())),
+                Identifier.of(soundIDs.get(ThreadLocalRandom.current().nextInt(soundIDs.size()))),
                 ConstantFloatProvider.create(adjustedVolume),
                 ConstantFloatProvider.create(adjustedPitch),
                 this.getWeight(), Sound.RegistrationType.SOUND_EVENT,

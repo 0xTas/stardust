@@ -14,10 +14,9 @@ import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.gui.screen.TitleScreen;
 import org.spongepowered.asm.mixin.injection.Inject;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.screen.ConnectScreen;
 import net.minecraft.client.gui.screen.SplashTextRenderer;
+import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -25,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(TitleScreen.class)
 public abstract class TitleScreenMixin extends Screen {
     @Unique
-    private static final ServerInfo OLD_SERVER = new ServerInfo("2builders2tools", "2b2t.org", false);
+    private static final ServerInfo OLD_SERVER = new ServerInfo("2builders2tools", "2b2t.org", ServerInfo.ServerType.OTHER);
 
     @Shadow
     private @Nullable SplashTextRenderer splashText;
@@ -43,7 +42,7 @@ public abstract class TitleScreenMixin extends Screen {
     private void onClick2b2tButton(ButtonWidget btn) {
         if (mc == null) mc = MinecraftClient.getInstance();
         ConnectScreen.connect(mc.currentScreen, mc,
-            ServerAddress.parse(OLD_SERVER.address), OLD_SERVER, true
+            ServerAddress.parse(OLD_SERVER.address), OLD_SERVER, true, null
         );
     }
 

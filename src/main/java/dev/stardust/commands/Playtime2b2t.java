@@ -12,10 +12,8 @@ import dev.stardust.util.commands.ApiHandler;
 import meteordevelopment.meteorclient.commands.Command;
 import net.minecraft.client.network.ClientPlayerEntity;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
-
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -46,7 +44,7 @@ public class Playtime2b2t extends Command {
                         player.sendMessage(
                             Text.of(
                                 "§8<"+StardustUtil.rCC()+"§o✨"+"§r§8> §4§oPlayer not found§7."
-                            )
+                            ), false
                         );
                     } else {
                         JsonElement ptJson = JsonParser.parseString(response);
@@ -74,7 +72,7 @@ public class Playtime2b2t extends Command {
                             if (minutes != 0) sb.append(minutes).append(" §7Minutes, ").append(cc);
                             if (seconds != 0) sb.append(seconds).append(" §7Seconds§7.");
 
-                            if (player != null) player.sendMessage(Text.of(sb.toString()));
+                            if (player != null) player.sendMessage(Text.of(sb.toString()), false);
                         } else {
                             ApiHandler.sendErrorResponse();
                             Stardust.LOG.warn("[Stardust] received unexpected output from api.2b2t.vc: "+ptJson);

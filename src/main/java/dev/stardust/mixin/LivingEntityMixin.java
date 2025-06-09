@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import meteordevelopment.meteorclient.systems.modules.Modules;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity
@@ -29,8 +29,8 @@ public abstract class LivingEntityMixin extends Entity
     @Nullable private RocketMan rm;
 
     // See RocketMan.java
-    @Inject(method = "travel", at = @At(value = "INVOKE", target = "Ljava/lang/Math;sqrt(D)D"))
-    private void spoofPitchForSpeedCalcs(CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef f, @Local(ordinal = 1)LocalRef<Vec3d> rotationVec) {
+    @Inject(method = "calcGlidingVelocity", at = @At(value = "INVOKE", target = "Ljava/lang/Math;sqrt(D)D"))
+    private void spoofPitchForSpeedCalcs(Vec3d oldVelocity, CallbackInfoReturnable<Vec3d> cir, @Local(ordinal = 0) LocalFloatRef f, @Local(ordinal = 1)LocalRef<Vec3d> rotationVec) {
         if (this.rm == null) {
             Modules modules = Modules.get();
             if (modules == null) return;
@@ -39,12 +39,12 @@ public abstract class LivingEntityMixin extends Entity
 
         if (!rm.isActive() || !rm.shouldLockYLevel()) return;
         if (!this.getUuid().equals(rm.getClientInstance().player.getUuid())) return;
-        if (!rm.getClientInstance().player.isFallFlying() || !rm.hasActiveRocket()) return;
+        if (!rm.getClientInstance().player.isGliding()|| !rm.hasActiveRocket()) return;
 
-        if (rm.getClientInstance().player.input.jumping && rm.verticalSpeed.get() > 0) {
+        if (rm.getClientInstance().player.input.playerInput.jump() && rm.verticalSpeed.get() > 0) {
             f.set(-45);
             rotationVec.set(this.getRotationVector(45, this.getYaw()));
-        } else if (rm.getClientInstance().player.input.sneaking && rm.verticalSpeed.get() > 0) {
+        } else if (rm.getClientInstance().player.input.playerInput.sneak() && rm.verticalSpeed.get() > 0) {
             f.set(45);
             rotationVec.set(this.getRotationVector(45, this.getYaw()));
         } else {

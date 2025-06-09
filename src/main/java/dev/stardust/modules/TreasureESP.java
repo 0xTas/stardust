@@ -23,7 +23,6 @@ import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.meteorclient.events.entity.player.InteractBlockEvent;
 import meteordevelopment.meteorclient.systems.modules.render.blockesp.ESPBlockData;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
@@ -150,7 +149,7 @@ public class TreasureESP extends Module {
                                             "§8<" + StardustUtil.rCC() + "✨§8> §3§oFound buried treasure§7§o!"
                                         );
                                     }
-                                    mc.player.sendMessage(notification);
+                                    mc.player.sendMessage(notification, false);
                                 }
                                 notified.add(blockPos);
                             }
@@ -164,7 +163,7 @@ public class TreasureESP extends Module {
     @EventHandler
     private void onChunkData(ChunkDataEvent event) {
         if (mc.world == null || mc.player == null) return;
-        Map<BlockPos, BlockEntity> blockEntities = event.chunk.getBlockEntities();
+        Map<BlockPos, BlockEntity> blockEntities = event.chunk().getBlockEntities();
 
         for (BlockPos pos : blockEntities.keySet()) {
             if (notified.contains(pos)) continue;
@@ -189,7 +188,7 @@ public class TreasureESP extends Module {
                                 "§8<" + StardustUtil.rCC() + "✨§8> §3§oFound buried treasure§7§o!"
                             );
                         }
-                        mc.player.sendMessage(notification);
+                        mc.player.sendMessage(notification, false);
                     }
                     notified.add(pos);
                 }

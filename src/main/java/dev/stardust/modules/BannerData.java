@@ -1,28 +1,24 @@
 package dev.stardust.modules;
 
-import java.util.List;
 import java.util.Optional;
 import dev.stardust.Stardust;
 import net.minecraft.text.Text;
-import net.minecraft.util.DyeColor;
 import net.minecraft.block.entity.*;
 import net.minecraft.nbt.NbtCompound;
 import dev.stardust.util.StardustUtil;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import dev.stardust.util.StardustUtil.*;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.registry.entry.RegistryEntry;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.EnumSetting;
+import net.minecraft.component.type.BannerPatternsComponent;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import meteordevelopment.meteorclient.events.entity.player.InteractBlockEvent;
-
 
 /**
 * @author Tas [0xTas] <root@0xTas.dev>
@@ -75,51 +71,25 @@ public class BannerData extends Module {
     private int timer = 0;
     private BlockPos lastEventPos = new BlockPos(0,0,0);
 
-    private String patternNameFromID(String id) {
-        return switch (id) {
-            case "b" -> "Base";
-            case "glb" -> "Globe";
-            case "gra" -> "Gradient";
-            case "sku" -> "Skull Charge";
-            case "flo" -> "Flower Charge";
-            case "gru" -> "Base Gradient";
-            case "moj" -> "Thing (Mojang)";
-            case "pig" -> "Snout (Piglin)";
-            case "cre" -> "Creeper Charge";
-            case "bo" -> "Bordure (Border)";
-            case "ts" -> "Chief (Top Stripe)";
-            case "bri" -> "Field Masoned (Brick)";
-            case "mc" -> "Roundel (Middle Circle)";
-            case "mr" -> "Lozenge (Middle Rhombus)";
-            case "sc" -> "Cross (Square Cross [+])";
-            case "bs" -> "Base Fess (Bottom Stripe)";
-            case "ls" -> "Pale Dexter (Left Stripe)";
-            case "drs" -> "Bend (Down Right Stripe)";
-            case "bt" -> "Chevron (Bottom Triangle)";
-            case "cr" -> "Saltire (Diagonal Cross [X])";
-            case "rs" -> "Pale Sinister (Right Stripe)";
-            case "vh" -> "Per Pale (Vertical Half Left)";
-            case "ss" -> "Paly (Small Vertical Stripes)";
-            case "cs" -> "Pale (Center Vertical Stripe)";
-            case "hh" -> "Per Fess (Horizontal Half Top)";
-            case "tts" -> "Chief Indented (Top Sawtooth)";
-            case "tt" -> "Inverted Chevron (Top Triangle)";
-            case "ms" -> "Fess (Middle Horizontal Stripe)";
-            case "cbo" -> "Bordure Indented (Curly Border)";
-            case "bts" -> "Base Indented (Bottom Sawtooth)";
-            case "dls" -> "Bend Sinister (Down Left Stripe)";
-            case "ld" -> "Per Bend Sinister (Left of Diagonal)";
-            case "tl" -> "Chief Dexter Canton (Top Left Corner)";
-            case "bl" -> "Base Dexter Canton (Bottom Left Corner)";
-            case "vhr" -> "Per Pale Inverted (Vertical Half Right)";
-            case "tr" -> "Chief Sinister Canton (Top Right Corner)";
-            case "rud" -> "Per Bend (Right of Upside-down Diagonal)";
-            case "br" -> "Base Sinister Canton (Bottom Right Corner)";
-            case "hhb" -> "Per Fess Inverted (Horizontal Half Bottom)";
-            case "rd" -> "Per Bend Sinister Inverted (Right of Diagonal)";
-            case "lud" -> "Per Bend Inverted (Left of Upside-Down Diagonal)";
-            default -> "Oasis Sigil";
-        };
+    private String patternNameFromAssetID(String id) {
+        StringBuilder sb = new StringBuilder();
+
+        boolean capitalize = true;
+        for (char c : id.toCharArray()) {
+            if (capitalize) {
+                sb.append(Character.toUpperCase(c));
+                capitalize = false;
+                continue;
+            }
+            if (c == '_') {
+                sb.append(' ');
+                capitalize = true;
+                continue;
+            }
+            sb.append(c);
+        }
+
+        return sb.toString();
     }
 
     @Override
@@ -150,9 +120,9 @@ public class BannerData extends Module {
                 }
                 String bannerName = customName.toString();
                 String baseColor = banner.getColorForState().name();
-                baseColor = baseColor.substring(0, 1).toUpperCase()+baseColor.substring(1);
+                baseColor = baseColor.charAt(0) +baseColor.substring(1).toLowerCase();
 
-                List<Pair<RegistryEntry<BannerPattern>, DyeColor>> patterns =  banner.getPatterns();
+                BannerPatternsComponent patterns = banner.getPatterns();
 
                 String txtFormat = textFormatSetting.get().label;
                 StringBuilder patternsList = new StringBuilder();
@@ -163,16 +133,20 @@ public class BannerData extends Module {
                 }
                 if (!bannerName.trim().isEmpty()) {
                     patternsList.append("§8<").append(cc).append("§o✨§r§8> ")
-                        .append(cc).append(txtFormat).append(bannerName).append("\n§r");
+                        .append(cc).append(txtFormat).append(bannerName);
                 } else {
                     patternsList.append("§8<").append(cc).append("§o✨§r§8> ")
-                        .append(cc).append(txtFormat).append(baseColor).append(" Banner\n§r");
+                        .append(cc).append(txtFormat).append(baseColor).append(" Banner");
                 }
 
                 if (!bannerNameOnly.get()) {
-                    for (Pair<RegistryEntry<BannerPattern>, DyeColor> patternEntry : patterns) {
-                        String patternColor = patternEntry.getSecond().name().charAt(0)
-                            +patternEntry.getSecond().name().substring(1).toLowerCase();
+                    patternsList.append("\n§r");
+                    patternsList.append(cc).append("   ◦ ").append("§7")
+                        .append(txtFormat).append(baseColor).append(" ").append("Base").append("\n");
+
+                    for (BannerPatternsComponent.Layer layer : patterns.layers()) {
+                        String patternColor = layer.color().name().charAt(0)
+                            +layer.color().name().substring(1).toLowerCase();
 
                         if (patternColor.contains("_")) {
                             int i = patternColor.indexOf("_");
@@ -182,16 +156,15 @@ public class BannerData extends Module {
 
                         patternsList.append(cc).append("   ◦ ").append("§7")
                             .append(txtFormat).append(patternColor).append(" ")
-                            .append(patternNameFromID(patternEntry.getFirst().value().getId())).append("\n");
+                            .append(patternNameFromAssetID(layer.pattern().value().assetId().getPath())).append("\n");
                     }
                 }
 
                 String bannerData = patternsList.toString().trim();
-                mc.player.sendMessage(Text.of(bannerData));
+                mc.player.sendMessage(Text.of(bannerData), false);
 
                 if (copyToClipboard.get()) {
-                    NbtCompound metadata = banner.toInitialChunkDataNbt();
-                    mc.keyboard.setClipboard(metadata.toString());
+                     mc.keyboard.setClipboard(patterns.toString());
                     ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
                         Text.of(
                             "§8<"+StardustUtil.rCC()+"§o✨§r§8> §7"
@@ -204,7 +177,7 @@ public class BannerData extends Module {
                 lastEventPos = pos;
             } else if (blockEntity instanceof SignBlockEntity sign) {
                 if (!signData.get()) return;
-                NbtCompound metadata = sign.toInitialChunkDataNbt();
+                NbtCompound metadata = sign.createNbt(mc.world.getRegistryManager());
                 if (copyToClipboard.get()) {
                     mc.keyboard.setClipboard(metadata.toString());
                     ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
@@ -218,7 +191,7 @@ public class BannerData extends Module {
                     mc.player.sendMessage(
                         Text.of(
                             "§8<"+StardustUtil.rCC()+"§o✨§r§8> §7"+metadata
-                        )
+                        ), false
                     );
                 }
 

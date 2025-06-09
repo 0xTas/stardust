@@ -9,19 +9,20 @@ import dev.stardust.Stardust;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.util.Hand;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.Box;
 import java.util.stream.Collectors;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtCompound;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.util.math.MathHelper;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.registry.tag.ItemTags;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.utils.Utils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.util.collection.ArrayListDeque;
 import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
 import meteordevelopment.meteorclient.renderer.ShapeMode;
@@ -29,6 +30,8 @@ import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.render.RenderUtils;
+import net.minecraft.component.type.WrittenBookContentComponent;
+import net.minecraft.component.type.WritableBookContentComponent;
 import net.minecraft.network.packet.c2s.play.BookUpdateC2SPacket;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import meteordevelopment.meteorclient.utils.player.FindItemResult;
@@ -169,8 +172,8 @@ public class PagePirate extends Module {
     private int timer = 0;
     private final HashSet<String> seenPages = new HashSet<>();
     private final HashSet<ItemEntity> booksOnGround = new HashSet<>();
-    private final ArrayDeque<PirateTask> jobQueue = new ArrayDeque<>();
     private final HashSet<ItemFrameEntity> booksInItemFrames = new HashSet<>();
+    private final ArrayListDeque<PirateTask> jobQueue = new ArrayListDeque<>();
     private final HashMap<String, ArrayList<String>> seenBooks = new HashMap<>();
 
     private String formatPageText(String page) {
@@ -214,38 +217,22 @@ public class PagePirate extends Module {
 
     private boolean bookAndQuillHasContent(ItemStack book) {
         if (book.getItem() != Items.WRITABLE_BOOK) return false;
+        WritableBookContentComponent content = book.get(DataComponentTypes.WRITABLE_BOOK_CONTENT);
+        List<String> pages = content.pages().stream().map(page -> page.raw().trim()).toList();
 
-        NbtCompound metadata = book.getNbt();
-        if (metadata == null || !metadata.contains("pages", NbtElement.LIST_TYPE)) return false;
-
-        NbtList content = metadata.getList("pages", NbtElement.STRING_TYPE);
-
-        final List<String> pages = new ArrayList<>();
-        for (int n = 0; n < content.size(); n++) {
-            pages.add(content.getString(n));
-        }
-
-        return pages.stream().anyMatch(page -> !page.trim().isBlank());
+        return pages.stream().anyMatch(page -> !page.isBlank());
     }
 
     private boolean equipBookAndQuill() {
         FindItemResult result = InvUtils.find(stack -> {
             if (stack.getItem() instanceof WritableBookItem) {
-                NbtCompound metadata = stack.getNbt();
-                if (metadata == null || !metadata.contains("pages", NbtElement.LIST_TYPE)) return false;
-
-                NbtList content = metadata.getList("pages", NbtElement.STRING_TYPE);
-
-                final List<String> pageList = new ArrayList<>();
-                for (int n = 0; n < content.size(); n++) {
-                    pageList.add(content.getString(n));
-                }
-
+                WritableBookContentComponent data = stack.get(DataComponentTypes.WRITABLE_BOOK_CONTENT);
+                List<String> pageList = data.pages().stream().map(RawFilteredPair::raw).toList();
                 return overwrite.get()
                     || pageList.stream()
-                    .map(this::formatPageText)
-                    .map(this::decodeUnicodeChars)
-                    .allMatch(page -> page.replace("~pgprte~newline~", " ").trim().isEmpty());
+                        .map(this::formatPageText)
+                        .map(this::decodeUnicodeChars)
+                        .allMatch(page -> page.replace("~pgprte~newline~", " ").trim().isEmpty());
             }
             return false;
         });
@@ -259,7 +246,7 @@ public class PagePirate extends Module {
                     InvUtils.move().from(result.slot()).to(emptySlot.slot());
                     InvUtils.swap(emptySlot.slot(), true);
                 } else {
-                    FindItemResult nonCriticalSlot = InvUtils.find(stack -> !(stack.getItem() instanceof ToolItem) && !stack.isFood());
+                    FindItemResult nonCriticalSlot = InvUtils.find(stack -> !(stack.getItem() instanceof MiningToolItem) && !(stack.isIn(ItemTags.WEAPON_ENCHANTABLE)) && !stack.contains(DataComponentTypes.FOOD));
                     if (nonCriticalSlot.found() && nonCriticalSlot.slot() < 9) {
                         InvUtils.move().from(result.slot()).to(nonCriticalSlot.slot());
                         InvUtils.swap(nonCriticalSlot.slot(), true);
@@ -279,100 +266,89 @@ public class PagePirate extends Module {
     }
 
     private void handleWrittenBook(ItemStack book, String piratedFrom) {
-        NbtCompound metadata = book.getNbt();
-        if (metadata == null || !metadata.contains("pages", NbtElement.LIST_TYPE)) return;
-        if (!metadata.contains("title", NbtElement.STRING_TYPE) || !metadata.contains("author", NbtElement.STRING_TYPE)) return;
+        if (book.contains(DataComponentTypes.WRITTEN_BOOK_CONTENT)) {
+            WrittenBookContentComponent metadata = book.get(DataComponentTypes.WRITTEN_BOOK_CONTENT);
 
-        String title = metadata.getString("title");
-        String author = metadata.getString("author");
-        NbtList content = metadata.getList("pages", NbtElement.STRING_TYPE);
+            String author = metadata.author();
+            String title = metadata.title().raw();
+            List<String> pages = metadata.getPages(false).stream().map(Text::getString).toList();
 
-        final List<String> pages = new ArrayList<>();
-        for (int n = 0; n < content.size(); n++) {
-            pages.add(content.getString(n));
-        }
+            String pageText = pages.stream()
+                .map(this::formatPageText)
+                .map(this::decodeUnicodeChars)
+                .collect(Collectors.joining("\n"));
 
-        String pageText = pages.stream()
-            .map(this::formatPageText)
-            .map(this::decodeUnicodeChars)
-            .collect(Collectors.joining("\n"));
+            if (seenPages.contains(pageText.replace("~pgprte~newline~", "\n")) && seenBooks.containsKey(author) && seenBooks.get(author).contains(title)) return;
 
-        if (seenPages.contains(pageText.replace("~pgprte~newline~", "\n")) && seenBooks.containsKey(author) && seenBooks.get(author).contains(title)) return;
-
-        seenPages.add(pageText.replace("~pgprte~newline~", "\n"));
-        if (seenBooks.containsKey(author)) {
-            ArrayList<String> booksFromAuthor = seenBooks.get(author);
-            booksFromAuthor.add(title);
-            seenBooks.put(author, booksFromAuthor);
-        } else {
-            ArrayList<String> books = new ArrayList<>();
-            books.add(title);
-            seenBooks.put(author, books);
-        }
-        if (chatDisplay.get()) {
-            if (deobfuscatePages.get()) {
-                pageText = pageText.replace("§k", "");
+            seenPages.add(pageText.replace("~pgprte~newline~", "\n"));
+            if (seenBooks.containsKey(author)) {
+                ArrayList<String> booksFromAuthor = seenBooks.get(author);
+                booksFromAuthor.add(title);
+                seenBooks.put(author, booksFromAuthor);
+            } else {
+                ArrayList<String> books = new ArrayList<>();
+                books.add(title);
+                seenBooks.put(author, books);
             }
+            if (chatDisplay.get()) {
+                if (deobfuscatePages.get()) {
+                    pageText = pageText.replace("§k", "");
+                }
 
-            switch (piratedFrom) {
-                case "on ground" -> {
-                    if (displayBooksOnGround.get()) {
-                        mc.player.sendMessage(
-                            Text.literal(
-                                "§8[§a§oPagePirate§8] §7Author: "
-                                    +StardustUtil.rCC()+"§o"+author+" §7Title: "
-                                    +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
-                            )
-                        );
+                switch (piratedFrom) {
+                    case "on ground" -> {
+                        if (displayBooksOnGround.get()) {
+                            mc.player.sendMessage(
+                                Text.literal(
+                                    "§8[§a§oPagePirate§8] §7Author: "
+                                        +StardustUtil.rCC()+"§o"+author+" §7Title: "
+                                        +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
+                                ), false
+                            );
+                        }
                     }
-                }
-                case "item frame" -> {
-                    if (displayBooksInItemFrames.get()) {
-                        mc.player.sendMessage(
-                            Text.literal(
-                                "§8[§a§oPagePirate§8] §7Author: "
-                                    +StardustUtil.rCC()+"§o"+author+" §7Title: "
-                                    +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
-                            )
-                        );
+                    case "item frame" -> {
+                        if (displayBooksInItemFrames.get()) {
+                            mc.player.sendMessage(
+                                Text.literal(
+                                    "§8[§a§oPagePirate§8] §7Author: "
+                                        +StardustUtil.rCC()+"§o"+author+" §7Title: "
+                                        +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
+                                ), false
+                            );
+                        }
                     }
+                    default -> mc.player.sendMessage(
+                        Text.literal(
+                            "§8[§a§oPagePirate§8] §7Author: "
+                                +StardustUtil.rCC()+"§o"+author+" §7Title: "
+                                +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
+                        ), false
+                    );
                 }
-                default -> mc.player.sendMessage(
-                    Text.literal(
-                        "§8[§a§oPagePirate§8] §7Author: "
-                            +StardustUtil.rCC()+"§o"+author+" §7Title: "
-                            +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
-                    )
-                );
             }
-        }
-        if (localCopy.get()) {
-            switch (piratedFrom) {
-                case "on ground" -> {
-                    if (copyBooksOnGround.get()) {
-                        jobQueue.addLast(new PirateTask(metadata, piratedFrom, pages));
+            if (localCopy.get()) {
+                switch (piratedFrom) {
+                    case "on ground" -> {
+                        if (copyBooksOnGround.get()) {
+                            jobQueue.addLast(new PirateTask(metadata, piratedFrom, pages));
+                        }
                     }
-                }
-                case "item frame" -> {
-                    if (copyBooksInItemFrames.get()) {
-                        jobQueue.addLast(new PirateTask(metadata, piratedFrom, pages));
+                    case "item frame" -> {
+                        if (copyBooksInItemFrames.get()) {
+                            jobQueue.addLast(new PirateTask(metadata, piratedFrom, pages));
+                        }
                     }
+                    default -> jobQueue.addLast(new PirateTask(metadata, piratedFrom, pages));
                 }
-                default -> jobQueue.addLast(new PirateTask(metadata, piratedFrom, pages));
             }
         }
     }
 
     private void handleBookAndQuill(ItemStack book, String piratedFrom) {
-        NbtCompound metadata = book.getNbt();
-        if (metadata == null || !metadata.contains("pages", NbtElement.LIST_TYPE)) return;
-
-        NbtList content = metadata.getList("pages", NbtElement.STRING_TYPE);
-
-        final List<String> pages = new ArrayList<>();
-        for (int n = 0; n < content.size(); n++) {
-            pages.add(content.getString(n));
-        }
+        if (!book.contains(DataComponentTypes.WRITABLE_BOOK_CONTENT)) return;
+        WritableBookContentComponent metadata = book.get(DataComponentTypes.WRITABLE_BOOK_CONTENT);
+        List<String> pages = metadata.pages().stream().map(p -> p.get(false)).toList();
 
         String pageText = pages.stream()
             .map(this::formatPageText)
@@ -391,18 +367,18 @@ public class PagePirate extends Module {
                 case "on ground" -> {
                     if (displayBooksOnGround.get()) {
                         mc.player.sendMessage(
-                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n"))
+                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n")), false
                         );
                     }
                 }
                 case "item frame" -> {
                     if (displayBooksInItemFrames.get()) {
                         mc.player.sendMessage(
-                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n"))
+                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n")), false
                         );
                     }
                 }
-                default -> mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n")));
+                default -> mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n")), false);
             }
         }
         if (localCopy.get()) {
@@ -423,7 +399,7 @@ public class PagePirate extends Module {
         }
     }
 
-    private void makeLocalCopy(NbtCompound metadata, List<String> pages, String piratedFrom) {
+    private void makeLocalCopy(@Nullable WrittenBookContentComponent metadata, List<String> pages, String piratedFrom) {
         ArrayList<String> filtered = new ArrayList<>(pages.stream()
             .map(this::formatPageText)
             .map(this::decodeUnicodeChars)
@@ -431,17 +407,15 @@ public class PagePirate extends Module {
         if (filtered.isEmpty()) return;
 
         if (!equipBookAndQuill()) {
-            mc.player.sendMessage(Text.literal("§8[§4§oPagePirate§8] §7Failed to copy nearby book because you have no empty Book & Quills§4..!"));
+            mc.player.sendMessage(Text.literal("§8[§4§oPagePirate§8] §7Failed to copy nearby book because you have no empty Book & Quills§4..!"), false);
             return;
         }
 
         List<String> piratedPages = new ArrayList<>();
-        if (writeCoverPage.get() && metadata != null && metadata.contains("title", NbtElement.STRING_TYPE) && metadata.contains("author", NbtElement.STRING_TYPE)) {
+        if (writeCoverPage.get() && metadata != null) {
             String rcc = StardustUtil.rCC();
             LocalDate currentDate = LocalDate.now();
             LocalTime currentTime = LocalTime.now();
-            String title = metadata.getString("title");
-            String author = metadata.getString("author");
 
             String paddedMinute, paddedHour;
             if (currentTime.getMinute() < 10) {
@@ -454,9 +428,8 @@ public class PagePirate extends Module {
             } else {
                 paddedHour = String.valueOf(currentTime.getHour());
             }
-
             String coverPage = "   "+rcc+"§o✨ PagePirate ✨ \n\n§0§lTitle: "+rcc+"§o" +
-                title + "\n§0§lAuthor: "+rcc+"§o" + author +
+                metadata.title().raw() + "\n§0§lAuthor: "+rcc+"§o" + metadata.author() +
                 "\n\n" + "§0§lPirated From: "+rcc+"§o" + piratedFrom + "\n§0§oat "+rcc+"§o" +
                 paddedHour + "§0§o:"+rcc+"§o" + paddedMinute + " §0§oon the "+rcc +
                 "§o" + dayOfMonthSuffix(currentDate.getDayOfMonth()) +
@@ -465,11 +438,12 @@ public class PagePirate extends Module {
 
             piratedPages.add(coverPage);
         }
+
         int slot = mc.player.getInventory().selectedSlot;
-        mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Successfully copied nearby book!"));
-        boolean shouldSign = finalizeCopy.get() && metadata != null && metadata.contains("title", NbtElement.STRING_TYPE);
+        boolean shouldSign = finalizeCopy.get() && metadata != null;
+        mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Successfully copied nearby book!"), false);
         piratedPages.addAll(filtered.stream().map(page -> page.replace("~pgprte~newline~", "\n")).toList());
-        mc.getNetworkHandler().sendPacket(new BookUpdateC2SPacket(slot, piratedPages, shouldSign ? Optional.of(metadata.getString("title")) : Optional.empty()));
+        mc.getNetworkHandler().sendPacket(new BookUpdateC2SPacket(slot, piratedPages, shouldSign ? Optional.of(metadata.title().raw()) : Optional.empty()));
     }
 
     @Override
@@ -601,9 +575,9 @@ public class PagePirate extends Module {
         booksInItemFrames.clear();
     }
 
-    private record PirateTask(NbtCompound metadata, String piratedFrom, List<String> pages) {
+    private record PirateTask(@Nullable WrittenBookContentComponent metadata, String piratedFrom, List<String> pages) {
         public List<String> getPages() { return this.pages; }
         public String getPiratedFrom() { return this.piratedFrom; }
-        public NbtCompound getData() { return this.metadata; }
+        public WrittenBookContentComponent getData() { return this.metadata; }
     }
 }

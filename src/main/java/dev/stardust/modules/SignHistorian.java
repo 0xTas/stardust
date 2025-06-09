@@ -148,7 +148,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Boolean> persistenceSetting = sgSigns.add(
         new BoolSetting.Builder()
-            .name("Persistence")
+            .name("persistence")
             .description("Save sign data to a file in order to persist SignHistorian's powers across play-sessions.")
             .defaultValue(false)
             .onChanged(it -> {
@@ -192,9 +192,9 @@ public class SignHistorian extends Module {
                     this.blacklisted.clear();
                     initBlacklistText();
                     if (mc.player != null) {
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."));
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."));
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7You must toggle this setting or the module after updating the blacklist's contents."));
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."), false);
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."), false);
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7You must toggle this setting or the module after updating the blacklist's contents."), false);
                     }
                 }
             })
@@ -233,7 +233,7 @@ public class SignHistorian extends Module {
 
     private final Setting<Double> alarmVolume = sgPrevention.add(
         new DoubleSetting.Builder()
-            .name("Volume")
+            .name("volume")
             .sliderMax(0)
             .sliderMax(200)
             .defaultValue(0)
@@ -307,7 +307,7 @@ public class SignHistorian extends Module {
                 readSignsFromFile(signsFile);
             } else if (signsFile.toFile().createNewFile()) {
                 if (mc.player != null) mc.player.sendMessage(
-                    Text.of("§8<"+ StardustUtil.rCC()+"✨§8> [§5SignHistorian§8] §7Sign data will be saved to §2§o"+signsFile.getFileName()+" §7in your §7§ometeor-client/sign-historian folder.")
+                    Text.of("§8<"+ StardustUtil.rCC()+"✨§8> [§5SignHistorian§8] §7Sign data will be saved to §2§o"+signsFile.getFileName()+" §7in your §7§ometeor-client/sign-historian folder."), false
                 );
                 readSignsFromFile(signsFile);
             }
@@ -331,7 +331,7 @@ public class SignHistorian extends Module {
                     BlockState state = result.result().orElse(null);
 
                     if (state == null) continue;
-                    BlockEntity be = BlockEntity.createFromNbt(bPos, state, reconstructed);
+                    BlockEntity be = BlockEntity.createFromNbt(bPos, state, reconstructed, mc.world.getRegistryManager());
 
                     if (be instanceof SignBlockEntity sbeReconstructed) {
                         if (!serverSigns.containsKey(bPos)) {
@@ -364,7 +364,7 @@ public class SignHistorian extends Module {
 
         try {
             NbtCompound stateNbt = NbtHelper.fromBlockState(state);
-            NbtCompound metadata = sign.createNbtWithIdentifyingData();
+            NbtCompound metadata = sign.createNbtWithIdentifyingData(mc.world.getRegistryManager());
 
             //noinspection ResultOfMethodCallIgnored
             historianFolder.toFile().mkdirs();
@@ -470,7 +470,7 @@ public class SignHistorian extends Module {
     private BlockPos getTargetedSign() {
         ClientPlayerEntity player = mc.player;
         if (player == null || mc.world == null) return null;
-        HitResult trace = player.raycast(7, mc.getTickDelta(), false);
+        HitResult trace = player.raycast(7,0, false);
         if (trace != null) {
             BlockPos pos = ((BlockHitResult) trace).getBlockPos();
             if (mc.world.getBlockEntity(pos) instanceof SignBlockEntity) return pos;
@@ -494,7 +494,7 @@ public class SignHistorian extends Module {
             // Signs placed in 1.8 - 1.12 (the majority of them) are "technically" irreplaceable due to metadata differences.
             // You might say that they're the *new* old signs. Either way you can tell that they've been (re)placed after 1.19.
             // To compensate for this, I'll hide a SignHistorian watermark in the NBT data which should clear up any confusion :]
-            if (sbe.createNbt().toString().contains("{\"extra\":[") && n == 3) {
+            if (sbe.createNbt(mc.world.getRegistryManager()).toString().contains("{\"extra\":[") && n == 3) {
                 StringBuilder sb = new StringBuilder();
                 int lineLen = mc.textRenderer.getWidth(sbe.getFrontText().getMessage(n, false).getString());
                 int spaceLeftHalved = (90 - lineLen) / 2; // center original text
@@ -730,12 +730,12 @@ public class SignHistorian extends Module {
             if (event.result.getBlockPos().isWithinDistance(sbe.getPos(), 1)) {
                 mc.player.sendMessage(Text.of(
                     "§8<"+ StardustUtil.rCC()+"✨§8> §e§lOriginal§7§l: §7§o"+ Arrays.stream(sbe.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" "))
-                ));
+                ), false);
                 mc.player.sendMessage(Text.of(
                     "§8<"+ StardustUtil.rCC()+"✨§8> §6§lWoodType§7§l: "+((AbstractSignBlock) sbe.getCachedState().getBlock()).getWoodType().name()
                     +" | §3§lColor§7§l: "+sbe.getText(true).getColor().name()
                     +" | §f§lGlow Ink§7§l: "+sbe.getText(true).isGlowing()
-                ));
+                ), false);
                 return;
             }
         }
@@ -751,12 +751,12 @@ public class SignHistorian extends Module {
             if (packet.getPos().isWithinDistance(ghost.getPos(), 1.5)) {
                 mc.player.sendMessage(Text.of(
                     "§8<"+ StardustUtil.rCC()+"✨§8> §c§lOriginal§7§l: §7§o"+ Arrays.stream(ghost.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" "))
-                ));
+                ), false);
                 mc.player.sendMessage(Text.of(
                     "§8<"+ StardustUtil.rCC()+"✨§8> §6§lWoodType§7§l: "+((AbstractSignBlock) ghost.getCachedState().getBlock()).getWoodType().name()
                         +" | §3§lColor§7§l: "+ghost.getText(true).getColor().name()
                         +" | §f§lGlow Ink§7§l: "+ghost.getText(true).isGlowing()
-                ));
+                ), false);
             }
         }
     }

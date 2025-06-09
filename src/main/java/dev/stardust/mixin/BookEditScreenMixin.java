@@ -12,6 +12,7 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import dev.stardust.mixin.accessor.BookEditScreenAccessor;
 import net.minecraft.client.gui.screen.ingame.BookEditScreen;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -163,7 +164,7 @@ public abstract class BookEditScreenMixin extends Screen {
         );
     }
 
-    @Inject(method = "charTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/SelectionManager;insert(Ljava/lang/String;)V", shift = At.Shift.BEFORE))
+    @Inject(method = "charTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/SelectionManager;insert(Ljava/lang/String;)V"))
     private void mixinCharTyped(char chr, int modifiers, CallbackInfoReturnable<Boolean> cir) {
         if (!rainbowMode || signing) return;
         didFormatPage = true;

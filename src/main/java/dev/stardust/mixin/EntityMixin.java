@@ -28,12 +28,12 @@ public abstract class EntityMixin
         RocketMan rm = modules.get(RocketMan.class);
         if (!rm.isActive() || !rm.shouldLockYLevel()) return velocity;
         if (!this.getUuid().equals(rm.getClientInstance().player.getUuid())) return velocity;
-        if (!rm.getClientInstance().player.isFallFlying() || !rm.hasActiveRocket()) return velocity;
+        if (!rm.getClientInstance().player.isGliding() || !rm.hasActiveRocket()) return velocity;
 
         Vec3d spoofVec;
-        if (rm.getClientInstance().player.input.jumping) {
+        if (rm.getClientInstance().player.input.playerInput.jump()) {
             spoofVec = new Vec3d(velocity.x, rm.verticalSpeed.get(), velocity.z);
-        } else if (rm.getClientInstance().player.input.sneaking) {
+        } else if (rm.getClientInstance().player.input.playerInput.sneak()) {
             spoofVec = new Vec3d(velocity.x, -rm.verticalSpeed.get(), velocity.z);
         } else spoofVec = new Vec3d(velocity.x, 0, velocity.z);
 

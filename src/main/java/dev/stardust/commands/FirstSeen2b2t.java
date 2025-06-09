@@ -16,10 +16,8 @@ import dev.stardust.util.commands.ApiHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import meteordevelopment.meteorclient.commands.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
-
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -49,7 +47,7 @@ public class FirstSeen2b2t extends Command {
                         player.sendMessage(
                             Text.of(
                                 "§8<"+StardustUtil.rCC()+"§o✨"+"§r§8> §4§oThat player has not been seen§7..."
-                            )
+                            ), false
                         );
                     }else {
                         JsonElement seenJson = JsonParser.parseString(response);
@@ -69,7 +67,7 @@ public class FirstSeen2b2t extends Command {
                                     Text.of(
                                         "§8<" + StardustUtil.rCC() + "§o✨" + "§r§8> "+cc+"§o"
                                             + playerString + "§r§7 was first seen on "+cc+"§o" + formattedTimestamp + "§7."
-                                    )
+                                    ), false
                                 );
                             }
                         } else {

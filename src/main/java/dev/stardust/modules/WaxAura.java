@@ -26,6 +26,7 @@ import net.minecraft.block.entity.BlockEntity;
 import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.block.entity.SignBlockEntity;
 import meteordevelopment.meteorclient.utils.Utils;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.block.entity.HangingSignBlockEntity;
 import meteordevelopment.meteorclient.renderer.ShapeMode;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
@@ -91,9 +92,9 @@ public class WaxAura extends Module {
                     this.blacklisted.clear();
                     initBlacklistText();
                     if (mc.player != null) {
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."));
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."));
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Toggle the module after updating the blacklist's contents."));
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."), false);
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."), false);
+                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Toggle the module after updating the blacklist's contents."), false);
                     }
                 }
             })
@@ -116,7 +117,7 @@ public class WaxAura extends Module {
 
     private final Setting<Boolean> espNonWaxed = sgESP.add(
         new BoolSetting.Builder()
-            .name("ESP-non-waxed")
+            .name("ESP-unwaxed-signs")
             .description("Render signs which aren't yet waxed through walls.")
             .defaultValue(false)
             .build()
@@ -281,7 +282,7 @@ public class WaxAura extends Module {
 
         ++timer;
         ItemStack active = mc.player.getActiveItem();
-        if ((active.isFood() || Utils.isThrowable(active.getItem())) && mc.player.getItemUseTime() > 0) return;
+        if ((active.contains(DataComponentTypes.FOOD) || Utils.isThrowable(active.getItem())) && mc.player.getItemUseTime() > 0) return;
         if (timer >= tickRate.get()) {
             timer = 0;
             if (currentSign != null) waxSign(currentSign);

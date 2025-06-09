@@ -11,7 +11,6 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import net.minecraft.client.gui.screen.SplashTextRenderer;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
