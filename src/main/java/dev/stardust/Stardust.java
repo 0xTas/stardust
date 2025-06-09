@@ -1,9 +1,9 @@
 package dev.stardust;
 
-import dev.stardust.util.MsgUtil;
 import org.slf4j.Logger;
 import dev.stardust.modules.*;
 import dev.stardust.commands.*;
+import dev.stardust.util.MsgUtil;
 import com.mojang.logging.LogUtils;
 import dev.stardust.util.StardustUtil;
 import net.fabricmc.loader.api.FabricLoader;
@@ -50,6 +50,7 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new BookTools());
         Modules.get().add(new ChatSigns());
         Modules.get().add(new RocketMan());
+        Modules.get().add(new RocketJump());
         Modules.get().add(new BannerData());
         Modules.get().add(new PagePirate());
         Modules.get().add(new MusicTweaks());
