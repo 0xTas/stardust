@@ -28,6 +28,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
+import dev.stardust.config.StardustConfig;
 import net.minecraft.registry.RegistryKey;
 import java.time.format.DateTimeFormatter;
 import net.minecraft.world.biome.BiomeKeys;
@@ -653,7 +654,7 @@ public class ChatSigns extends Module {
 
     private void doForceKick(Text reason) {
         disconnectReason = reason;
-        StardustUtil.illegalDisconnect(true, Stardust.illegalDisconnectMethodSetting.get());
+        StardustUtil.illegalDisconnect(true, StardustConfig.illegalDisconnectMethodSetting.get());
     }
 
     @Override

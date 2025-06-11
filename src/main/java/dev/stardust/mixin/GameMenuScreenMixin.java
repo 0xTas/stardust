@@ -1,9 +1,9 @@
 package dev.stardust.mixin;
 
-import dev.stardust.Stardust;
 import net.minecraft.text.Text;
 import dev.stardust.util.StardustUtil;
 import org.spongepowered.asm.mixin.Mixin;
+import dev.stardust.config.StardustConfig;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.gui.screen.Screen;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,10 +25,10 @@ public class GameMenuScreenMixin extends Screen {
 
     @Inject(method = "initWidgets", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/GridWidget;refreshPositions()V"))
     private void addIllegalDisconnectButton(CallbackInfo ci, @Local GridWidget.Adder adder) {
-        if (Stardust.illegalDisconnectButtonSetting.get() && !mc.isInSingleplayer()) {
+        if (StardustConfig.illegalDisconnectButtonSetting.get() && !mc.isInSingleplayer()) {
             adder.add(ButtonWidget.builder(Text.literal("§cIllegal Disconnect"), button -> {
                 button.active = false;
-                StardustUtil.illegalDisconnect(false, Stardust.illegalDisconnectMethodSetting.get());
+                StardustUtil.illegalDisconnect(false, StardustConfig.illegalDisconnectMethodSetting.get());
             }).width(204).build(), 2);
         }
     }

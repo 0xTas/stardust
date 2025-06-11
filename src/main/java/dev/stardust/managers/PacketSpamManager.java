@@ -1,7 +1,7 @@
 package dev.stardust.managers;
 
-import dev.stardust.Stardust;
 import net.minecraft.item.ItemStack;
+import dev.stardust.config.StardustConfig;
 import net.minecraft.screen.ScreenHandler;
 import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.orbit.EventPriority;
@@ -30,7 +30,7 @@ public class PacketSpamManager {
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onSendPacket(PacketEvent.Send event) {
         if (mc.player == null) return;
-        if (!Stardust.antiInventoryPacketKick.get()) return;
+        if (!StardustConfig.antiInventoryPacketKick.get()) return;
         if (!(event.packet instanceof ClickSlotC2SPacket packet)) return;
         if (!packet.getActionType().equals(SlotActionType.QUICK_MOVE)) return;
 

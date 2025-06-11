@@ -1,8 +1,8 @@
 package dev.stardust.mixin;
 
-import dev.stardust.Stardust;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
+import dev.stardust.config.StardustConfig;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -48,7 +48,7 @@ public abstract class TitleScreenMixin extends Screen {
 
     @Inject(method = "init", at = @At("TAIL"))
     private void mixinInit(CallbackInfo ci) {
-        if (Stardust.directConnectButtonSetting.get()) {
+        if (StardustConfig.directConnectButtonSetting.get()) {
             this.addDrawableChild(ButtonWidget.builder(
                     Text.of("§c§l2§a§lB"), this::onClick2b2tButton)
                 .dimensions(this.width / 2 + 104, this.height / 4 + 72, 20, 20)
@@ -65,7 +65,7 @@ public abstract class TitleScreenMixin extends Screen {
         }
 
         ++timer;
-        if (timer >= 420 && Stardust.rotateSplashTextSetting.get()) {
+        if (timer >= 420 && StardustConfig.rotateSplashTextSetting.get()) {
             timer = 0;
             splashText = mc.getSplashTextLoader().get();
         }

@@ -1,7 +1,7 @@
 package dev.stardust.mixin;
 
-import dev.stardust.Stardust;
 import org.spongepowered.asm.mixin.Mixin;
+import dev.stardust.config.StardustConfig;
 import org.spongepowered.asm.mixin.Unique;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.font.TextRenderer;
@@ -25,6 +25,6 @@ public class SplashTextRendererMixin {
 
     @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawCenteredTextWithShadow(Lnet/minecraft/client/font/TextRenderer;Ljava/lang/String;III)V"), index = 4)
     private int modifyRenderArg(int color) {
-        return Stardust.greenSplashTextSetting.get() ? 0x54FB54 | this.trackAlpha : color;
+        return StardustConfig.greenSplashTextSetting.get() ? 0x54FB54 | this.trackAlpha : color;
     }
 }

@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import dev.stardust.util.StardustUtil;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import dev.stardust.config.StardustConfig;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import meteordevelopment.orbit.EventHandler;
@@ -93,7 +94,7 @@ public abstract class AutoLogMixin extends Module {
             didLog = true;
             requestedDcAt = System.currentTimeMillis();
             disconnectReason = Text.literal("§8[§a§oAutoLog§8] §f" + reason.getString());
-            StardustUtil.illegalDisconnect(true, Stardust.illegalDisconnectMethodSetting.get());
+            StardustUtil.illegalDisconnect(true, StardustConfig.illegalDisconnectMethodSetting.get());
         }
     }
 
