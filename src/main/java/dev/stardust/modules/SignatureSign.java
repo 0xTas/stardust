@@ -430,7 +430,6 @@ public class SignatureSign extends Module {
         storyText.clear();
         lastLines.clear();
         signsToWax.clear();
-        packetQueue.clear();
         signsToColor.clear();
         signsToGlowInk.clear();
 
