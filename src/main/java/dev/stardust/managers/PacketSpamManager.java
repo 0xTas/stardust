@@ -36,6 +36,7 @@ public class PacketSpamManager {
 
         int origin = packet.getSlot();
         ScreenHandler handler = mc.player.currentScreenHandler;
+        if (origin < 0 || origin >= handler.slots.size()) return;
         ItemStack toMove = handler.getSlot(origin).getStack();
 
         if (toMove.isEmpty()) {
