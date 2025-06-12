@@ -604,7 +604,7 @@ public class RocketMan extends Module {
     public boolean hasActiveRocket() {
         if (mc.world == null) return false;
         for (Entity e : mc.world.getEntities()) {
-            if (e instanceof FireworkRocketEntity r && r.getOwner() != null && r.getOwner() != null && r.getOwner().equals(mc.player)) {
+            if (e instanceof FireworkRocketEntity r && r.getOwner() != null && r.getOwner().equals(mc.player)) {
                 return true;
             }
         }
@@ -693,8 +693,7 @@ public class RocketMan extends Module {
 
     private void assistTakeoff() {
         if (mc.player == null || mc.getNetworkHandler() == null) return;
-
-        if (PlayerUtils.getDimension().equals(Dimension.Nether) && mc.player.isSubmergedIn(FluidTags.LAVA)) {
+        if (escapeLava.get() && PlayerUtils.getDimension().equals(Dimension.Nether) && mc.player.isSubmergedIn(FluidTags.LAVA)) {
             inLava = true;
             if (lastPlayerPitch == -420.69f) {
                 lastPlayerPitch = mc.player.getPitch();

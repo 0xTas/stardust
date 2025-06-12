@@ -90,7 +90,7 @@ public class RocketJump extends Module {
     private boolean hasActiveRocket() {
         if (mc.world == null) return false;
         for (Entity e : mc.world.getEntities()) {
-            if (e instanceof FireworkRocketEntity r && r.getOwner() != null && r.getOwner() != null && r.getOwner().equals(mc.player)) {
+            if (e instanceof FireworkRocketEntity r && r.getOwner() != null && r.getOwner().equals(mc.player)) {
                 return true;
             }
         }
