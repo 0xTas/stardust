@@ -5,7 +5,7 @@
   "name": "Stardust",
   "description": "2b2t Utility Addon for Meteor Client.",
   "authors": [
-    "Tas [@0xTas] <root@0xTas.dev>"
+    "0xTas"
   ],
   "contact": {
     "repo": "https://github.com/0xTas/stardust"
