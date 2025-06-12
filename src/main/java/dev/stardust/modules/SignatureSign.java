@@ -6,6 +6,9 @@ import java.util.List;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.nio.file.Files;
+
+import meteordevelopment.meteorclient.MeteorClient;
+import meteordevelopment.meteorclient.utils.Utils;
 import net.minecraft.item.*;
 import net.minecraft.text.*;
 import dev.stardust.Stardust;
@@ -440,6 +443,10 @@ public class SignatureSign extends Module {
         rotationPriority = 69420;
         didDisableWaxAura = false;
         needDelayedDeactivate = false;
+
+        if (!packetQueue.isEmpty() && Utils.canUpdate()) {
+            MeteorClient.EVENT_BUS.subscribe(this);
+        }
     }
 
 
@@ -931,13 +938,17 @@ public class SignatureSign extends Module {
             packetQueue.addLast(new UpdateSignC2SPacket(
                 sign.getPos(), true, messages[0], messages[1], messages[2], messages[3]
             ));
+            if (autoDisable.get()) {
+                toggle();
+                sendToggledMsg();
+            }
         }
     }
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
         if (mc.player == null) return;
-        if (mc.currentScreen != null) return;
+        if (!Utils.canUpdate()) return;
         if (mc.getNetworkHandler() == null) return;
 
         if (!packetQueue.isEmpty()) {
@@ -948,7 +959,12 @@ public class SignatureSign extends Module {
                     packetQueue.removeFirst(), null, true
                 );
             }
+        } else if (packetQueue.isEmpty() && !isActive()) {
+            MeteorClient.EVENT_BUS.unsubscribe(this);
+            return;
         }
+
+        if (mc.currentScreen != null) return;
 
         if (timer == -1) {
             if (dyeSlot != -1) {

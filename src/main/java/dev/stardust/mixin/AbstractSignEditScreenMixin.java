@@ -51,9 +51,9 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
         SignatureSign signatureSign = modules.get(SignatureSign.class);
         if (!signatureSign.isActive() && !signHistorian.isActive()) return;
 
+        if (signatureSign.getAutoConfirm()) return;
         SignText restoration = signHistorian.getRestoration(this.blockEntity);
         if ((!signHistorian.isActive() || restoration == null) && signatureSign.isActive()) {
-            if (signatureSign.getAutoConfirm()) return;
             SignText signature = signatureSign.getSignature(this.blockEntity);
             List<String> msgs = Arrays.stream(signature.getMessages(false)).map(Text::getString).toList();
             String[] messages = new String[msgs.size()];
@@ -61,10 +61,6 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
 
             ((AbstractSignEditScreenAccessor) this).setText(signature);
             ((AbstractSignEditScreenAccessor) this).setMessages(messages);
-            if (signatureSign.needsDisabling()) {
-                signatureSign.disable();
-            }
-
             if ((signatureSign.isActive() && signatureSign.signFreedom.get())) {
                 // bypass client-side length limits for sign text by using a truthy predicate in the SelectionManager
                 AbstractSignEditScreenAccessor accessor = ((AbstractSignEditScreenAccessor) this);
@@ -73,6 +69,10 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
                     SelectionManager.makeClipboardGetter(this.client), SelectionManager.makeClipboardSetter(this.client),
                     string -> true
                 );
+            }
+
+            if (signatureSign.needsDisabling()) {
+                signatureSign.disable();
             }
         }
     }
