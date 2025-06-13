@@ -35,6 +35,9 @@ import meteordevelopment.meteorclient.mixin.ClientPlayNetworkHandlerAccessor;
  * @author Tas [@0xTas] <root@0xTas.dev>
  **/
 public class StardustUtil {
+    public static final boolean XAERO_AVAILABLE = FabricLoader.getInstance().isModLoaded("xaeroworldmap")
+        && FabricLoader.getInstance().isModLoaded("xaerominimap");
+
     public enum RainbowColor {
         Reds(new String[]{"§c", "§4"}),
         Yellows(new String[]{"§e", "§6"}),

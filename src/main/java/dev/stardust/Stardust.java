@@ -62,6 +62,10 @@ public class Stardust extends MeteorAddon {
         StardustConfig.initialize();
         MsgUtil.initModulePrefixes();
         LOG.info("<✨> Stardust initialized.");
+
+        if (!StardustUtil.XAERO_AVAILABLE) {
+            LOG.warn("[Stardust] Skipping Xaero Map integration as one or both of xaero world map & xaero minimap are missing..!");
+        }
     }
 
 

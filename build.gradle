@@ -17,6 +17,10 @@ repositories {
         name = "Meteor Dev Snapshots"
         url = "https://maven.meteordev.org/snapshots"
     }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
 }
 
 dependencies {
@@ -29,6 +33,12 @@ dependencies {
     modImplementation("meteordevelopment:meteor-client:${project.meteor_version}") {
         changing = true
     }
+
+    // XaeroMinimap
+    modImplementation("maven.modrinth:xaeros-minimap:${project.xaeros_minimap_version}")
+
+    // XaeroWorldMap
+    modImplementation "maven.modrinth:xaeros-world-map:${project.xaeros_worldmap_version}"
 
     configurations.configureEach {
         resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
