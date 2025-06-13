@@ -3,10 +3,12 @@ package dev.stardust.modules;
 import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
+import java.util.Optional;
 import dev.stardust.Stardust;
 import net.minecraft.item.Item;
 import net.minecraft.util.Hand;
 import net.minecraft.item.Items;
+import dev.stardust.util.MapUtil;
 import dev.stardust.util.MsgUtil;
 import net.minecraft.block.Blocks;
 import dev.stardust.util.RenderUtil;
@@ -132,6 +134,31 @@ public class Archaeology extends Module {
             .description("Whether to send chat notifications for suspicious sand, gravel, or both.")
             .defaultValue(SuspiciousBlocks.Both)
             .visible(chatNotify::get)
+            .build()
+    );
+
+    private final Setting<Boolean> waypoints = sgSurvey.add(
+        new BoolSetting.Builder()
+            .name("add-waypoints")
+            .description("Adds waypoints to your Xaeros map on clusters of suspicious blocks.")
+            .defaultValue(false)
+            .visible(() -> StardustUtil.XAERO_AVAILABLE)
+            .build()
+    );
+    private final Setting<Boolean> tempWaypoints = sgSurvey.add(
+        new BoolSetting.Builder()
+            .name("temporary-waypoints")
+            .description("Temporary waypoints are removed when you disconnect from the server or close the game.")
+            .defaultValue(true)
+            .visible(() -> StardustUtil.XAERO_AVAILABLE && waypoints.get())
+            .build()
+    );
+    private final Setting<SuspiciousBlocks> waypointsFor = sgSurvey.add(
+        new EnumSetting.Builder<SuspiciousBlocks>()
+            .name("waypoints-for")
+            .description("Whether to add waypoints for suspicious sand, gravel, or both.")
+            .defaultValue(SuspiciousBlocks.Both)
+            .visible(() -> StardustUtil.XAERO_AVAILABLE && waypoints.get())
             .build()
     );
 
@@ -363,6 +390,29 @@ public class Archaeology extends Module {
                     testPos.set(be.getPos().getX(), lastFoundPos == null ? be.getPos().getY() : lastFoundPos.getY(), be.getPos().getZ());
                     if (lastFoundPos == null || isOutOfRange(lastFoundPos, testPos, 69)) {
                         lastFoundPos = be.getPos();
+                        if (StardustUtil.XAERO_AVAILABLE && waypoints.get()) switch (waypointsFor.get()) {
+                            case SuspiciousSand -> {
+                                if (mc.world.getBlockState(be.getPos()).isOf(Blocks.SUSPICIOUS_SAND)) {
+                                    MapUtil.addWaypoint(
+                                        be.getPos(), "Archaeology Dig Site", "ᛩ",
+                                        MapUtil.Purpose.Normal, MapUtil.WpColor.Random, tempWaypoints.get()
+                                    );
+                                }
+                            }
+                            case SuspiciousGravel -> {
+                                if (mc.world.getBlockState(be.getPos()).isOf(Blocks.SUSPICIOUS_GRAVEL)) {
+                                    MapUtil.addWaypoint(
+                                        be.getPos(), "Archaeology Dig Site", "ᛩ",
+                                        MapUtil.Purpose.Normal, MapUtil.WpColor.Random, tempWaypoints.get()
+                                    );
+                                }
+                            }
+                            default -> MapUtil.addWaypoint(
+                                be.getPos(), "Archaeology Dig Site", "ᛩ",
+                                MapUtil.Purpose.Normal, MapUtil.WpColor.Random, tempWaypoints.get()
+                            );
+                        }
+
                         if (soundPing.get()) switch (soundFor.get()) {
                             case SuspiciousSand -> {
                                 if (mc.world.getBlockState(be.getPos()).isOf(Blocks.SUSPICIOUS_SAND)) {
@@ -493,6 +543,14 @@ public class Archaeology extends Module {
         BlockPos hitPos = blockHit.getBlockPos();
         if (toIgnore.contains(hitPos.asLong())) return;
         if (mc.world.getBlockEntity(hitPos) instanceof BrushableBlockEntity brushableBlock) {
+            if (StardustUtil.XAERO_AVAILABLE && waypoints.get() && (suspiciousGravelBlocks.contains(hitPos) || suspiciousSandBlocks.contains(hitPos))) {
+                MapUtil.removeWaypoints(
+                    "Archaeology",
+                    pos -> pos.isWithinDistance(hitPos, 64),
+                    Optional.of(hitPos.getY())
+                );
+            }
+
             ItemStack stack = brushableBlock.getItem();
             if (stack == ItemStack.EMPTY || stack.getItem() == Items.AIR) {
                 preventingBreakageBlocks.add(hitPos);
