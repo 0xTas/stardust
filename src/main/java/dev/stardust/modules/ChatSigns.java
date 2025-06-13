@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import net.minecraft.text.Style;
+import dev.stardust.util.MapUtil;
 import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.stream.Collectors;
@@ -78,7 +79,7 @@ public class ChatSigns extends Module {
     private final SettingGroup formatGroup = settings.createGroup("Formatting", true);
     private final SettingGroup oldSignGroup = settings.createGroup("OldSigns Settings", true);
     private final SettingGroup blacklistGroup = settings.createGroup("SignText Blacklist", true);
-    private final SettingGroup autoLogGroup = settings.createGroup("SignBoard AutoLog", true);
+    private final SettingGroup signBoardGroup = settings.createGroup("Sign Cluster Settings", true);
 
     private final Setting<ChatMode> chatMode = modesGroup.add(
         new EnumSetting.Builder<ChatMode>()
@@ -137,7 +138,7 @@ public class ChatSigns extends Module {
 
     private final Setting<Boolean> ignoreNether = oldSignGroup.add(
         new BoolSetting.Builder()
-            .name("ignore -nether")
+            .name("ignore-nether")
             .description("Ignore potentially-old signs in the nether (near highways they're all certainly new.)")
             .visible(showOldSigns::get)
             .defaultValue(true)
@@ -244,15 +245,56 @@ public class ChatSigns extends Module {
             .build()
     );
 
-    private final Setting<Boolean> signBoardAutoLog = autoLogGroup.add(
+    private final Setting<Boolean> signBoardWaypoints = signBoardGroup.add(
         new BoolSetting.Builder()
-            .name("signBoard-autoLog")
+            .name("signBoard-waypoints")
+            .description("Adds waypoints to your Xaeros map when a cluster of signs is rendered.")
+            .defaultValue(false)
+            .visible(() -> StardustUtil.XAERO_AVAILABLE)
+            .build()
+    );
+    private final Setting<Boolean> temporaryWaypoints = signBoardGroup.add(
+        new BoolSetting.Builder()
+            .name("temporary-waypoints")
+            .description("Temporary waypoints are cleared when you disconnect from the server or close the game.")
+            .defaultValue(true)
+            .visible(() -> StardustUtil.XAERO_AVAILABLE && signBoardWaypoints.get())
+            .build()
+    );
+    private final Setting<Boolean> waypointsIgnoreEmpty = signBoardGroup.add(
+        new BoolSetting.Builder()
+            .name("waypoints-ignore-empty")
+            .description("If enabled, empty signs will not count towards a cluster waypoint.")
+            .defaultValue(true)
+            .visible(() -> StardustUtil.XAERO_AVAILABLE && signBoardWaypoints.get())
+            .build()
+    );
+    private final Setting<Boolean> waypointsIgnoreBlacklist = signBoardGroup.add(
+        new BoolSetting.Builder()
+            .name("waypoints-ignore-blacklist")
+            .description("If enabled, signs containing blocked text will still count towards the waypoint cluster.")
+            .defaultValue(false)
+            .visible(() -> StardustUtil.XAERO_AVAILABLE && signBoardWaypoints.get())
+            .build()
+    );
+    private final Setting<Integer> signBoardWaypointsAmount = signBoardGroup.add(
+        new IntSetting.Builder()
+            .name("signBoard-waypoints-amount")
+            .description("The amount of signs to trigger adding a waypoint.")
+            .range(1, 1200).sliderRange(1, 120).defaultValue(3)
+            .visible(() -> StardustUtil.XAERO_AVAILABLE && signBoardWaypoints.get())
+            .build()
+    );
+
+    private final Setting<Boolean> signBoardAutoLog = signBoardGroup.add(
+        new BoolSetting.Builder()
+            .name("signBoard-autoDisconnect")
             .description("Disconnect from the server when you render a cluster of signs.")
             .defaultValue(false)
             .build()
     );
 
-    private final Setting<Boolean> forceKick = autoLogGroup.add(
+    private final Setting<Boolean> forceKick = signBoardGroup.add(
         new BoolSetting.Builder()
             .name("force-kick")
             .description("Forces the server to kick you by sending an illegal packet.")
@@ -260,9 +302,9 @@ public class ChatSigns extends Module {
             .build()
     );
 
-    private final Setting<Integer> signBoardAutoLogAmount = autoLogGroup.add(
+    private final Setting<Integer> signBoardAutoLogAmount = signBoardGroup.add(
         new IntSetting.Builder()
-            .name("signBoard-autoLog-amount")
+            .name("signBoard-autoLog-threshold")
             .description("The amount of signs to trigger a disconnect.")
             .range(1, 1200).sliderRange(1, 120).defaultValue(5)
             .build()
@@ -314,8 +356,12 @@ public class ChatSigns extends Module {
     private int timer = 0;
     private int chatTimer = 0;
     private int clusterAmount = 0;
+    private int fullClusterAmount = 0;
+    private int emptyClusterAmount = 0;
     @Nullable private Text disconnectReason = null;
     @Nullable private BlockPos lastFocusedSign = null;
+    @Nullable private BlockPos lastFullClusterPos = null;
+    @Nullable private BlockPos lastEmptyClusterPos = null;
     private final HashSet<BlockPos> posSet = new HashSet<>();
     private final HashSet<BlockPos> oldSet = new HashSet<>();
     private final ArrayList<String> blacklisted = new ArrayList<>();
@@ -536,12 +582,10 @@ public class ChatSigns extends Module {
         signs.forEach(sign -> {
             ++clusterAmount;
             String textOnSign = Arrays.stream(sign.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" ")).trim();
-            if (signMessages.containsKey(textOnSign) && ignoreDuplicates.get()) return;
-
-            if (signBlacklist.get() && !blacklisted.isEmpty()) {
-                if (caseSensitive.get()) {
-                    if (blacklisted.stream().anyMatch(line -> textOnSign.contains(line.trim()))) return;
-                } else if (blacklisted.stream().anyMatch(line -> textOnSign.toLowerCase().contains(line.trim().toLowerCase()))) return;
+            if (signMessages.containsKey(textOnSign) && ignoreDuplicates.get()) {
+                ++fullClusterAmount;
+                lastFullClusterPos = sign.getPos();
+                return;
             }
 
             if (chatMode.get() == ChatMode.ESP && posSet.contains(sign.getPos())) return;
@@ -554,7 +598,32 @@ public class ChatSigns extends Module {
             String msg = formatSignText(sign, chunk);
 
             posSet.add(sign.getPos());
-            if (msg.isBlank()) return;
+            if (msg.isBlank()) {
+                ++emptyClusterAmount;
+                lastEmptyClusterPos = sign.getPos();
+                return;
+            }
+
+            if (signBlacklist.get() && !blacklisted.isEmpty()) {
+                if (caseSensitive.get()) {
+                    if (blacklisted.stream().anyMatch(line -> textOnSign.contains(line.trim()))) {
+                        if (waypointsIgnoreBlacklist.get()) {
+                            ++fullClusterAmount;
+                            lastFullClusterPos = sign.getPos();
+                        }
+                        return;
+                    }
+                } else if (blacklisted.stream().anyMatch(line -> textOnSign.toLowerCase().contains(line.trim().toLowerCase()))) {
+                    if (waypointsIgnoreBlacklist.get()) {
+                        ++fullClusterAmount;
+                        lastFullClusterPos = sign.getPos();
+                    }
+                    return;
+                }
+            }
+
+            ++fullClusterAmount;
+            lastFullClusterPos = sign.getPos();
             Style clickESP = Style.EMPTY.withClickEvent(
                 new ClickEvent(
                     ClickEvent.Action.RUN_COMMAND,
@@ -587,7 +656,7 @@ public class ChatSigns extends Module {
         try(Stream<String> lineStream = Files.lines(blackListFile.toPath())) {
             blacklisted.addAll(lineStream.toList());
         }catch (Exception err) {
-            Stardust.LOG.error("[Stardust] Failed to read from "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err);
+            Stardust.LOG.error("[Stardust] Failed to read from {}! - Why:\n{}", blackListFile.getAbsolutePath(), err);
         }
     }
 
@@ -645,7 +714,7 @@ public class ChatSigns extends Module {
                 }
             } else return Vec3d.ofCenter(pos);
         } catch (Exception err) {
-            Stardust.LOG.error("Failed to get tracer offset. Why: \n"+err);
+            Stardust.LOG.error("Failed to get tracer offset. Why: \n{}", err.toString());
             return Vec3d.ofCenter(pos);
         }
 
@@ -689,6 +758,8 @@ public class ChatSigns extends Module {
         timer = 0;
         chatTimer = 0;
         clusterAmount = 0;
+        fullClusterAmount = 0;
+        emptyClusterAmount = 0;
         posSet.clear();
         oldSet.clear();
         jobQueue.clear();
@@ -699,6 +770,8 @@ public class ChatSigns extends Module {
         lastFocusedSign = null;
         disconnectReason = null;
         signsToHighlight.clear();
+        lastFullClusterPos = null;
+        lastEmptyClusterPos = null;
     }
 
     @EventHandler
@@ -727,6 +800,24 @@ public class ChatSigns extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Pre event) {
+        if (StardustUtil.XAERO_AVAILABLE && signBoardWaypoints.get()) {
+            if (!waypointsIgnoreEmpty.get() && emptyClusterAmount >= signBoardWaypointsAmount.get() && lastEmptyClusterPos != null) {
+                MapUtil.addWaypoint(
+                    lastEmptyClusterPos,
+                    "ChatSigns: Cluster of " + emptyClusterAmount + " Empty Signs (Likely Farm)", "⛨",
+                    MapUtil.Purpose.Normal, MapUtil.WpColor.Random, temporaryWaypoints.get()
+                );
+                emptyClusterAmount = 0;
+            }
+            if (fullClusterAmount >= signBoardWaypointsAmount.get() && lastFullClusterPos != null) {
+                MapUtil.addWaypoint(
+                    lastFullClusterPos,
+                    "ChatSigns: Cluster of " + fullClusterAmount + " Signs", "✉",
+                    MapUtil.Purpose.Normal, MapUtil.WpColor.Random, temporaryWaypoints.get()
+                );
+                fullClusterAmount = 0;
+            }
+        }
         if (signBoardAutoLog.get() && clusterAmount >= signBoardAutoLogAmount.get()) {
             Text reason = Text.literal("§8[§a§oChatSigns§8] §7Disconnected you because you rendered a cluster of §a§o"+ clusterAmount + " §7signs§a!");
             if (forceKick.get()) {
@@ -736,6 +827,7 @@ public class ChatSigns extends Module {
                 StardustUtil.disableAutoReconnect();
                 mc.getNetworkHandler().onDisconnect(new DisconnectS2CPacket(reason));
             }
+            toggle();
             return;
         }
 
@@ -749,6 +841,8 @@ public class ChatSigns extends Module {
         if (timer % 5 == 0) {
             timer = 0;
             clusterAmount = 0;
+            fullClusterAmount = 0;
+            emptyClusterAmount = 0;
             BlockPos targetedSign = getTargetedSign();
             if (targetedSign == null) {
                 lastFocusedSign = null;
