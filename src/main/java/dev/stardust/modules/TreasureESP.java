@@ -4,6 +4,7 @@ import java.util.*;
 import dev.stardust.Stardust;
 import net.minecraft.block.*;
 import net.minecraft.text.Text;
+import dev.stardust.util.MapUtil;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.HitResult;
@@ -28,7 +29,7 @@ import meteordevelopment.meteorclient.systems.modules.render.blockesp.ESPBlockDa
  **/
 public class TreasureESP extends Module {
     public TreasureESP() {
-        super(Stardust.CATEGORY, "TreasureESP", "Notifies you when a treasure chest is nearby.");
+        super(Stardust.CATEGORY, "TreasureESP", "Notifies you when a buried treasure chest is nearby.");
     }
 
     private final SettingGroup sgNotifications = settings.createGroup("Notifications");
@@ -47,6 +48,24 @@ public class TreasureESP extends Module {
             .name("coords")
             .description("Display chest coordinates in chat notifications.")
             .defaultValue(false)
+            .visible(chatSetting::get)
+            .build()
+    );
+
+    private final Setting<Boolean> waypoints = sgNotifications.add(
+        new BoolSetting.Builder()
+            .name("add-waypoints")
+            .description("Adds waypoints to your Xaeros map for treasure chests.")
+            .defaultValue(false)
+            .visible(() -> StardustUtil.XAERO_AVAILABLE)
+            .build()
+    );
+    private final Setting<Boolean> tempWaypoints = sgNotifications.add(
+        new BoolSetting.Builder()
+            .name("temporary-waypoints")
+            .description("Temporary waypoints are removed when you disconnect from the server, or close the game.")
+            .defaultValue(true)
+            .visible(() -> StardustUtil.XAERO_AVAILABLE && waypoints.get())
             .build()
     );
 
@@ -134,6 +153,12 @@ public class TreasureESP extends Module {
 
                             // Buried treasure chests always generate at local chunk coordinates of x=9,z=9
                             if (localX == 9 && localZ == 9 && isBuriedNaturally(blockPos)) {
+                                if (StardustUtil.XAERO_AVAILABLE && waypoints.get()) {
+                                    MapUtil.addWaypoint(
+                                        blockPos, "TreasureESP - Buried Treasure", "❌",
+                                        MapUtil.Purpose.Normal, MapUtil.WpColor.Dark_Red, tempWaypoints.get()
+                                    );
+                                }
                                 if (soundSetting.get()) {
                                     mc.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE, volumeSetting.get().floatValue(), 1f);
                                 }
@@ -173,6 +198,12 @@ public class TreasureESP extends Module {
 
                 // Buried treasure chests always generate at local chunk coordinates of x=9,z=9
                 if (localX == 9 && localZ == 9 && isBuriedNaturally(pos)) {
+                    if (StardustUtil.XAERO_AVAILABLE && waypoints.get()) {
+                        MapUtil.addWaypoint(
+                            pos, "TreasureESP - Buried Treasure", "❌",
+                            MapUtil.Purpose.Normal, MapUtil.WpColor.Dark_Red, tempWaypoints.get()
+                        );
+                    }
                     if (soundSetting.get()) {
                         mc.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE, volumeSetting.get().floatValue(), 1f);
                     }
@@ -234,6 +265,14 @@ public class TreasureESP extends Module {
         if (notified.contains(event.result.getBlockPos())) {
             if (event.result.getType() == HitResult.Type.BLOCK && mc.world.getBlockState(event.result.getBlockPos()).getBlock() instanceof ChestBlock) {
                 looted.add(event.result.getBlockPos());
+                if (StardustUtil.XAERO_AVAILABLE && waypoints.get()) {
+                    BlockPos wpPos = event.result.getBlockPos();
+                    MapUtil.removeWaypoints(
+                        "TreasureESP",
+                        pos -> pos.getX() == wpPos.getX() && pos.getY() == wpPos.getY() && pos.getZ() == wpPos.getZ(),
+                        Optional.empty()
+                    );
+                }
             }
         }
     }
