@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import net.minecraft.component.DataComponentTypes;
 import org.spongepowered.asm.mixin.injection.Inject;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.BoolSetting;
@@ -56,8 +57,8 @@ public class BetterTooltipsMixin extends Module {
     private void appendDurabilityTooltip(ItemStackTooltipEvent event, CallbackInfo ci) {
         if (!event.itemStack().isDamageable()) return;
 
-        int damage = event.itemStack().getDamage();
         int maxDamage = event.itemStack().getMaxDamage();
+        int damage = event.itemStack().getOrDefault(DataComponentTypes.DAMAGE, event.itemStack().getDamage());
 
         if (rawDamageTag != null && rawDamageTag.get()) {
             event.appendEnd(Text.literal("§7Damage§3: §a§o" + damage + " §8[§7Max§3: §a§o" + maxDamage + "§8]"));
