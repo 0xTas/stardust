@@ -53,10 +53,10 @@ public class LoreLocator extends Module {
             .build()
     );
 
-    private final Setting<Boolean> zeroDurability = sgRares.add(
+    private final Setting<Boolean> negativeDurability = sgRares.add(
         new BoolSetting.Builder()
-            .name("zero-durability")
-            .description("Highlight items with 0 durability (all negative durability items became 0 durability items in 1.21.)")
+            .name("negative-durability")
+            .description("Highlight items with negative true durability (all negative durability items show in-game as 0 durability items in 1.21.)")
             .defaultValue(true)
             .build()
     );
@@ -230,8 +230,8 @@ public class LoreLocator extends Module {
         if (petrifiedSlabs.get() && stack.getItem() == Items.PETRIFIED_OAK_SLAB) return true;
         if (renamedItems.get() && stack.contains(DataComponentTypes.CUSTOM_NAME)) return true;
 
-        if (zeroDurability.get() && stack.isDamageable()) {
-            if (stack.getDamage() == stack.getMaxDamage()) return true;
+        if (negativeDurability.get() && stack.isDamageable()) {
+            if (stack.getOrDefault(DataComponentTypes.DAMAGE, stack.getDamage()) >= stack.getMaxDamage()) return true;
         }
 
         if (illegalEnchants.get() && (stack.getItem() == Items.ENCHANTED_BOOK || stack.hasEnchantments())) {
