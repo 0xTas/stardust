@@ -15,8 +15,8 @@ import meteordevelopment.meteorclient.events.packets.PacketEvent;
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
-public class PacketSpamManager {
-    public PacketSpamManager() {
+public class PacketManager {
+    public PacketManager() {
         MeteorClient.EVENT_BUS.subscribe(this);
     }
 

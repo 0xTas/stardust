@@ -7,8 +7,8 @@ import dev.stardust.util.MsgUtil;
 import com.mojang.logging.LogUtils;
 import dev.stardust.util.StardustUtil;
 import dev.stardust.config.StardustConfig;
+import dev.stardust.managers.PacketManager;
 import net.fabricmc.loader.api.FabricLoader;
-import dev.stardust.managers.PacketSpamManager;
 import meteordevelopment.meteorclient.MeteorClient;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import meteordevelopment.meteorclient.addons.GithubRepo;
@@ -24,7 +24,7 @@ public class Stardust extends MeteorAddon {
     public static final Logger LOG = LogUtils.getLogger();
     public static final Category CATEGORY = new Category("Stardust", StardustUtil.chooseMenuIcon());
 
-    private PacketSpamManager packetSpamManager;
+    private PacketManager packetManager;
 
     @Override
     public void onInitialize() {
@@ -60,7 +60,7 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new AutoDyeShulkers());
         Modules.get().add(new AutoDrawDistance());
 
-        packetSpamManager = new PacketSpamManager();
+        packetManager = new PacketManager();
 
         StardustConfig.initialize();
         MsgUtil.initModulePrefixes();
