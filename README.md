@@ -65,6 +65,7 @@ OldSigns functionality can be accessed in the ChatSigns module settings.
 | **Packet-spam Anti-kick**     | *Config setting to prevent you from getting kicked for sending too many invalid inventory interactions to the server.* As of June 2025, 2b2t kicks you for sending just a small handful of invalid QUICK_MOVE packets too quickly. This feature inspects these packets and cancels them if they are invalid, preventing some kicks. |
 | **ExpThrower Level Cap**      | *Adds settings to Meteor's built-in ExpThrower module to automatically stop throwing when a chosen experience level is reached.*                                                                                                                                                                                                    |
 | **BetterTooltips Durability** | *Adds raw damage & true durability settings to Meteor's BetterTooltips module.*                                                                                                                                                                                                                                                     |
+| **Custom GUI Theme**          | *Adds a custom Stardust theme option to your Meteor GUI config.* Credit to [crosby](https://github.com/RacoonDog) for the original implementation of recolored themes. I may add more themes in the future if I feel like it.                                                                                                       |
 
 <br>
 
