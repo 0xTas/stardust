@@ -18,7 +18,8 @@
     ]
   },
   "mixins": [
-    "stardust.mixins.json"
+    "stardust.mixins.json",
+    "stardust-meteor.mixins.json"
   ],
   "custom": {
     "meteor-client:color": "147,233,190",
