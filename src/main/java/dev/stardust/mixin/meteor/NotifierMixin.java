@@ -104,7 +104,7 @@ public abstract class NotifierMixin extends Module {
                 messageQueue.addLast(Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §a" + format + name + " §7" + format + greeting + "§a" + format + "."));
             } else {
                 String greeting = prefixGreetings[ThreadLocalRandom.current().nextInt(prefixGreetings.length)];
-                messageQueue.addLast(Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7" + format + greeting + ", §a" + format + name));
+                messageQueue.addLast(Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7" + format + greeting + ", §a" + format + name + "§7" + format + "."));
             }
         }
     }
@@ -126,7 +126,7 @@ public abstract class NotifierMixin extends Module {
                 messageQueue.addLast(Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §c" + format + name + " §7" + format + farewell + "§c" + format + "."));
             } else {
                 String farewell = prefixFarewells[ThreadLocalRandom.current().nextInt(prefixFarewells.length)];
-                messageQueue.addLast(Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7" + format + farewell + ", §c" + format + name));
+                messageQueue.addLast(Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7" + format + farewell + ", §c" + format + name + "§7" + format + "."));
             }
         }
     }
