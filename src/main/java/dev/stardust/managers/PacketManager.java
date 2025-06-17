@@ -1,5 +1,6 @@
 package dev.stardust.managers;
 
+import dev.stardust.Stardust;
 import net.minecraft.item.ItemStack;
 import dev.stardust.config.StardustConfig;
 import net.minecraft.screen.ScreenHandler;
@@ -7,10 +8,12 @@ import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.orbit.EventPriority;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
+import meteordevelopment.meteorclient.utils.Utils;
 import meteordevelopment.meteorclient.MeteorClient;
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
+import net.minecraft.network.packet.s2c.play.OverlayMessageS2CPacket;
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -18,6 +21,22 @@ import meteordevelopment.meteorclient.events.packets.PacketEvent;
 public class PacketManager {
     public PacketManager() {
         MeteorClient.EVENT_BUS.subscribe(this);
+    }
+
+    /**
+     * 2b2t now sends periodic "2b2t.org" overlay messages throughout your play session.
+     * I have seen several people complaining about this, so here is a way to disable them.
+     **/
+    @EventHandler(priority = EventPriority.HIGHEST)
+    private void onReceivePacket(PacketEvent.Receive event) {
+        if (!Utils.canUpdate()) return;
+        if (!StardustConfig.ignore2b2tOverlayMessages.get()) return;
+        if (!(event.packet instanceof OverlayMessageS2CPacket packet)) return;
+
+        if (packet.text().getString().equals("2b2t.org")) {
+            event.cancel();
+            Stardust.LOG.info("[Stardust] Cancelling 2b2t.org overlay packet..!");
+        }
     }
 
     /**

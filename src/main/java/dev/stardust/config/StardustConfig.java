@@ -14,6 +14,7 @@ public class StardustConfig {
     public static Setting<Boolean> illegalDisconnectButtonSetting = new BoolSetting.Builder().build();
     public static Setting<Boolean> disableMeteorClientTelemetry = new BoolSetting.Builder().build();
     public static Setting<Boolean> antiInventoryPacketKick = new BoolSetting.Builder().build();
+    public static Setting<Boolean> ignore2b2tOverlayMessages = new BoolSetting.Builder().build();
     public static Setting<StardustUtil.IllegalDisconnectMethod> illegalDisconnectMethodSetting = new EnumSetting.Builder<StardustUtil.IllegalDisconnectMethod>().defaultValue(StardustUtil.IllegalDisconnectMethod.Slot).build();
 
     public static void initialize() {
@@ -66,11 +67,18 @@ public class StardustConfig {
                 .defaultValue(false)
                 .build()
         );
-        // See PacketSpamManager.java
+        // See PacketManager.java
         antiInventoryPacketKick = sgStardust.add(
             new BoolSetting.Builder()
                 .name("anti-packet-spam-kick")
                 .description("Attempts to prevent you from getting kicked for sending too many invalid inventory packets.")
+                .defaultValue(false)
+                .build()
+        );
+        ignore2b2tOverlayMessages = sgStardust.add(
+            new BoolSetting.Builder()
+                .name("ignore-2b2t-overlay")
+                .description("Ignore the periodic \"2b2t.org\" overlay messages that appear on 2b2t.")
                 .defaultValue(false)
                 .build()
         );
