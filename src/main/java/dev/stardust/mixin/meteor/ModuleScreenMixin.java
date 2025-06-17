@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import meteordevelopment.meteorclient.utils.Utils;
+import meteordevelopment.meteorclient.MeteorClient;
 import meteordevelopment.meteorclient.gui.GuiTheme;
 import org.spongepowered.asm.mixin.injection.Inject;
 import meteordevelopment.meteorclient.gui.utils.Cell;
@@ -57,6 +58,7 @@ public abstract class ModuleScreenMixin extends WindowScreen {
 
     @Inject(method = "initWidgets", at = @At("HEAD"), cancellable = true)
     private void maybeHijackInitWidgets(CallbackInfo ci) {
+        if (this.module.addon != null && this.module.addon != MeteorClient.ADDON) return;
         if (Arrays.stream(mods).anyMatch(mod -> this.module.name.equalsIgnoreCase(mod))) {
             ci.cancel();
 
