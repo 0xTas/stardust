@@ -22,6 +22,7 @@
     "accessor.StyleAccessor",
     "SplashTextRendererMixin",
     "ClientPlayerEntityMixin",
+    "meteor.ModuleScreenMixin",
     "ElytraSoundInstanceMixin",
     "meteor.ModulesScreenMixin",
     "AbstractSignEditScreenMixin",
