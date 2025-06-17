@@ -17,6 +17,7 @@
     "BookEditScreenMixin",
     "MinecraftClientMixin",
     "NarratorManagerMixin",
+    "InventoryScreenMixin",
     "WeightedSoundSetMixin",
     "accessor.StyleAccessor",
     "SplashTextRendererMixin",

@@ -7,10 +7,11 @@ It contains original modules to enhance your experience on Old Server, with a fo
 ### Feature Set
 #### Commands
 
-| Command                                                  | Description                                                                                                                                                             |
-|----------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Stats2b2t, LastSeen2b2t, FirstSeen2b2t, Playtime2b2t** | *Self explanatory commands. Use your Meteor command prefix.* Credit to [rfresh](https://github.com/rfresh2) for the current best [2b2t stats api](https://api.2b2t.vc). |
-| **Panorama**                                             | *Takes a panorama screenshot and automatically assembles it into a resource pack for the main menu screen.* Usage: `.panorama [name]`                                   |
+| Command                                                  | Description                                                                                                                                                                                                    |
+|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Stats2b2t, LastSeen2b2t, FirstSeen2b2t, Playtime2b2t** | *Self explanatory commands. Use your Meteor command prefix.* Credit to [rfresh](https://github.com/rfresh2) for the current best [2b2t stats api](https://api.2b2t.vc).                                        |
+| **Panorama**                                             | *Takes a panorama screenshot and automatically assembles it into a resource pack for the main menu screen.* Usage: `.panorama [name]`                                                                          |
+| **Loadout**                                              | *Save & load inventory configurations.* The current state of your inventory is saved when using `.loadout save name`, and your inventory will be sorted to match if you use `.loadout load name` at any point. |
 
 <br>
 
@@ -28,6 +29,7 @@ It contains original modules to enhance your experience on Old Server, with a fo
 | **AutoSmith**        | *Automatically upgrades gear or trims armor sets when interacting with smithing tables.*                                                                                                                                                              |
 | **AntiToS**          | *Censors player-generated text on render, like signs, books, chat, and more, according to a customizable content blacklist.*                                                                                                                          |
 | **Archaeology**      | *ESP / Notifications for archaeological dig sites, & automatic brushing of targeted suspicious blocks.* Also prevents accidental breakage of suspicious blocks.                                                                                       |
+| **Loadouts**         | *Save & load inventory configurations.* Adds quicksave & load buttons to your inventory screen, and handles sorting your inventory when a config is loaded with the Loadout command.                                                                  |
 | **LoreLocator**      | *Slot highlighter for rare, unique, and anomalous items.* Capable of highlighting renamed items, items with illegal enchants, zero durability items, and more.                                                                                        |
 | **AxolotlTools**     | *Variant ESP, auto-collector & auto-breeder for axolotls.* Can also catch buckets of tropical fish, with or without a farm setup. I used this to get blue axolotls on 2b2t because interacting with them normally pisses me off.                      |
 | **AutoDrawDistance** | *Automatically adjusts your render distance to maintain an FPS target.* Some biomes/areas can drop my fps by half, so I occasionally find this useful.                                                                                                |

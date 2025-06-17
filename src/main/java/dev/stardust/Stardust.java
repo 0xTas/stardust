@@ -28,6 +28,7 @@ public class Stardust extends MeteorAddon {
 
     @Override
     public void onInitialize() {
+        Commands.add(new Loadout());
         Commands.add(new Panorama());
         Commands.add(new Stats2b2t());
         Commands.add(new Playtime2b2t());
@@ -38,6 +39,7 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new WaxAura());
         Modules.get().add(new AntiToS());
         Modules.get().add(new Updraft());
+        Modules.get().add(new Loadouts());
         Modules.get().add(new AutoDoors());
         Modules.get().add(new AutoSmith());
         Modules.get().add(new BookTools());
