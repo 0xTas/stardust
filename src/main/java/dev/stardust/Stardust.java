@@ -9,7 +9,9 @@ import dev.stardust.util.StardustUtil;
 import dev.stardust.config.StardustConfig;
 import dev.stardust.managers.PacketManager;
 import net.fabricmc.loader.api.FabricLoader;
+import dev.stardust.gui.themes.StardustTheme;
 import meteordevelopment.meteorclient.MeteorClient;
+import meteordevelopment.meteorclient.gui.GuiThemes;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.commands.Commands;
@@ -59,6 +61,8 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new SignHistorian());
         Modules.get().add(new AutoDyeShulkers());
         Modules.get().add(new AutoDrawDistance());
+
+        GuiThemes.add(StardustTheme.INSTANCE);
 
         packetManager = new PacketManager();
 
