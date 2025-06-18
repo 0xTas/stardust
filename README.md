@@ -93,3 +93,4 @@ OldSigns functionality can be accessed in the ChatSigns module settings.
 ### Credits
 - [**Meteor Development**](https://github.com/MeteorDevelopment) *for [Meteor Client](https://meteorclient.com).*
 - [**rfresh**](https://github.com/rfresh2) *for the [2b2t statistics api](https://api.2b2t.vc).*
+- [**crosby**](https://github.com/RacoonDog) *for the [custom GUI themes impl](https://github.com/RacoonDog/Tokyo-Client/blob/main/src/main/java/io/github/racoondog/tokyo/utils/RecolorGuiTheme.java).*
