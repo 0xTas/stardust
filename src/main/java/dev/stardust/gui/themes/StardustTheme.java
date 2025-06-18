@@ -107,4 +107,44 @@ public class StardustTheme extends MeteorGuiTheme implements RecolorGuiTheme {
     public SettingColor getSliderRight() {
         return new SettingColor(49, 37, 55, 200);
     }
+
+    @Override
+    public SettingColor getStarscriptText() {
+        return new SettingColor(147, 129, 255);
+    }
+
+    @Override
+    public SettingColor getStarscriptBraces() {
+        return new SettingColor(39, 171, 214);
+    }
+
+    @Override
+    public SettingColor getStarscriptParenthesis() {
+        return new SettingColor(210, 149, 247);
+    }
+
+    @Override
+    public SettingColor getStarscriptDots() {
+        return new SettingColor(246, 237, 153);
+    }
+
+    @Override
+    public SettingColor getStarscriptCommas() {
+        return new SettingColor(246, 237, 153);
+    }
+
+    @Override
+    public SettingColor getStarscriptStrings() {
+        return new SettingColor(141, 237, 179);
+    }
+
+    @Override
+    public SettingColor getStarscriptNumbers() {
+        return new SettingColor(240, 128, 128);
+    }
+
+    @Override
+    public SettingColor getStarscriptKeywords() {
+        return new SettingColor(89, 174, 245);
+    }
 }
