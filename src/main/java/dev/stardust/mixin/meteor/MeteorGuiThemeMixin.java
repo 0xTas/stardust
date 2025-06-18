@@ -143,7 +143,7 @@ public abstract class MeteorGuiThemeMixin {
     }
 
     // Outline
-    @ModifyArgs(method = "<init>", slice = @Slice(from = @At(value = "CONSTANT", args = "stringValue=outline")), at = @At(value = "INVOKE", target = "Lmeteordevelopment/meteorclient/gui/themes/meteor/MeteorGuiTheme$ThreeStateColorSetting;<init>(Lmeteordevelopment/meteorclient/gui/themes/meteor/MeteorGuiTheme;Lmeteordevelopment/meteorclient/settings/SettingGroup;Ljava/lang/String;Lmeteordevelopment/meteorclient/utils/render/color/SettingColor;Lmeteordevelopment/meteorclient/utils/render/color/SettingColor;Lmeteordevelopment/meteorclient/utils/render/color/SettingColor;)V", ordinal = 1))
+    @ModifyArgs(method = "<init>", slice = @Slice(from = @At(value = "CONSTANT", args = "stringValue=outline")), at = @At(value = "INVOKE", target = "Lmeteordevelopment/meteorclient/gui/themes/meteor/MeteorGuiTheme$ThreeStateColorSetting;<init>(Lmeteordevelopment/meteorclient/gui/themes/meteor/MeteorGuiTheme;Lmeteordevelopment/meteorclient/settings/SettingGroup;Ljava/lang/String;Lmeteordevelopment/meteorclient/utils/render/color/SettingColor;Lmeteordevelopment/meteorclient/utils/render/color/SettingColor;Lmeteordevelopment/meteorclient/utils/render/color/SettingColor;)V", ordinal = 0))
     private void outlineColor(Args args) {
         if (args.get(0) instanceof RecolorGuiTheme RecolorGuiTheme) {
             RecolorGuiTheme.TriColorSetting triColorSetting = RecolorGuiTheme.getOutlineColor();
