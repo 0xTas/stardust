@@ -8,6 +8,7 @@ import com.mojang.logging.LogUtils;
 import dev.stardust.util.StardustUtil;
 import dev.stardust.gui.themes.SnowyTheme;
 import dev.stardust.config.StardustConfig;
+import dev.stardust.gui.themes.LambdaTheme;
 import dev.stardust.managers.PacketManager;
 import net.fabricmc.loader.api.FabricLoader;
 import dev.stardust.gui.themes.StardustTheme;
@@ -65,6 +66,7 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new AutoDrawDistance());
 
         GuiThemes.add(SnowyTheme.INSTANCE);
+        GuiThemes.add(LambdaTheme.INSTANCE);
         GuiThemes.add(StardustTheme.INSTANCE);
         GuiThemes.add(MonochromeTheme.INSTANCE);
 
