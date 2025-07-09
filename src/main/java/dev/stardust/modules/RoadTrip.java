@@ -144,7 +144,6 @@ public class RoadTrip extends Module {
             .name("timer-autoLog-seconds")
             .description("Logs you out x seconds after enabling the module, or the Timer AutoLog setting.")
             .min(0).noSlider().defaultValue(3600)
-            .visible(timeoutAutoLog::get)
             .onChanged(it -> {
                 if (timeoutAutoLog.get()) this.setLogOutTimer(it);
             })
