@@ -50,6 +50,7 @@
     "accessor.ClientConnectionAccessor",
     "accessor.AnvilScreenHandlerAccessor",
     "accessor.DisconnectS2CPacketAccessor",
-    "accessor.PlayerMoveC2SPacketAccessor"
+    "accessor.PlayerMoveC2SPacketAccessor",
+    "accessor.GrindstoneScreenHandlerAccessor"
   ]
 }
