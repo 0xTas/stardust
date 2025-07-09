@@ -64,6 +64,7 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new AutoDyeShulkers());
         Modules.get().add(new AutoDrawDistance());
 
+        GuiThemes.add(DarkTheme.INSTANCE);
         GuiThemes.add(SnowyTheme.INSTANCE);
         GuiThemes.add(LambdaTheme.INSTANCE);
         GuiThemes.add(StardustTheme.INSTANCE);
