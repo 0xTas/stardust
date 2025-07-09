@@ -1,18 +1,15 @@
 package dev.stardust;
 
+import dev.stardust.gui.themes.*;
 import org.slf4j.Logger;
 import dev.stardust.modules.*;
 import dev.stardust.commands.*;
 import dev.stardust.util.MsgUtil;
 import com.mojang.logging.LogUtils;
 import dev.stardust.util.StardustUtil;
-import dev.stardust.gui.themes.SnowyTheme;
 import dev.stardust.config.StardustConfig;
-import dev.stardust.gui.themes.LambdaTheme;
 import dev.stardust.managers.PacketManager;
 import net.fabricmc.loader.api.FabricLoader;
-import dev.stardust.gui.themes.StardustTheme;
-import dev.stardust.gui.themes.MonochromeTheme;
 import meteordevelopment.meteorclient.MeteorClient;
 import meteordevelopment.meteorclient.gui.GuiThemes;
 import net.fabricmc.loader.api.metadata.CustomValue;
@@ -68,6 +65,7 @@ public class Stardust extends MeteorAddon {
         GuiThemes.add(SnowyTheme.INSTANCE);
         GuiThemes.add(LambdaTheme.INSTANCE);
         GuiThemes.add(StardustTheme.INSTANCE);
+        GuiThemes.add(MidnightTheme.INSTANCE);
         GuiThemes.add(MonochromeTheme.INSTANCE);
 
         packetManager = new PacketManager();
