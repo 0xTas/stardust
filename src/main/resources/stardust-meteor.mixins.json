@@ -21,6 +21,7 @@
     "OnlinePlayersMixin",
     "BetterTooltipsMixin",
     "MeteorGuiThemeMixin",
+    "PacketCancellerMixin",
     "accessor.CategoryAccessor"
   ]
 }
