@@ -1,9 +1,9 @@
 package dev.stardust;
 
-import dev.stardust.gui.themes.*;
 import org.slf4j.Logger;
 import dev.stardust.modules.*;
 import dev.stardust.commands.*;
+import dev.stardust.gui.themes.*;
 import dev.stardust.util.MsgUtil;
 import com.mojang.logging.LogUtils;
 import dev.stardust.util.StardustUtil;
@@ -42,6 +42,7 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new AntiToS());
         Modules.get().add(new Updraft());
         Modules.get().add(new Grinder());
+        Modules.get().add(new RoadTrip());
         Modules.get().add(new Loadouts());
         Modules.get().add(new AutoDoors());
         Modules.get().add(new AutoSmith());

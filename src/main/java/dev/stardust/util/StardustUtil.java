@@ -22,9 +22,11 @@ import io.netty.util.internal.ThreadLocalRandom;
 import meteordevelopment.meteorclient.utils.Utils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ProfileComponent;
+import meteordevelopment.meteorclient.utils.world.Dimension;
 import dev.stardust.mixin.accessor.ClientConnectionAccessor;
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 import meteordevelopment.meteorclient.systems.modules.Modules;
+import meteordevelopment.meteorclient.utils.player.PlayerUtils;
 import net.minecraft.network.encryption.NetworkEncryptionUtils;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.network.packet.c2s.common.ClientOptionsC2SPacket;
@@ -313,6 +315,13 @@ public class StardustUtil {
             Stardust.LOG.error("Failed to open "+ file.getAbsolutePath() +"! - Why:\n"+err);
             if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open "+file.getName()+"§7."), false);
         }
+    }
+
+    public static boolean isIn2b2tQueue() {
+        if (mc.player == null || mc.getNetworkHandler() == null) return false;
+
+        return PlayerUtils.getDimension().equals(Dimension.End)
+            && mc.player.getAbilities().allowFlying && mc.getNetworkHandler().getPlayerList().size() <= 1;
     }
 
     public enum IllegalDisconnectMethod {
