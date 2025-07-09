@@ -53,7 +53,8 @@ public abstract class ModuleScreenMixin extends WindowScreen {
 
     @Unique
     private final String[] mods = {
-        "auto-mend", "auto-log", "better-tooltips", "exp-thrower", "freecam", "nametags", "no-render", "notifier"
+        "auto-mend", "auto-log", "better-tooltips", "exp-thrower",
+        "freecam", "nametags", "no-render", "notifier", "packet-canceller"
     };
 
     @Inject(method = "initWidgets", at = @At("HEAD"), cancellable = true)
