@@ -9,6 +9,7 @@ import dev.stardust.Stardust;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.util.Hand;
+import dev.stardust.util.MsgUtil;
 import net.minecraft.util.math.Box;
 import java.util.stream.Collectors;
 import net.minecraft.entity.Entity;
@@ -298,32 +299,26 @@ public class PagePirate extends Module {
                 switch (piratedFrom) {
                     case "on ground" -> {
                         if (displayBooksOnGround.get()) {
-                            mc.player.sendMessage(
-                                Text.literal(
-                                    "§8[§a§oPagePirate§8] §7Author: "
-                                        +StardustUtil.rCC()+"§o"+author+" §7Title: "
-                                        +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
-                                ), false
+                            MsgUtil.sendModuleMsg(
+                                "Author: " + StardustUtil.rCC() + "§o" + author
+                                + " §7Title: " + StardustUtil.rCC() + "§5§o" + title
+                                + " §7Pages: \n§o" + pageText.replace("~pgprte~newline~", "\n"), this.name
                             );
                         }
                     }
                     case "item frame" -> {
                         if (displayBooksInItemFrames.get()) {
-                            mc.player.sendMessage(
-                                Text.literal(
-                                    "§8[§a§oPagePirate§8] §7Author: "
-                                        +StardustUtil.rCC()+"§o"+author+" §7Title: "
-                                        +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
-                                ), false
+                            MsgUtil.sendModuleMsg(
+                                "Author: " + StardustUtil.rCC() + "§o" + author
+                                    + " §7Title: " + StardustUtil.rCC() + "§5§o" + title
+                                    + " §7Pages: \n§o" + pageText.replace("~pgprte~newline~", "\n"), this.name
                             );
                         }
                     }
-                    default -> mc.player.sendMessage(
-                        Text.literal(
-                            "§8[§a§oPagePirate§8] §7Author: "
-                                +StardustUtil.rCC()+"§o"+author+" §7Title: "
-                                +StardustUtil.rCC()+"§5§o"+title+" §7Pages: \n§o"+pageText.replace("~pgprte~newline~", "\n")
-                        ), false
+                    default -> MsgUtil.sendModuleMsg(
+                        "Author: " + StardustUtil.rCC() + "§o" + author
+                            + " §7Title: " + StardustUtil.rCC() + "§5§o" + title
+                            + " §7Pages: \n§o" + pageText.replace("~pgprte~newline~", "\n"), this.name
                     );
                 }
             }
@@ -366,19 +361,15 @@ public class PagePirate extends Module {
             switch (piratedFrom) {
                 case "on ground" -> {
                     if (displayBooksOnGround.get()) {
-                        mc.player.sendMessage(
-                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n")), false
-                        );
+                        MsgUtil.sendModuleMsg("Unsigned Contents from §a§o" + piratedFrom + "§7: \n§7§o" + pageText.replace("~pgprte~newline~", "\n"), this.name);
                     }
                 }
                 case "item frame" -> {
                     if (displayBooksInItemFrames.get()) {
-                        mc.player.sendMessage(
-                            Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n")), false
-                        );
+                        MsgUtil.sendModuleMsg("Unsigned Contents from §a§o" + piratedFrom + "§7: \n§7§o" + pageText.replace("~pgprte~newline~", "\n"), this.name);
                     }
                 }
-                default -> mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Unsigned Contents from §a§o"+ piratedFrom+"§7: \n§7§o"+pageText.replace("~pgprte~newline~", "\n")), false);
+                default -> MsgUtil.sendModuleMsg("Unsigned Contents from §a§o" + piratedFrom + "§7: \n§7§o" + pageText.replace("~pgprte~newline~", "\n"), this.name);
             }
         }
         if (localCopy.get()) {
@@ -407,7 +398,7 @@ public class PagePirate extends Module {
         if (filtered.isEmpty()) return;
 
         if (!equipBookAndQuill()) {
-            mc.player.sendMessage(Text.literal("§8[§4§oPagePirate§8] §7Failed to copy nearby book because you have no empty Book & Quills§4..!"), false);
+            MsgUtil.sendModuleMsg("Failed to copy nearby book because you have no empty Book & Quills§c..!", this.name);
             return;
         }
 
@@ -441,7 +432,7 @@ public class PagePirate extends Module {
 
         int slot = mc.player.getInventory().selectedSlot;
         boolean shouldSign = finalizeCopy.get() && metadata != null;
-        mc.player.sendMessage(Text.literal("§8[§a§oPagePirate§8] §7Successfully copied nearby book!"), false);
+        MsgUtil.sendModuleMsg("Successfully copied nearby book§a..!", this.name);
         piratedPages.addAll(filtered.stream().map(page -> page.replace("~pgprte~newline~", "\n")).toList());
         mc.getNetworkHandler().sendPacket(new BookUpdateC2SPacket(slot, piratedPages, shouldSign ? Optional.of(metadata.title().raw()) : Optional.empty()));
     }

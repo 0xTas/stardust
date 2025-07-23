@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import net.minecraft.text.Style;
+import dev.stardust.util.MsgUtil;
 import dev.stardust.util.LogUtil;
 import dev.stardust.util.MapUtil;
 import net.minecraft.world.World;
@@ -321,9 +322,9 @@ public class ChatSigns extends Module {
                     this.blacklisted.clear();
                     initBlacklistText();
                     if (mc.player != null) {
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."), false);
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."), false);
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Toggle the module after updating the blacklist's contents."), false);
+                        MsgUtil.sendMsg("Please write one blacklisted item for each line of the file.");
+                        MsgUtil.sendMsg("Spaces and other punctuation will be treated literally.");
+                        MsgUtil.sendMsg("Toggle the ChatSigns module after updating the file's contents.");
                     }
                 }
             })
@@ -675,7 +676,7 @@ public class ChatSigns extends Module {
 
     private void openBlacklistFile() {
         resetBlacklistFileSetting();
-        StardustUtil.openFile(mc, BLACKLIST_FILE);
+        StardustUtil.openFile(BLACKLIST_FILE);
     }
 
     private void resetBlacklistFileSetting() {

@@ -5,12 +5,10 @@ import java.util.UUID;
 import java.time.Instant;
 import java.util.Optional;
 import net.minecraft.util.Hand;
-import net.minecraft.text.Text;
 import net.minecraft.text.Style;
 import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.ClickEvent;
-import net.minecraft.text.MutableText;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.network.packet.Packet;
 import net.fabricmc.loader.api.FabricLoader;
@@ -280,14 +278,10 @@ public class StardustUtil {
             try {
                 if (file.createNewFile()) {
                     if (mc.player != null) {
-                        mc.player.sendMessage(
-                            Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created "+file.getName()+" in meteor-client folder."), false
-                        );
-                        Text msg = Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Click §2§lhere §r§7to open the file.");
+                        MsgUtil.sendMsg("Created " + file.getName() + " in your meteor-client folder.");
                         Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()));
 
-                        MutableText txt = msg.copyContentOnly().setStyle(style);
-                        mc.player.sendMessage(txt, false);
+                        MsgUtil.sendMsg("Click §2§lhere §r§7to open the file.", style);
                     }
                     return true;
                 }
@@ -299,7 +293,7 @@ public class StardustUtil {
         return false;
     }
 
-    public static void openFile(MinecraftClient mc, String fileName) {
+    public static void openFile(String fileName) {
         File file = FabricLoader.getInstance().getGameDir().resolve(fileName).toFile();
 
         try {
@@ -311,8 +305,8 @@ public class StardustUtil {
                 runtime.exec(new String[]{"xdg-open", file.getAbsolutePath()});
             }
         } catch (Exception err) {
+            MsgUtil.sendMsg("Failed to open " + file.getName() + "§c..!");
             LogUtil.error("Failed to open " + file.getAbsolutePath() + "! - Why:\n" + err, "StardustUtil#openFile");
-            if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open "+file.getName()+"§7."), false);
         }
     }
 

@@ -7,6 +7,7 @@ import dev.stardust.Stardust;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import net.minecraft.text.Text;
+import dev.stardust.util.MsgUtil;
 import dev.stardust.util.LogUtil;
 import net.minecraft.util.DyeColor;
 import dev.stardust.util.StardustUtil;
@@ -100,7 +101,7 @@ public class AntiToS extends Module {
             .defaultValue(false)
             .onChanged(it -> {
                 if (it) {
-                    if (StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) StardustUtil.openFile(mc, BLACKLIST_FILE);
+                    if (StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) StardustUtil.openFile(BLACKLIST_FILE);
                     resetBlacklistFileSetting();
                 }
             })
@@ -117,10 +118,10 @@ public class AntiToS extends Module {
         try(Stream<String> lineStream = Files.lines(blackListFile.toPath())) {
             blacklisted.addAll(lineStream.toList());
             if (blacklisted.isEmpty()) {
-                mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7"+BLACKLIST_FILE+" §4was empty§7!"), false);
-                mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."), false);
-                mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."), false);
-                mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7You must toggle this setting or the module after updating the blacklist's contents."), false);
+                MsgUtil.sendMsg(BLACKLIST_FILE + " §4 was empty§8..!");
+                MsgUtil.sendMsg("Please write one blacklisted item for each line of the file.");
+                MsgUtil.sendMsg("Spaces and other punctuation will be treated literally.");
+                MsgUtil.sendMsg("You must toggle this setting or the AntiToS module after updating the file's contents.");
             }
         }catch (Exception err) {
             LogUtil.error("Failed to read from " + blackListFile.getAbsolutePath() +"! - Why:\n"+err, this.name);
@@ -170,12 +171,8 @@ public class AntiToS extends Module {
         if (StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) initBlacklistText();
         else {
             toggle();
-            mc.player.sendMessage(Text.of(
-                "§8[§4Stardust§8] §4§lFailed to create anti-tos.txt in your meteor-client folder§8!"
-            ),false);
-            mc.player.sendMessage(Text.of(
-                "§8[§4Stardust§8] §4§lThis issue is fatal§8§l. §4§lPlease check latest.log for more info§8§l."
-            ),false);
+            MsgUtil.sendModuleMsg("§4§lFailed to create anti-tos.txt in your meteor-client folder§8..!", this.name);
+            MsgUtil.sendModuleMsg("§4§lThis issue is fatal§8. §4§lPlease check latest.log for more info§8§l.", this.name);
         }
     }
 

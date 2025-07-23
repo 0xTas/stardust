@@ -4,7 +4,6 @@ import java.time.Instant;
 import org.joml.Vector3d;
 import java.time.Duration;
 import org.lwjgl.glfw.GLFW;
-import net.minecraft.text.Text;
 import dev.stardust.util.MsgUtil;
 import net.minecraft.block.AirBlock;
 import net.minecraft.util.math.Vec3d;
@@ -206,7 +205,7 @@ public abstract class FreecamMixin {
             } else if (BaritoneUtils.IS_AVAILABLE) {
                 PathManagers.get().stop();
                 PathManagers.get().moveTo(crosshairPos);
-                if (Modules.get().get(Freecam.class).chatFeedback) mc.player.sendMessage(Text.literal("§8[§a§oFreecam§8] §7Baritone pathing to destination§a..!"), false);
+                if (Modules.get().get(Freecam.class).chatFeedback) MsgUtil.sendModuleMsg("Baritone pathing to destination§a..!", "freecam");
             } else {
                 MsgUtil.sendMsg("Baritone was not found to be installed. If this is a mistake, please enable the \"Use Baritone Chat\" setting and try again.");
             }

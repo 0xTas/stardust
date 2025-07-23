@@ -1,11 +1,10 @@
 package dev.stardust.modules;
 
 import dev.stardust.Stardust;
-import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.item.Items;
+import dev.stardust.util.MsgUtil;
 import net.minecraft.item.ItemStack;
-import dev.stardust.util.StardustUtil;
 import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.meteorclient.utils.Utils;
 import net.minecraft.component.DataComponentTypes;
@@ -18,7 +17,6 @@ import meteordevelopment.meteorclient.utils.player.Rotations;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.meteor.KeyEvent;
-import meteordevelopment.meteorclient.mixininterface.IChatHud;
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -110,10 +108,7 @@ public class Updraft extends Module {
             return;
         } else if (chatFeedback && swapSetting.get() && notify <= 0) {
             notify = 100;
-            ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                Text.literal("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §4§oNo wind charges remaining§7§o..."),
-                "windChargeAmmoUpdate".hashCode()
-            );
+            MsgUtil.updateModuleMsg("No wind charges remaining§c..!", this.name, "windChargeAmmo".hashCode());
         }
         currentState = State.Idle;
     }

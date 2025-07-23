@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.nbt.NbtOps;
+import dev.stardust.util.MsgUtil;
 import dev.stardust.util.LogUtil;
 import javax.annotation.Nullable;
 import net.minecraft.world.World;
@@ -55,7 +56,6 @@ import meteordevelopment.meteorclient.utils.player.Rotations;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Modules;
-import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import meteordevelopment.meteorclient.utils.render.RenderUtils;
 import net.minecraft.network.packet.c2s.play.UpdateSignC2SPacket;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
@@ -205,9 +205,9 @@ public class SignHistorian extends Module {
                     this.blacklisted.clear();
                     initBlacklistText();
                     if (mc.player != null) {
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."), false);
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."), false);
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7You must toggle this setting or the module after updating the blacklist's contents."), false);
+                        MsgUtil.sendModuleMsg("Please write one blacklisted item for each line of the file.", this.name);
+                        MsgUtil.sendModuleMsg("Spaces and other punctuation will be treated literally.", this.name);
+                        MsgUtil.sendModuleMsg("You must toggle this setting or the module after updating the file's contents.", this.name);
                     }
                 }
             })
@@ -221,7 +221,7 @@ public class SignHistorian extends Module {
             .defaultValue(false)
             .onChanged(it -> {
                 if (it) {
-                    if (StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) StardustUtil.openFile(mc, BLACKLIST_FILE);
+                    if (StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) StardustUtil.openFile(BLACKLIST_FILE);
                     resetBlacklistFileSetting();
                 }
             })
@@ -321,9 +321,7 @@ public class SignHistorian extends Module {
             if (signsFile.toFile().exists()) {
                 readSignsFromFile(signsFile);
             } else if (signsFile.toFile().createNewFile()) {
-                if (mc.player != null) mc.player.sendMessage(
-                    Text.of("§8<"+ StardustUtil.rCC()+"✨§8> [§5SignHistorian§8] §7Sign data will be saved to §2§o"+signsFile.getFileName()+" §7in your §7§ometeor-client/sign-historian folder."), false
-                );
+                MsgUtil.sendModuleMsg("Sign data will be saved to §2§o" + signsFile.getFileName() + " §7in your §7§ometeor-client/sign-historian §7folder.", this.name);
                 readSignsFromFile(signsFile);
             }
         } catch (Exception err) {
@@ -744,14 +742,12 @@ public class SignHistorian extends Module {
         if (!Utils.canUpdate()) return;
         for (SignBlockEntity sbe : modifiedSigns) {
             if (event.result.getBlockPos().isWithinDistance(sbe.getPos(), 1)) {
-                mc.player.sendMessage(Text.of(
-                    "§8<"+ StardustUtil.rCC()+"✨§8> §e§lOriginal§7§l: §7§o"+ Arrays.stream(sbe.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" "))
-                ), false);
-                mc.player.sendMessage(Text.of(
-                    "§8<"+ StardustUtil.rCC()+"✨§8> §6§lWoodType§7§l: "+((AbstractSignBlock) sbe.getCachedState().getBlock()).getWoodType().name()
-                        +" | §3§lColor§7§l: "+sbe.getText(true).getColor().name()
-                        +" | §f§lGlow Ink§7§l: "+sbe.getText(true).isGlowing()
-                ), false);
+                MsgUtil.sendModuleMsg("§e§lOriginal§7§l: §7§o" + Arrays.stream(sbe.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" ")), this.name);
+                MsgUtil.sendModuleMsg(
+                    "§6§lWoodType§7§l: " + ((AbstractSignBlock) sbe.getCachedState().getBlock()).getWoodType().name()
+                    + " | §3§lColor§7§l: " + sbe.getText(true).getColor().name()
+                    + " | §f§lGlow Ink§7§l: " + sbe.getText(true).isGlowing(), this.name
+                );
                 return;
             }
         }
@@ -765,14 +761,12 @@ public class SignHistorian extends Module {
 
         for (SignBlockEntity ghost : destroyedSigns) {
             if (packet.getPos().isWithinDistance(ghost.getPos(), 1.5)) {
-                mc.player.sendMessage(Text.of(
-                    "§8<"+ StardustUtil.rCC()+"✨§8> §c§lOriginal§7§l: §7§o"+ Arrays.stream(ghost.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" "))
-                ), false);
-                mc.player.sendMessage(Text.of(
-                    "§8<"+ StardustUtil.rCC()+"✨§8> §6§lWoodType§7§l: "+((AbstractSignBlock) ghost.getCachedState().getBlock()).getWoodType().name()
-                        +" | §3§lColor§7§l: "+ghost.getText(true).getColor().name()
-                        +" | §f§lGlow Ink§7§l: "+ghost.getText(true).isGlowing()
-                ), false);
+                MsgUtil.sendModuleMsg("§e§lOriginal§7§l: §7§o" + Arrays.stream(ghost.getFrontText().getMessages(false)).map(Text::getString).collect(Collectors.joining(" ")), this.name);
+                MsgUtil.sendModuleMsg(
+                    "§6§lWoodType§7§l: " + ((AbstractSignBlock) ghost.getCachedState().getBlock()).getWoodType().name()
+                        + " | §3§lColor§7§l: " + ghost.getText(true).getColor().name()
+                        + " | §f§lGlow Ink§7§l: " + ghost.getText(true).isGlowing(), this.name
+                );
             }
         }
     }
@@ -902,10 +896,7 @@ public class SignHistorian extends Module {
                         pingTicks = 0;
                         mc.player.playSound(SoundEvents.ENTITY_PHANTOM_HURT, alarmVolume.get().floatValue(), 1f);
                         if (chatNotification.get()) {
-                            ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                                Text.literal("§8<"+ StardustUtil.rCC()+"✨§8> [§5SignHistorian§8] §c§lNEARBY SIGNS IN DANGER OF MOB GRIEFING§7§l."),
-                                "MobGriefAlarm".hashCode()
-                            );
+                            MsgUtil.updateModuleMsg("§c§lNEARBY SIGNS IN DANGER OF MOB GRIEFING§8§L.", this.name, "MobGriefAlarm".hashCode());
                         }
                     }
                 }

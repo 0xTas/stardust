@@ -63,6 +63,15 @@ public class MsgUtil {
         } catch (Exception ignored) {}
     }
 
+    public static void sendMsg(String msg, Style style) {
+        if (mc.player == null) return;
+
+        try {
+            String message = getPrefix() + ' ' + Formatting.GRAY + msg;
+            mc.player.sendMessage(Text.literal(message).setStyle(style), false);
+        } catch (Exception ignored) {}
+    }
+
     public static void sendModuleMsg(String msg, String module) {
         if (mc.player == null) return;
 

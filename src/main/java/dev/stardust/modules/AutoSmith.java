@@ -931,9 +931,7 @@ public class AutoSmith extends Module {
                             if (disableOnDone.get()) toggle();
                             if (closeOnDone.get()) mc.player.closeHandledScreen();
                             if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1f);
-                            mc.player.sendMessage(
-                                Text.of("§8<§a§o✨§8> §2§oNo gear left to upgrade§8§o."), false
-                            );
+                            MsgUtil.sendModuleMsg("No gear left to upgrade§a..!", this.name);
                         }
                     }else if (!foundIngots) {
                         for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
@@ -949,9 +947,7 @@ public class AutoSmith extends Module {
                             if (disableOnDone.get()) toggle();
                             if (closeOnDone.get()) mc.player.closeHandledScreen();
                             if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1f);
-                            mc.player.sendMessage(
-                                Text.of("§8<§a§o✨§8> §c§oNo netherite ingots left to use§8§o!"), false
-                            );
+                            MsgUtil.sendModuleMsg("No netherite ingots left to use§c..!", this.name);
                         }
                     } else if (!foundTemplates) {
                         for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
@@ -967,9 +963,7 @@ public class AutoSmith extends Module {
                             if (disableOnDone.get()) toggle();
                             if (closeOnDone.get()) mc.player.closeHandledScreen();
                             if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1f);
-                            mc.player.sendMessage(
-                                Text.of("§8<§a§o✨§8> §c§oNo netherite smithing templates left to use§8§o!"), false
-                            );
+                            MsgUtil.sendModuleMsg("No netherite smithing templates left to use§c..!", this.name);
                         }
                     } else {
                         timer = tickRate.get() - 1;

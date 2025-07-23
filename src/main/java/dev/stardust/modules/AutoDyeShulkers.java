@@ -4,6 +4,7 @@ import dev.stardust.Stardust;
 import net.minecraft.item.Item;
 import net.minecraft.text.Text;
 import net.minecraft.item.Items;
+import dev.stardust.util.MsgUtil;
 import net.minecraft.item.DyeItem;
 import net.minecraft.util.DyeColor;
 import net.minecraft.item.ItemStack;
@@ -267,9 +268,7 @@ public class AutoDyeShulkers extends Module {
                             if (disableOnDone.get()) toggle();
                             if (closeOnDone.get() && cs instanceof CraftingScreenHandler) mc.player.closeHandledScreen();
                             if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1f);
-                            mc.player.sendMessage(
-                                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §2§oFinished dyeing items§8§o."), false
-                            );
+                            MsgUtil.sendModuleMsg("Finished dyeing items§a..!", this.name);
                         }
                     }
                 }
@@ -322,9 +321,7 @@ public class AutoDyeShulkers extends Module {
                             if (disableOnDone.get()) toggle();
                             if (closeOnDone.get() && cs instanceof CraftingScreenHandler) mc.player.closeHandledScreen();
                             if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1f);
-                            mc.player.sendMessage(
-                                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §2§oFinished dyeing shulkers§8§o."), false
-                            );
+                            MsgUtil.sendModuleMsg("Finished dyeing shulkers§a..!", this.name);
                         }
                     }
                 }
@@ -377,9 +374,7 @@ public class AutoDyeShulkers extends Module {
                             if (disableOnDone.get()) toggle();
                             if (closeOnDone.get() && cs instanceof CraftingScreenHandler) mc.player.closeHandledScreen();
                             if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1f);
-                            mc.player.sendMessage(
-                                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §2§oFinished dyeing bundles§8§o."), false
-                            );
+                            MsgUtil.sendModuleMsg("Finished dyeing bundles§a..!", this.name);
                         }
                     }
                 }

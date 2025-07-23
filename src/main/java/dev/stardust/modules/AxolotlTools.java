@@ -3,9 +3,9 @@ package dev.stardust.modules;
 import java.util.*;
 import dev.stardust.Stardust;
 import net.minecraft.item.Item;
-import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.item.Items;
+import dev.stardust.util.MsgUtil;
 import javax.annotation.Nullable;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.entity.Entity;
@@ -29,7 +29,6 @@ import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.utils.player.Rotations;
-import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import meteordevelopment.meteorclient.utils.render.RenderUtils;
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
@@ -330,10 +329,7 @@ public class AxolotlTools extends Module {
             return result.get() == ActionResult.SUCCESS || result.get() == ActionResult.CONSUME;
         }
 
-        ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-            Text.of("§8<§c§o✨§r§8> §4§oNo valid bucket types found in inventory§8§o."),
-            "noBucketsFound".hashCode()
-        );
+        MsgUtil.updateModuleMsg("No valid bucket types found in inventory§c..!", this.name, "noBucketFound".hashCode());
 
         return false;
     }
@@ -355,10 +351,12 @@ public class AxolotlTools extends Module {
                 }
             }
             if (!foundBucket) {
-                if (!fishFarm.get()) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                    Text.of("§8<§c§o✨§r§8> §4§oNo valid bucket types found in inventory§8§o."),
-                    "noBucketsFound".hashCode()
-                );
+                if (!fishFarm.get()) {
+                    MsgUtil.updateModuleMsg(
+                        "No valid bucket types found in inventory§c..!",
+                        this.name, "noBucketFound".hashCode()
+                    );
+                }
                 return false;
             }
         }
@@ -465,9 +463,9 @@ public class AxolotlTools extends Module {
                                         ++timer;
                                         return;
                                     } else {
-                                        ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                                            Text.of("§8<§6§o✨§r§8> §4§oFull inventory prevents auto-filling buckets§8§o!"),
-                                            "fullInventoryWarning".hashCode()
+                                        MsgUtil.updateModuleMsg(
+                                            "Full inventory prevents auto-filling buckets§c..!",
+                                            this.name, "fullInventoryWarning".hashCode()
                                         );
                                     }
                                 }
@@ -512,9 +510,9 @@ public class AxolotlTools extends Module {
                                     if (!interactVariants.contains(axolotl.getVariant().toString())) return;
                                     if (tryInteractMobTrigger(axolotl, Items.TROPICAL_FISH_BUCKET)) return;
                                     else {
-                                        ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                                            Text.of("§8<§5§o✨§r§8> §4§oThat axolotl isn't ready to eat yet§8§o!"),
-                                            "breedingCooldownUpdate".hashCode()
+                                        MsgUtil.updateModuleMsg(
+                                            "That axolotl isn't ready to eat yet§c..!",
+                                            this.name, "breedingCooldownUpdate".hashCode()
                                         );
                                     }
                                 }
@@ -582,9 +580,9 @@ public class AxolotlTools extends Module {
                                 if (hasEmptySlots() || current.getCount() == 1) {
                                     mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND);
                                 } else {
-                                    ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                                        Text.of("§8<§6§o✨§r§8> §4§oFull inventory prevents auto-filling buckets§8§o!"),
-                                        "fullInventoryWarning".hashCode()
+                                    MsgUtil.updateModuleMsg(
+                                        "Full inventory prevents auto-filling buckets§c..!",
+                                        this.name, "fullInventoryWarning".hashCode()
                                     );
                                 }
                                 ++timer;

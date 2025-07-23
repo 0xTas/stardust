@@ -7,6 +7,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import dev.stardust.util.MsgUtil;
 import dev.stardust.util.LogUtil;
 import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
@@ -532,7 +533,7 @@ public class RocketMan extends Module {
     private void useFireworkRocket(String caller) {
         if (mc.player == null) return;
         if (mc.interactionManager == null) return;
-        if (debug.get() && chatFeedback) mc.player.sendMessage(Text.literal("§7Caller: "+StardustUtil.rCC()+caller), false);
+        if (debug.get() && chatFeedback) MsgUtil.sendModuleMsg("Caller: " + StardustUtil.rCC() + caller, this.name);
 
         boolean foundRocket = false;
         for (int n = 0; n < 9; n++) {
@@ -578,11 +579,10 @@ public class RocketMan extends Module {
     public void discardCurrentRocket(String source) {
         if (mc.player == null || mc.getNetworkHandler() == null) return;
         if (!source.trim().isEmpty() && debug.get() && chatFeedback) {
-            mc.player.sendMessage(
-                Text.literal("§7Discarding current rocket! Why: "
-                    +StardustUtil.rCC()+source+" §7| Packets: "
-                    +StardustUtil.rCC()+pongQueue.size()
-                ), false
+            MsgUtil.sendModuleMsg(
+                "Discarding current rocket! Why: "
+                    + StardustUtil.rCC() + source + " §7| Packets: "
+                    + StardustUtil.rCC() + pongQueue.size(), this.name
             );
         }
 
@@ -647,10 +647,7 @@ public class RocketMan extends Module {
                     if (percentDurability <= durabilityThreshold.get()) {
                         float vol = warnVolume.get() / 100f;
                         mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK, vol, 1f);
-                        ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                            Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Elytra durability: §4"+percentDurability+"§7%"),
-                            "Elytra durability warning".hashCode()
-                        );
+                        MsgUtil.updateModuleMsg("Elytra durability: §c" + percentDurability + "§7%", this.name, "elytraDurabilityWarning".hashCode());
                         durabilityCheckTicks = 0;
                     }
                 }
@@ -660,10 +657,7 @@ public class RocketMan extends Module {
             if (percentDurability <= durabilityThreshold.get()) {
                 float vol = warnVolume.get() / 100f;
                 mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK, vol, 1f);
-                ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                    Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Elytra durability: §4"+percentDurability+"§7%"),
-                    "Elytra durability warning".hashCode()
-                );
+                MsgUtil.updateModuleMsg("Elytra durability: §c" + percentDurability + "§7%", this.name, "elytraDurabilityWarning".hashCode());
                 durabilityCheckTicks = 0;
             }
         }
@@ -684,10 +678,7 @@ public class RocketMan extends Module {
         if (totalRockets < notifyAmount.get()) {
             float vol = notifyVolume.get() / 100f;
             mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, vol, 1f);
-            ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Rockets remaining: §c"+totalRockets+"§7."),
-                "Rockets remaining warning".hashCode()
-            );
+            MsgUtil.updateModuleMsg("Rockets remaining: §c" + totalRockets + "§7.", this.name, "rocketsRemainingWarning".hashCode());
             rocketStockTicks = 0;
         }
     }
@@ -779,10 +770,7 @@ public class RocketMan extends Module {
     public void setIsHovering(boolean hovering) {
         isHovering = hovering;
         if (hoverModeFeedback.get() && chatFeedback) {
-            ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§7Hover Mode "+ (hovering ? "§2§oEnabled§7§o." : "§4§oDisabled§7.")),
-                "hover mode feedback".hashCode()
-            );
+            MsgUtil.updateModuleMsg("Hover Mode " + (hovering ? "§2§oEnabled§7§o." : "§4§oDisabled§7."), this.name, "hoverModeFeedback".hashCode());
         }
     }
 
@@ -868,16 +856,10 @@ public class RocketMan extends Module {
                     }
                 }
                 if (!foundElytra) {
-                    ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                        Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§4No elytra in inventory!"),
-                        "No elytra warning".hashCode()
-                    );
+                    MsgUtil.updateModuleMsg("No elytra in inventory§c..!", this.name, "noElytraWarning".hashCode());
                 }
             } else {
-                ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                    Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> "+"§4No elytra equipped!"),
-                    "No elytra warning".hashCode()
-                );
+                MsgUtil.updateModuleMsg("No elytra equipped§c..!", this.name, "noElytraWarning".hashCode());
             }
         } else if (!takingOff && !assisted) assistTakeoff();
     }
@@ -907,13 +889,13 @@ public class RocketMan extends Module {
         if (mc.getNetworkHandler() == null) return;
         if (mc.player == null || mc.world == null || mc.interactionManager == null) return;
         if (syncInventory.get() && !synced && mc.getNetworkHandler().getPlayerList().size() > 1) {
-            if (timer == 0 && debug.get()) mc.player.sendMessage(Text.literal("§7Priming inventory to prevent desync..."), false);
+            if (timer == 0 && debug.get() && chatFeedback) MsgUtil.sendModuleMsg("Priming inventory to prevent desync...", this.name);
             ++timer;
             if (timer >= 37) {
                 timer = 0;
                 synced = true;
                 mc.player.closeHandledScreen();
-                if (debug.get()) mc.player.sendMessage(Text.literal("§7Inventory synced with server."), false);
+                if (debug.get() && chatFeedback) MsgUtil.sendModuleMsg("Inventory synced with server..!", this.name);
             }
             return;
         }
@@ -936,9 +918,8 @@ public class RocketMan extends Module {
                 String formatted = duration.substring(0, Math.min(5, duration.length()));
                 if (formatted.length() <= 4) formatted = formatted+"0";
 
-                if (debug.get() || durationFeedback.get() && chatFeedback) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                    Text.literal("§7Duration Boost: §e§o"+formatted+" §7§oseconds."),
-                    "rocketDurationUpdate".hashCode()
+                if (debug.get() || durationFeedback.get() && chatFeedback) MsgUtil.updateModuleMsg(
+                    "Duration Boost: §e§o" + formatted + " §7§oseconds.", this.name, "rocketDurationUpdate".hashCode()
                 );
 
                 if (pongQueue.size() >= 1900) {
@@ -1165,9 +1146,9 @@ public class RocketMan extends Module {
                 double speed = verticalSpeed.get();
                 double newSpeed = speed + (event.value * verticalScrollSensitivity.get());
                 verticalSpeed.set(newSpeed);
-                if (scrollSpeedFeedback.get() && chatFeedback) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                    Text.literal("§8<§5§o✨§r§8> §7Vertical Speed: §3"+String.valueOf(newSpeed).substring(0, Math.min(5, String.valueOf(newSpeed).length()))),
-                    "verticalSpeedScroll".hashCode()
+                if (scrollSpeedFeedback.get() && chatFeedback) MsgUtil.updateMsg(
+                    "Vertical Speed: §3"
+                        + String.valueOf(newSpeed).substring(0, Math.min(5, String.valueOf(newSpeed).length())), "verticalSpeedScroll".hashCode()
                 );
             } else {
                 if (maxSpeedScrollSensitivity.get() <= 0) return;
@@ -1175,9 +1156,9 @@ public class RocketMan extends Module {
                 double speed = speedSetting.get();
                 double newSpeed = speed + (event.value * maxSpeedScrollSensitivity.get());
                 speedSetting.set(newSpeed);
-                if (scrollSpeedFeedback.get() && chatFeedback) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                    Text.literal("§8<§5§o✨§r§8> §7Max Speed: §3"+String.valueOf(newSpeed).substring(0, Math.min(5, String.valueOf(newSpeed).length()))),
-                    "maxSpeedScroll".hashCode()
+                if (scrollSpeedFeedback.get() && chatFeedback) MsgUtil.updateMsg(
+                    "Max Speed: §3"
+                        + String.valueOf(newSpeed).substring(0, Math.min(5, String.valueOf(newSpeed).length())), "maxSpeedScroll".hashCode()
                 );
             }
         } else if (Input.isKeyPressed(GLFW.GLFW_KEY_LEFT_ALT)) {
@@ -1187,9 +1168,9 @@ public class RocketMan extends Module {
                 double speed = horizontalSpeed.get();
                 double newSpeed = speed + (event.value * horizontalScrollSensitivity.get());
                 horizontalSpeed.set(newSpeed);
-                if (scrollSpeedFeedback.get() && chatFeedback) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                    Text.literal("§8<§3§o✨§r§8> §7Horizontal Speed: §5"+String.valueOf(newSpeed).substring(0, Math.min(5, String.valueOf(newSpeed).length()))),
-                    "horizontalSpeedScroll".hashCode()
+                if (scrollSpeedFeedback.get() && chatFeedback) MsgUtil.updateMsg(
+                    "Horizontal Speed: §5"
+                        + String.valueOf(newSpeed).substring(0, Math.min(5, String.valueOf(newSpeed).length())), "horizontalSpeedScroll".hashCode()
                 );
             } else {
                 if (accelerationScrollSensitivity.get() <= 0) return;
@@ -1197,9 +1178,9 @@ public class RocketMan extends Module {
                 double speed = accelerationSetting.get();
                 double newSpeed = speed + (event.value * accelerationScrollSensitivity.get());
                 accelerationSetting.set(newSpeed);
-                if (scrollSpeedFeedback.get() && chatFeedback) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                    Text.literal("§8<§3§o✨§r§8> §7Acceleration: §5"+String.valueOf(newSpeed).substring(0, Math.min(5, String.valueOf(newSpeed).length()))),
-                    "accelerationScroll".hashCode()
+                if (scrollSpeedFeedback.get() && chatFeedback) MsgUtil.updateMsg(
+                    "Acceleration: §5"
+                        + String.valueOf(newSpeed).substring(0, Math.min(5, String.valueOf(newSpeed).length())), "accelerationScroll".hashCode()
                 );
             }
         }

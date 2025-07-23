@@ -21,7 +21,6 @@ import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.utils.Utils;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
-import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import dev.stardust.mixin.accessor.DisconnectS2CPacketAccessor;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
 import net.minecraft.network.packet.s2c.common.DisconnectS2CPacket;
@@ -274,10 +273,7 @@ public class RoadTrip extends Module {
 
             if (percentDurability <= 5) {
                 mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK, pingVolume.get().floatValue(), 1f);
-                ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                    Text.of("§8<"+ StardustUtil.rCC()+"§o✨§r§8> §7Elytra durability: §4"+percentDurability+"§7%"),
-                    "roadTripElytraWarning".hashCode()
-                );
+                MsgUtil.updateModuleMsg("Elytra durability: §c" + percentDurability + "§7%", this.name, "roadTripElytraWarn".hashCode());
                 reset = true;
             }
         }
@@ -438,9 +434,9 @@ public class RoadTrip extends Module {
                 if (averageETA.get()) {
                     blocksPerSecond = average / bpsValues.size();
                 }
-                if (speedUpdates.get() && timer >= 20) ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                    Text.of("§8<§a§o✨§r§8> Average Speed over "+ averageSpeedMinutes.get()+" minute(s): "+(Math.floor(average / bpsValues.size()) * 3600) / 1000+"Km/h"),
-                    "averageBPSUpdate".hashCode()
+                if (speedUpdates.get() && timer >= 20) MsgUtil.updateMsg(
+                    "Average speed over " + averageSpeedMinutes.get() + " minute(s): "
+                        + (Math.floor(average / bpsValues.size()) * 3600) / 1000 + "Km/h", "averageBPSUpdate".hashCode()
                 );
             }
 
@@ -449,10 +445,7 @@ public class RoadTrip extends Module {
                 if (blocksPerSecond == 0) {
                     double verticalBPS = Utils.getPlayerSpeed().y;
                     if (verticalBPS == 0) return;
-                    ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                        Text.literal("§8<§a§o✨§r§8> §7§oVertical Speed: §6§o"+Math.floor(verticalBPS)+"§7§ob/s. §5§o"+(Math.floor(verticalBPS) * 3600) / 1000+"§7§oKm/h."),
-                        "verticalSpeedUpdate".hashCode()
-                    );
+                    MsgUtil.updateMsg("Vertical Speed: §6§o" + Math.floor(verticalBPS) + "§7§ob/s. §5§o" + (Math.floor(verticalBPS) * 3600) / 1000 + "§7§oKm/h", "verticalSpeedUpdate".hashCode());
                     return;
                 }
                 double totalSeconds = totalBlocksLeft / blocksPerSecond;
@@ -482,10 +475,7 @@ public class RoadTrip extends Module {
                     if (seconds != 0) sb.append(seconds).append(" §7§oSeconds.");
                 }
 
-                ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                    Text.of(sb.toString()),
-                    "RoadTrip ETA update".hashCode()
-                );
+                MsgUtil.updateMsg(sb.toString(), "RoadTripETAUpdate".hashCode());
             }
             lastPos = newPos;
         }

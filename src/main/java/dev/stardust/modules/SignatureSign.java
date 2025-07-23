@@ -11,6 +11,7 @@ import net.minecraft.text.*;
 import dev.stardust.Stardust;
 import java.util.stream.Stream;
 import net.minecraft.util.Hand;
+import dev.stardust.util.MsgUtil;
 import dev.stardust.util.LogUtil;
 import java.security.MessageDigest;
 import net.minecraft.util.DyeColor;
@@ -129,11 +130,7 @@ public class SignatureSign extends Module {
             .onChanged(txt -> {
                 if (signFreedom.isVisible() && !signFreedom.get() && inputTooLong(txt)) {
                     restoreValidInput(1);
-                    if (mc.player != null) {
-                        mc.player.sendMessage(
-                            Text.of("§8<§4✨§8> §4Input too long§7.."), false
-                        );
-                    }
+                    MsgUtil.sendModuleMsg("Input too long§c..!", this.name);
                 } else {
                     lastLine1TextFront = txt;
                 }
@@ -188,11 +185,7 @@ public class SignatureSign extends Module {
             .onChanged(txt -> {
                 if (signFreedom.isVisible() && !signFreedom.get() && inputTooLong(txt)) {
                     restoreValidInput(2);
-                    if (mc.player != null) {
-                        mc.player.sendMessage(
-                            Text.of("§8<§4✨§8> §4Input too long§7.."), false
-                        );
-                    }
+                    MsgUtil.sendModuleMsg("Input too long§c..!", this.name);
                 } else {
                     lastLine2TextFront = txt;
                 }
@@ -247,11 +240,7 @@ public class SignatureSign extends Module {
             .onChanged(txt -> {
                 if (signFreedom.isVisible() && !signFreedom.get() && inputTooLong(txt)) {
                     restoreValidInput(3);
-                    if (mc.player != null) {
-                        mc.player.sendMessage(
-                            Text.of("§8<§4✨§8> §4Input too long§7.."), false
-                        );
-                    }
+                    MsgUtil.sendModuleMsg("Input too long§c..!", this.name);
                 } else {
                     lastLine3TextFront = txt;
                 }
@@ -306,11 +295,7 @@ public class SignatureSign extends Module {
             .onChanged(txt -> {
                 if (signFreedom.isVisible() && !signFreedom.get() && inputTooLong(txt)) {
                     restoreValidInput(4);
-                    if (mc.player != null) {
-                        mc.player.sendMessage(
-                            Text.of("§8<§4✨§8> §4Input too long§7.."), false
-                        );
-                    }
+                    MsgUtil.sendModuleMsg("Input too long§c..!", this.name);
                 } else {
                     lastLine4TextFront = txt;
                 }
@@ -636,11 +621,7 @@ public class SignatureSign extends Module {
         if (signFreedom.get()) return signText;
         for (int i = 0; i < signText.size(); i++) {
             if (inputTooLong(signText.get(i))) {
-                if (mc.player != null) {
-                    mc.player.sendMessage(
-                        Text.of("§8<§4✨§8> §7§oLine §4§o"+(i+1)+" §7§owon't render fully due to length.."), false
-                    );
-                }
+                MsgUtil.sendModuleMsg("§oLine §4§o" + (i+1) + " §7§owon't render fully due to length§c..!", this.name);
             }
         }
         return signText;
@@ -663,13 +644,10 @@ public class SignatureSign extends Module {
             try {
                 if (file.createNewFile()) {
                     if (mc.player != null) {
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created autosign.txt in meteor-client folder."), false);
-
-                        Text msg = Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Click §2§lhere §r§7to open the folder.");
+                        MsgUtil.sendModuleMsg("Created autosign.txt in your meteor-client folder§a..!", this.name);
                         Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, meteorFolder.toFile().getAbsolutePath()));
 
-                        MutableText txt = msg.copyContentOnly().setStyle(style);
-                        mc.player.sendMessage(txt, false);
+                        MsgUtil.sendModuleMsg("Click §2§lhere §r§7to open the folder.", style, this.name);
                     }
                 }
             } catch (Exception err) {
@@ -700,13 +678,10 @@ public class SignatureSign extends Module {
             try {
                 if (file.createNewFile()) {
                     if (mc.player != null) {
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Created storysign.txt in meteor-client folder."), false);
-
-                        Text msg = Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Click §2§lhere §r§7to open the folder.");
+                        MsgUtil.sendModuleMsg("Created storysign.txt in your meteor-client folder§a..!", this.name);
                         Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, meteorFolder.toFile().getAbsolutePath()));
 
-                        MutableText txt = msg.copyContentOnly().setStyle(style);
-                        mc.player.sendMessage(txt, false);
+                        MsgUtil.sendModuleMsg("Click §2§lhere §r§7to open the folder.", style, this.name);
                     }
                 }
             } catch (Exception err) {
@@ -772,9 +747,7 @@ public class SignatureSign extends Module {
             lastIndexAmount = 0;
             lastLines.addAll(storyLines);
             if (mc.player != null) {
-                mc.player.sendMessage(
-                    Text.of("§8<"+StardustUtil.rCC()+"✨§8> §7§oSign story complete."), false
-                );
+                MsgUtil.sendModuleMsg("§oSign story complete§a§o..!", this.name);
                 mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 0.77f, 0.77f);
             }
         }
@@ -883,7 +856,7 @@ public class SignatureSign extends Module {
     }
 
     private void openMeteorFolder() {
-        StardustUtil.openFile(mc, "meteor-client");
+        StardustUtil.openFile("meteor-client");
         openFolder.set(false);
     }
 

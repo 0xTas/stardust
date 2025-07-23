@@ -3,7 +3,7 @@ package dev.stardust.modules;
 import java.util.*;
 import dev.stardust.Stardust;
 import net.minecraft.block.*;
-import net.minecraft.text.Text;
+import dev.stardust.util.MsgUtil;
 import dev.stardust.util.MapUtil;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.sound.SoundEvents;
@@ -163,18 +163,14 @@ public class TreasureESP extends Module {
                                     mc.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE, volumeSetting.get().floatValue(), 1f);
                                 }
                                 if (chatSetting.get()) {
-                                    Text notification;
+                                    String notification;
                                     if (coordsSetting.get()) {
-                                        notification = Text.of(
-                                            "§8<" + StardustUtil.rCC() + "✨§8> §3§oFound buried treasure at §8[§7§o"
-                                                + blockPos.getX() + "§8, §7§o" + blockPos.getY() + "§8, §7§o" + blockPos.getZ() + "§8]"
-                                        );
+                                        notification = "§3§oFound buried treasure at §8[§7§o"
+                                            + blockPos.getX() + "§8, §7§o" + blockPos.getY() + "§8, §7§o" + blockPos.getZ() + "§8]";
                                     } else {
-                                        notification = Text.of(
-                                            "§8<" + StardustUtil.rCC() + "✨§8> §3§oFound buried treasure§7§o!"
-                                        );
+                                        notification = "§3§oFound buried treasure§7§o!";
                                     }
-                                    mc.player.sendMessage(notification, false);
+                                    MsgUtil.sendModuleMsg(notification, this.name);
                                 }
                                 notified.add(blockPos);
                             }
@@ -208,18 +204,14 @@ public class TreasureESP extends Module {
                         mc.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE, volumeSetting.get().floatValue(), 1f);
                     }
                     if (chatSetting.get()) {
-                        Text notification;
+                        String notification;
                         if (coordsSetting.get()) {
-                            notification = Text.of(
-                                "§8<" + StardustUtil.rCC() + "✨§8> §3§oFound buried treasure at §8[§7§o"
-                                    + pos.getX() + "§8, §7§o" + pos.getY() + "§8, §7§o" + pos.getZ() + "§8]"
-                            );
+                            notification = "§3§oFound buried treasure at §8[§7§o"
+                                + pos.getX() + "§8, §7§o" + pos.getY() + "§8, §7§o" + pos.getZ() + "§8]";
                         } else {
-                            notification = Text.of(
-                                "§8<" + StardustUtil.rCC() + "✨§8> §3§oFound buried treasure§7§o!"
-                            );
+                            notification = "§3§oFound buried treasure§7§o!";
                         }
-                        mc.player.sendMessage(notification, false);
+                        MsgUtil.sendModuleMsg(notification, this.name);
                     }
                     notified.add(pos);
                 }

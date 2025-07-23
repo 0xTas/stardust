@@ -3,9 +3,8 @@ package dev.stardust.modules;
 import java.util.List;
 import dev.stardust.Stardust;
 import net.minecraft.item.Item;
-import net.minecraft.text.Text;
+import dev.stardust.util.MsgUtil;
 import net.minecraft.item.ItemStack;
-import dev.stardust.util.StardustUtil;
 import net.minecraft.sound.SoundEvents;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.screen.AnvilScreenHandler;
@@ -40,9 +39,7 @@ public class StashBrander extends Module {
             .defaultValue("")
             .onChanged(name -> {
                 if (name.length() > AnvilScreenHandler.MAX_NAME_LENGTH) {
-                    if (mc.player != null) mc.player.sendMessage(
-                        Text.of("§8<"+ StardustUtil.rCC()+"✨§8> §4§oCustom name exceeds max accepted length§8§o!"), false
-                    );
+                    MsgUtil.sendModuleMsg("§4Custom name exceeds max accepted length§8..!", this.name);
                 }
             })
             .build()
@@ -146,9 +143,7 @@ public class StashBrander extends Module {
     private void noXP() {
         if (mc.player == null) return;
         if (!notified) {
-            mc.player.sendMessage(
-                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNot enough experience§8§o..."), false
-            );
+            MsgUtil.sendModuleMsg("Not enough experience§c..!", this.name);
             if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
         }
         notified = true;
@@ -160,9 +155,7 @@ public class StashBrander extends Module {
     private void finished() {
         if (mc.player == null) return;
         if (!notified) {
-            mc.player.sendMessage(
-                Text.of("§8<" + StardustUtil.rCC() + "✨§8> §4§oNo more items to rename§8§o."), false
-            );
+            MsgUtil.sendModuleMsg("No more items to rename§a..!", this.name);
             if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
         }
         notified = true;

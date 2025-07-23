@@ -2,7 +2,7 @@ package dev.stardust.modules;
 
 import java.util.Optional;
 import dev.stardust.Stardust;
-import net.minecraft.text.Text;
+import dev.stardust.util.MsgUtil;
 import net.minecraft.block.entity.*;
 import net.minecraft.nbt.NbtCompound;
 import dev.stardust.util.StardustUtil;
@@ -17,7 +17,6 @@ import meteordevelopment.meteorclient.settings.EnumSetting;
 import net.minecraft.component.type.BannerPatternsComponent;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
-import meteordevelopment.meteorclient.mixininterface.IChatHud;
 import meteordevelopment.meteorclient.events.entity.player.InteractBlockEvent;
 
 /**
@@ -161,17 +160,11 @@ public class BannerData extends Module {
                 }
 
                 String bannerData = patternsList.toString().trim();
-                mc.player.sendMessage(Text.of(bannerData), false);
+                MsgUtil.sendRawMsg(bannerData);
 
                 if (copyToClipboard.get()) {
-                     mc.keyboard.setClipboard(patterns.toString());
-                    ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                        Text.of(
-                            "§8<"+StardustUtil.rCC()+"§o✨§r§8> §7"
-                                + txtFormat + "Copied NBT data to clipboard§8."
-                        ),
-                        "clipboardUpdate".hashCode()
-                    );
+                    mc.keyboard.setClipboard(patterns.toString());
+                    MsgUtil.updateModuleMsg(txtFormat + "Copied NBT data to clipboard§8.", this.name, "clipboardUpdate".hashCode());
                 }
 
                 lastEventPos = pos;
@@ -180,19 +173,9 @@ public class BannerData extends Module {
                 NbtCompound metadata = sign.createNbt(mc.world.getRegistryManager());
                 if (copyToClipboard.get()) {
                     mc.keyboard.setClipboard(metadata.toString());
-                    ((IChatHud) mc.inGameHud.getChatHud()).meteor$add(
-                        Text.of(
-                            "§8<"+StardustUtil.rCC()+"§o✨§r§8> §7§o"
-                                + "Copied NBT data to clipboard§8."
-                        ),
-                        "clipboardUpdate".hashCode()
-                    );
+                    MsgUtil.updateModuleMsg("§oCopied NBT data to clipboard§8§o..!", this.name, "bdclipboardUpdate".hashCode());
                 } else {
-                    mc.player.sendMessage(
-                        Text.of(
-                            "§8<"+StardustUtil.rCC()+"§o✨§r§8> §7"+metadata
-                        ), false
-                    );
+                    MsgUtil.sendMsg(metadata.toString());
                 }
 
                 lastEventPos = pos;

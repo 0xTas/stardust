@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.item.Items;
+import dev.stardust.util.MsgUtil;
 import dev.stardust.util.LogUtil;
 import java.util.stream.Collectors;
 import net.minecraft.item.ItemStack;
@@ -93,9 +94,9 @@ public class WaxAura extends Module {
                     this.blacklisted.clear();
                     initBlacklistText();
                     if (mc.player != null) {
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Please write one blacklisted item for each line of the file."), false);
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Spaces and other punctuation will be treated literally."), false);
-                        mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7Toggle the module after updating the blacklist's contents."), false);
+                        MsgUtil.sendModuleMsg("Please write one blacklisted item for each line fo the file.", this.name);
+                        MsgUtil.sendModuleMsg("Spaces and other punctuation will be treated literally.", this.name);
+                        MsgUtil.sendModuleMsg("Toggle the module after updating the file's contents.", this.name);
                     }
                 }
             })
@@ -109,7 +110,7 @@ public class WaxAura extends Module {
             .defaultValue(false)
             .onChanged(it -> {
                 if (it) {
-                    if (StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) StardustUtil.openFile(mc, BLACKLIST_FILE);
+                    if (StardustUtil.checkOrCreateFile(mc, BLACKLIST_FILE)) StardustUtil.openFile(BLACKLIST_FILE);
                     resetBlacklistFileSetting();
                 }
             })
