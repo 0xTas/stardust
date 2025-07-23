@@ -23,6 +23,14 @@ public class MsgUtil {
             Formatting.ITALIC + "✨" + Formatting.DARK_GRAY + ">";
     }
 
+    public static String getRawPrefix() {
+        return "[Stardust]";
+    }
+
+    public static String getRawPrefix(String module) {
+        return "[" + module + "]";
+    }
+
     public static void initModulePrefixes() {
         for (Module module : Modules.get().getGroup(Stardust.CATEGORY)) {
             String name = module.name;
