@@ -89,7 +89,10 @@ OldSigns functionality can be accessed in the ChatSigns module settings.
 5. Select the appropriate sources Jar from the list (usually named something like `net.minecraft:minecraft-merged-...-sources.jar`) and hit `Ok`.
 6. Now you can contribute or modify code with those mappings as a reference (ctrl+click to view the source for any class.)
 
->Issues and pull requests are welcome if you would like to submit them.
+>**Notes:**<br>
+>Issues and pull requests are welcome if you would like to submit them.<br>
+>Please use the `sortImports` custom Gradle task or otherwise sort your import blocks prior to opening a pr.<br>
+>You can find the `sortImports` task under the `build` task in IntelliJ, or by running `./gradlew sortImports`.
 <br>
 
 ### Credits
