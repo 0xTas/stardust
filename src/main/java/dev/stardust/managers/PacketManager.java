@@ -1,6 +1,5 @@
 package dev.stardust.managers;
 
-import dev.stardust.Stardust;
 import net.minecraft.item.ItemStack;
 import dev.stardust.config.StardustConfig;
 import net.minecraft.screen.ScreenHandler;
@@ -30,12 +29,16 @@ public class PacketManager {
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onReceivePacket(PacketEvent.Receive event) {
         if (!Utils.canUpdate()) return;
-        if (!StardustConfig.ignore2b2tOverlayMessages.get()) return;
+        if (!StardustConfig.ignoreOverlayMessages.get()) return;
         if (!(event.packet instanceof OverlayMessageS2CPacket packet)) return;
+        if (StardustConfig.overlayMessageFilter.get().isEmpty()
+            || StardustConfig.overlayMessageFilter.get().stream().allMatch(String::isBlank)) return;
 
-        if (packet.text().getString().equals("2b2t.org")) {
-            event.cancel();
-            Stardust.LOG.info("[Stardust] Cancelling 2b2t.org overlay packet..!");
+        for (String filter : StardustConfig.overlayMessageFilter.get()) {
+            if (filter.isBlank()) continue;
+            if (packet.text().getString().equalsIgnoreCase(filter)) {
+                event.cancel();
+            }
         }
     }
 

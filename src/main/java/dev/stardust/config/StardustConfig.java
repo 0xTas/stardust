@@ -1,10 +1,8 @@
 package dev.stardust.config;
 
+import java.util.List;
 import dev.stardust.util.StardustUtil;
-import meteordevelopment.meteorclient.settings.Setting;
-import meteordevelopment.meteorclient.settings.BoolSetting;
-import meteordevelopment.meteorclient.settings.EnumSetting;
-import meteordevelopment.meteorclient.settings.SettingGroup;
+import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.config.Config;
 
 public class StardustConfig {
@@ -14,7 +12,8 @@ public class StardustConfig {
     public static Setting<Boolean> illegalDisconnectButtonSetting = new BoolSetting.Builder().build();
     public static Setting<Boolean> disableMeteorClientTelemetry = new BoolSetting.Builder().build();
     public static Setting<Boolean> antiInventoryPacketKick = new BoolSetting.Builder().build();
-    public static Setting<Boolean> ignore2b2tOverlayMessages = new BoolSetting.Builder().build();
+    public static Setting<Boolean> ignoreOverlayMessages = new BoolSetting.Builder().build();
+    public static Setting<List<String>> overlayMessageFilter = new StringListSetting.Builder().build();
     public static Setting<StardustUtil.IllegalDisconnectMethod> illegalDisconnectMethodSetting = new EnumSetting.Builder<StardustUtil.IllegalDisconnectMethod>().defaultValue(StardustUtil.IllegalDisconnectMethod.Slot).build();
 
     public static void initialize() {
@@ -75,11 +74,19 @@ public class StardustConfig {
                 .defaultValue(false)
                 .build()
         );
-        ignore2b2tOverlayMessages = sgStardust.add(
+        ignoreOverlayMessages = sgStardust.add(
             new BoolSetting.Builder()
-                .name("ignore-2b2t-overlay")
-                .description("Ignore the periodic \"2b2t.org\" overlay messages that appear on 2b2t.")
+                .name("ignore-overlay-messages")
+                .description("Overlay messages will be ignored if they match any of the provided filters.")
                 .defaultValue(false)
+                .build()
+        );
+        overlayMessageFilter = sgStardust.add(
+            new StringListSetting.Builder()
+                .name("overlay-message-filter")
+                .description("Overlay messages will be ignored if they match any of the provided filters.")
+                .defaultValue(List.of("2b2t.org"))
+                .visible(ignoreOverlayMessages::get)
                 .build()
         );
     }
