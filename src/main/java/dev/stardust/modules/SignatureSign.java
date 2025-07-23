@@ -11,12 +11,14 @@ import net.minecraft.text.*;
 import dev.stardust.Stardust;
 import java.util.stream.Stream;
 import net.minecraft.util.Hand;
+import java.security.MessageDigest;
 import net.minecraft.util.DyeColor;
 import java.util.stream.Collectors;
 import net.minecraft.util.math.Vec3d;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import net.minecraft.block.entity.SignText;
 import org.apache.commons.codec.binary.Hex;
@@ -46,7 +48,7 @@ public class SignatureSign extends Module {
     public SignatureSign() { super(Stardust.CATEGORY, "SignatureSign", "Autofill signs with custom text."); }
 
     public static final String[] lineModes = {"Custom", "Empty", "File", "Username",
-        "Username was here", "Timestamp", "Stardust", "Oasis", "Base64", "Hex", "0xHex", "ROT13"};
+        "Username was here", "Timestamp", "Stardust", "Oasis", "Base64", "Hex", "0xHex", "ROT13", "Player UUID", "Random UUID", "Hashed UUID"};
     public static final String[] timestampTypes = {"MM/DD/YY", "MM/DD/YYYY", "DD/MM/YY", "DD/MM/YYYY",
         "YYYY/MM/DD", "YYYY/DD/MM", "Day Month Year", "Month Day Year", "Month Year", "Year", "Day Month", "Month Day",
         "Unix Epoch"};
@@ -505,6 +507,33 @@ public class SignatureSign extends Module {
         }
     }
 
+    private String getUuid(boolean player, boolean hash) {
+        String id;
+        if (player && mc.player != null) {
+            id = mc.player.getUuidAsString();
+        } else {
+            id = UUID.randomUUID().toString();
+        }
+
+        if (!hash) {
+            return id.substring(0, Math.min(8, id.length()));
+        }
+
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            byte[] hashBytes = digest.digest(id.getBytes(StandardCharsets.UTF_8));
+
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.substring(0, Math.min(8, sb.length()));
+        } catch (Exception err) {
+            Stardust.LOG.error("SHA-1 algorithm not available - {}", err.toString());
+            return mc.player.getUuidAsString().substring(0, mc.player.getUuidAsString().indexOf("-"));
+        }
+    }
+
     private List<String> getSignText() {
         List<String> signText = new ArrayList<>();
         if (mc.player == null) return signText;
@@ -535,6 +564,9 @@ public class SignatureSign extends Module {
                 case "Hex" -> signText.add(Hex.encodeHexString(line1TextFront.get().getBytes()));
                 case "0xHex" -> signText.add("0x"+Hex.encodeHexString(line1TextFront.get().getBytes()));
                 case "ROT13" -> signText.add(rot13(line1TextFront.get()));
+                case "Player UUID" -> signText.add(getUuid(true, false));
+                case "Random UUID" -> signText.add(getUuid(false, false));
+                case "Hashed UUID" -> signText.add(getUuid(true, true));
             }
             switch (line2ModeFront.get()) {
                 case "Custom" -> signText.add(line2TextFront.get());
@@ -548,6 +580,9 @@ public class SignatureSign extends Module {
                 case "Hex" -> signText.add(Hex.encodeHexString(line2TextFront.get().getBytes()));
                 case "0xHex" -> signText.add("0x"+Hex.encodeHexString(line2TextFront.get().getBytes()));
                 case "ROT13" -> signText.add(rot13(line2TextFront.get()));
+                case "Player UUID" -> signText.add(getUuid(true, false));
+                case "Random UUID" -> signText.add(getUuid(false, false));
+                case "Hashed UUID" -> signText.add(getUuid(true, true));
             }
             switch (line3ModeFront.get()) {
                 case "Custom" -> signText.add(line3TextFront.get());
@@ -561,6 +596,9 @@ public class SignatureSign extends Module {
                 case "Hex" -> signText.add(Hex.encodeHexString(line3TextFront.get().getBytes()));
                 case "0xHex" -> signText.add("0x"+Hex.encodeHexString(line3TextFront.get().getBytes()));
                 case "ROT13" -> signText.add(rot13(line3TextFront.get()));
+                case "Player UUID" -> signText.add(getUuid(true, false));
+                case "Random UUID" -> signText.add(getUuid(false, false));
+                case "Hashed UUID" -> signText.add(getUuid(true, true));
             }
             switch (line4ModeFront.get()) {
                 case "Custom" -> signText.add(line4TextFront.get());
@@ -575,6 +613,9 @@ public class SignatureSign extends Module {
                 case "Hex" -> signText.add(Hex.encodeHexString(line4TextFront.get().getBytes()));
                 case "0xHex" -> signText.add("0x"+Hex.encodeHexString(line4TextFront.get().getBytes()));
                 case "ROT13" -> signText.add(rot13(line4TextFront.get()));
+                case "Player UUID" -> signText.add(getUuid(true, false));
+                case "Random UUID" -> signText.add(getUuid(false, false));
+                case "Hashed UUID" -> signText.add(getUuid(true, true));
             }
         }
 
@@ -958,7 +999,7 @@ public class SignatureSign extends Module {
                     packetQueue.removeFirst(), null, true
                 );
             }
-        } else if (packetQueue.isEmpty() && !isActive()) {
+        } else if (!isActive()) {
             MeteorClient.EVENT_BUS.unsubscribe(this);
             return;
         }
