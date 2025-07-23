@@ -49,6 +49,11 @@ public class MsgUtil {
         }
     }
 
+    public static void sendRawMsg(String msg) {
+        if (mc.player == null) return;
+        mc.player.sendMessage(Text.literal(msg), false);
+    }
+
     public static void sendMsg(String msg) {
         if (mc.player == null) return;
 
