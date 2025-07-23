@@ -92,7 +92,8 @@ OldSigns functionality can be accessed in the ChatSigns module settings.
 >**Notes:**<br>
 >Issues and pull requests are welcome if you would like to submit them.<br>
 >Please use the `sortImports` custom Gradle task or otherwise sort your import blocks prior to opening a pr.<br>
->You can find the `sortImports` task under the `build` task in IntelliJ, or by running `./gradlew sortImports`.
+>You can find the `sortImports` task under the `build` task in IntelliJ, or by running `./gradlew sortImports`.<br>
+>This custom Gradle task requires Python to be installed and in your PATH environment, because it runs the`import-organizer.py` script from the `scripts` folder.
 <br>
 
 ### Credits
