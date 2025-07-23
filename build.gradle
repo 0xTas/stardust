@@ -61,3 +61,14 @@ processResources {
 tasks.withType(JavaCompile).configureEach {
     it.options.encoding("UTF-8")
 }
+
+tasks.register("sortImports", Exec) {
+    description = "Runs import-organizer.py in the scripts folder to sort import blocks by length in all Java source files in the project."
+    group = "build"
+
+    var pythonCmd = System.getenv("OS") != null && System.getenv("OS").contains("Windows") ? "python" : "python3"
+
+    commandLine(pythonCmd, "${projectDir}/scripts/import-organizer.py")
+
+    setIgnoreExitValue(false)
+}
