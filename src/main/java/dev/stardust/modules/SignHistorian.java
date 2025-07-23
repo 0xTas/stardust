@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.nbt.NbtOps;
+import dev.stardust.util.LogUtil;
 import javax.annotation.Nullable;
 import net.minecraft.world.World;
 import net.minecraft.entity.Entity;
@@ -296,7 +297,7 @@ public class SignHistorian extends Module {
         try(Stream<String> lineStream = Files.lines(blackListFile.toPath())) {
             blacklisted.addAll(lineStream.toList());
         }catch (Exception err) {
-            Stardust.LOG.error("[Stardust] Failed to read from "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err);
+            LogUtil.error("Failed to read from "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err, this.name);
         }
     }
 
@@ -326,7 +327,7 @@ public class SignHistorian extends Module {
                 readSignsFromFile(signsFile);
             }
         } catch (Exception err) {
-            Stardust.LOG.error(err.toString());
+            LogUtil.error(err.toString(), this.name);
         }
     }
 
@@ -356,11 +357,11 @@ public class SignHistorian extends Module {
                         }
                     }
                 } catch (Exception err) {
-                    Stardust.LOG.error("Failed to parse SignBlockEntity Nbt: "+err);
+                    LogUtil.error("Failed to parse SignBlockEntity Nbt: "+err, this.name);
                 }
             }
         }catch (Exception e) {
-            Stardust.LOG.error(e.toString());
+            LogUtil.error(e.toString(), this.name);
         }
     }
 
@@ -368,7 +369,7 @@ public class SignHistorian extends Module {
         try {
             Files.writeString(signsFile, metadata+" -|- "+cachedState+"\n", StandardOpenOption.APPEND);
         } catch (Exception err) {
-            Stardust.LOG.error("[Stardust] "+err);
+            LogUtil.error(err.toString(), this.name);
         }
     }
 
@@ -396,7 +397,7 @@ public class SignHistorian extends Module {
                 writeSignToFile(metadata, stateNbt, signsFile);
             }
         } catch (Exception err) {
-            Stardust.LOG.error("[Stardust] "+err);
+            LogUtil.error(err.toString(), this.name);
         }
     }
 

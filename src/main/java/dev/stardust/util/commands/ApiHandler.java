@@ -3,8 +3,8 @@ package dev.stardust.util.commands;
 import java.net.URI;
 import java.net.http.*;
 import java.time.Duration;
-import dev.stardust.Stardust;
 import net.minecraft.text.Text;
+import dev.stardust.util.LogUtil;
 import javax.annotation.Nullable;
 import java.net.URISyntaxException;
 import dev.stardust.util.StardustUtil;
@@ -44,7 +44,7 @@ public class ApiHandler {
                 .build();
         } catch (URISyntaxException err) {
             sendErrorResponse();
-            Stardust.LOG.error("[ApiHandler] "+err);
+            LogUtil.error(err.toString(), "ApiHandler");
             return null;
         }
 
@@ -57,7 +57,7 @@ public class ApiHandler {
         try {
             res = client.sendAsync(req, HttpResponse.BodyHandlers.ofString()).get();
         } catch (Exception err) {
-            Stardust.LOG.error("[ApiHandler] "+err);
+            LogUtil.error(err.toString(), "ApiHandler");
         }
 
         if (res == null) {
@@ -71,7 +71,7 @@ public class ApiHandler {
             return "204 Undocumented";
         } else {
             sendErrorResponse();
-            Stardust.LOG.warn("[ApiHandler] received unexpected response from api.2b2t.vc: "+res);
+            LogUtil.warn("Received unexpected response from api.2b2t.vc: \"" + res + "\"", "ApiHandler");
         }
 
         return null;

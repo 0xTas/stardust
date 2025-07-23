@@ -4,18 +4,15 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Optional;
+import dev.stardust.util.*;
 import dev.stardust.Stardust;
 import net.minecraft.item.Item;
 import net.minecraft.util.Hand;
 import net.minecraft.item.Items;
-import dev.stardust.util.MapUtil;
-import dev.stardust.util.MsgUtil;
 import net.minecraft.block.Blocks;
-import dev.stardust.util.RenderUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShovelItem;
 import net.minecraft.block.BlockState;
-import dev.stardust.util.StardustUtil;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.block.FallingBlock;
 import net.minecraft.util.hit.HitResult;
@@ -558,7 +555,7 @@ public class Archaeology extends Module {
 
                 if (ticksBrushing > 20) {
                     ticksBrushing = 0;
-                    Stardust.LOG.warn("[Stardust] Retrying brush packet after response timeout.");
+                    LogUtil.warn("Retrying brush packet after response timeout...", this.name);
                     mc.player.stopUsingItem();
                     mc.options.useKey.setPressed(false);
                 }

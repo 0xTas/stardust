@@ -2,9 +2,9 @@ package dev.stardust.commands;
 
 import java.io.File;
 import java.nio.file.*;
-import dev.stardust.Stardust;
 import javax.imageio.ImageIO;
 import net.minecraft.text.Text;
+import dev.stardust.util.LogUtil;
 import javax.annotation.Nullable;
 import java.awt.image.BufferedImage;
 import dev.stardust.util.StardustUtil;
@@ -72,7 +72,7 @@ public class Panorama extends Command {
             //noinspection ResultOfMethodCallIgnored
             panoramaDir.toFile().mkdirs();
         }catch (Exception err) {
-            Stardust.LOG.error(err.toString());
+            LogUtil.error(err.toString(), this.getName());
         }
 
         instance = mc;
@@ -120,7 +120,7 @@ public class Panorama extends Command {
             File packMeta = customBaseFolder.resolve("pack.mcmeta").toFile();
             if (!packMeta.createNewFile()) {
                 error("[Stardust] Failed to assemble custom resource pack! Does a pack of that name already exist?");
-                Stardust.LOG.error("[Stardust] Failed to assemble custom resource pack.");
+                LogUtil.error("Failed to assemble custom resource pack (failed to create new file).", this.getName());
                 return;
             }
             Files.write(packMeta.toPath(), mcMeta.getBytes());
@@ -131,8 +131,8 @@ public class Panorama extends Command {
             File overlayImage = customPackFolder.resolve("panorama_overlay.png").toFile();
             ImageIO.write(transparentOverlay, "PNG", overlayImage);
         } catch (Exception err) {
-            Stardust.LOG.error("[Stardust] "+err);
             error(err.toString());
+            LogUtil.error(err.toString(), this.getName());
         }
 
         readyToAssemble = false;

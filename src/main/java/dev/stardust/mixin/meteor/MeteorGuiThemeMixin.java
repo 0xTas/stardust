@@ -1,6 +1,5 @@
 package dev.stardust.mixin.meteor;
 
-import dev.stardust.Stardust;
 import dev.stardust.gui.RecolorGuiTheme;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -127,7 +126,6 @@ public abstract class MeteorGuiThemeMixin {
     private void backgroundColor(Args args) {
         if (args.get(0) instanceof RecolorGuiTheme RecolorGuiTheme) {
             RecolorGuiTheme.TriColorSetting triColorSetting = RecolorGuiTheme.getBackgroundColor();
-            Stardust.LOG.info("[Stardust] Setting theme background color!");
             args.set(3, triColorSetting.c1());
             args.set(4, triColorSetting.c2());
             args.set(5, triColorSetting.c3());

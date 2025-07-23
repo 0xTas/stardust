@@ -7,6 +7,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import dev.stardust.util.LogUtil;
 import javax.annotation.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
@@ -950,7 +951,7 @@ public class RocketMan extends Module {
                 }
             }
         } catch (Exception err) {
-            Stardust.LOG.error("[RocketMan] extensionStartPos should not have been null, but it was! Why:\n{}", err.toString());
+            LogUtil.error("extensionStartPos should not have been null, but it was! - Why: " + err, this.name);
         }
 
 

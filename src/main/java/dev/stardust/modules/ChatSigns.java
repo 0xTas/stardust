@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import net.minecraft.text.Style;
+import dev.stardust.util.LogUtil;
 import dev.stardust.util.MapUtil;
 import net.minecraft.world.World;
 import javax.annotation.Nullable;
@@ -668,7 +669,7 @@ public class ChatSigns extends Module {
         try(Stream<String> lineStream = Files.lines(blackListFile.toPath())) {
             blacklisted.addAll(lineStream.toList());
         }catch (Exception err) {
-            Stardust.LOG.error("[Stardust] Failed to read from {}! - Why:\n{}", blackListFile.getAbsolutePath(), err);
+            LogUtil.error("Failed to read from " + blackListFile.getAbsolutePath() + "! - Why: " + err, this.name);
         }
     }
 
@@ -726,7 +727,7 @@ public class ChatSigns extends Module {
                 }
             } else return Vec3d.ofCenter(pos);
         } catch (Exception err) {
-            Stardust.LOG.error("Failed to get tracer offset. Why: \n{}", err.toString());
+            LogUtil.error("Failed to get tracer offset. Why: " + err, this.name);
             return Vec3d.ofCenter(pos);
         }
 

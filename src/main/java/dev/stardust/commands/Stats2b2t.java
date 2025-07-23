@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import dev.stardust.Stardust;
 import net.minecraft.text.Text;
 import java.time.ZonedDateTime;
+import dev.stardust.util.LogUtil;
 import java.util.concurrent.TimeUnit;
 import dev.stardust.util.StardustUtil;
 import java.time.format.DateTimeFormatter;
@@ -143,8 +144,8 @@ public class Stats2b2t extends Command {
                             ), false
                         );
                     } catch (Exception err) {
-                        Stardust.LOG.error("[Stats2b2t] Failed to deserialize Json: "+err);
                         error("§7Failed to deserialize response from the server§4..!");
+                        LogUtil.error("Failed to deserialize Json: " + err, this.getName());
                     }
                 }
             });

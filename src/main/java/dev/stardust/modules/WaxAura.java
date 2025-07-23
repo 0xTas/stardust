@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.item.Items;
+import dev.stardust.util.LogUtil;
 import java.util.stream.Collectors;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
@@ -171,7 +172,7 @@ public class WaxAura extends Module {
         try(Stream<String> lineStream = Files.lines(blackListFile.toPath())) {
             blacklisted.addAll(lineStream.toList());
         }catch (Exception err) {
-            Stardust.LOG.error("[Stardust] Failed to read from "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err);
+            LogUtil.error("Failed to read from "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err, this.name);
         }
     }
 
@@ -394,7 +395,7 @@ public class WaxAura extends Module {
                         esp.tracerColor
                     );
                 } catch (Exception err) {
-                    Stardust.LOG.error(err.toString());
+                    LogUtil.error(err.toString(), this.name);
                 }
             }
         }

@@ -11,6 +11,7 @@ import dev.stardust.Stardust;
 import java.lang.reflect.Type;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import dev.stardust.util.LogUtil;
 import dev.stardust.util.MsgUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
@@ -105,7 +106,7 @@ public class Loadouts extends Module {
 
     private void loadLoadoutsFromFile() {
         if (!StardustUtil.checkOrCreateFile(mc, LOADOUTS_FILE)) {
-            Stardust.LOG.error("[Stardust] Error checking loadouts file for loading..!");
+            LogUtil.error("Error checking loadouts file for loading..!", this.name);
         }
 
         Gson gson = new Gson();
@@ -121,16 +122,16 @@ public class Loadouts extends Module {
                 }
 
                 loadouts.put(entry.getKey(), itemMap);
-                Stardust.LOG.info("[Stardust] Successfully loaded loadouts from file..!");
+                LogUtil.info("Successfully loaded loadouts from file..!", this.name);
             }
         } catch (Exception err) {
-            Stardust.LOG.error("[Stardust] Error loading loadouts from file..! - Why:\n{}", err.toString());
+            LogUtil.error("Error loading loadouts from file..! - Why: " + err, this.name);
         }
     }
 
     private void saveLoadoutsToFile() {
         if (!StardustUtil.checkOrCreateFile(mc, LOADOUTS_FILE)) {
-            Stardust.LOG.error("[Stardust] Error checking loadouts file for saving..!");
+            LogUtil.error("Error checking loadouts file for saving..!", this.name);
         }
 
         Gson gson = new Gson();
@@ -146,9 +147,9 @@ public class Loadouts extends Module {
             }
 
             gson.toJson(itemNameMap, writer);
-            Stardust.LOG.info("[Stardust] Successfully saved loadouts to file..!");
+            LogUtil.info("Successfully saved loadouts to file..!", this.name);
         } catch (Exception err) {
-            Stardust.LOG.error("[Stardust] Error saving loadouts to file..! - Why:\n{}", err.toString());
+            LogUtil.error("Error saving loadouts to file..! - Why: " + err, this.name);
         }
     }
 
@@ -207,14 +208,14 @@ public class Loadouts extends Module {
 
             ItemStack current = handler.getSlot(to).getStack();
             if (debug.get()) {
-                Stardust.LOG.info(
-                    "[Stardust] Assigned: {} | Current: {}",
-                    assigned.getName().getString(), current.getName().getString()
+                LogUtil.info(
+                    "Assigned: " + assigned.getName().getString()
+                    + " | Current: " + current.getName().getString(), this.name
                 );
             }
 
             if (current.isOf(assigned)) {
-                if (debug.get()) Stardust.LOG.info("[Stardust] Slot already sorted..!");
+                if (debug.get()) LogUtil.info("Slot already sorted..!", this.name);
                 sorted.add(to);
                 continue;
             }
@@ -228,9 +229,9 @@ public class Loadouts extends Module {
                     occupiedBy = handler.getSlot(from).getStack();
                 }
                 if (debug.get()) {
-                    Stardust.LOG.info(
-                        "[Stardust] Looking for: {} | found: {}",
-                        assigned.getName().getString(), occupiedBy.getName().getString()
+                    LogUtil.info(
+                        "Looking for: " + assigned.getName().getString()
+                        + " | found: " + occupiedBy.getName().getString(), this.name
                     );
                 }
                 if (occupiedBy.isOf(assigned)) {
@@ -251,9 +252,9 @@ public class Loadouts extends Module {
                     }
 
                     if (debug.get()) {
-                        Stardust.LOG.info(
-                            "[Stardust] Moving stack: {} from slot {} to slot {}..!",
-                            occupiedBy.getName().getString(), from, to
+                        LogUtil.info(
+                            "Moving stack: " + occupiedBy.getName().getString()
+                            + " from slot " + from + " to slot " + to + "..!", this.name
                         );
                     }
                     break;

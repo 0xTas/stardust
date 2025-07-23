@@ -1,7 +1,7 @@
 package dev.stardust.mixin.meteor;
 
-import dev.stardust.Stardust;
 import net.minecraft.text.Text;
+import dev.stardust.util.LogUtil;
 import javax.annotation.Nullable;
 import dev.stardust.util.StardustUtil;
 import org.spongepowered.asm.mixin.Final;
@@ -79,7 +79,7 @@ public abstract class AutoLogMixin extends Module {
     private void mixinOnTick(CallbackInfo ci) {
         if (!Utils.canUpdate() || !isActive()) ci.cancel();
         if (didLog && System.currentTimeMillis() - requestedDcAt >= 1337) {
-            Stardust.LOG.warn("[Stardust] Detected illegal disconnect failure, falling back on regular disconnect. Try adjusting your illegal disconnect method config setting.");
+            LogUtil.warn("Detected illegal disconnect failure, falling back on regular disconnect (try adjusting your illegal disconnect method config setting).");
             if (mc.getNetworkHandler() != null) mc.getNetworkHandler().onDisconnect(new DisconnectS2CPacket(disconnectReason));
             disconnectReason = null;
             didLog = false;

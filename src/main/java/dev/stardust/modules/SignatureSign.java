@@ -11,6 +11,7 @@ import net.minecraft.text.*;
 import dev.stardust.Stardust;
 import java.util.stream.Stream;
 import net.minecraft.util.Hand;
+import dev.stardust.util.LogUtil;
 import java.security.MessageDigest;
 import net.minecraft.util.DyeColor;
 import java.util.stream.Collectors;
@@ -529,7 +530,7 @@ public class SignatureSign extends Module {
             }
             return sb.substring(0, Math.min(8, sb.length()));
         } catch (Exception err) {
-            Stardust.LOG.error("SHA-1 algorithm not available - {}", err.toString());
+            LogUtil.error("SHA-1 algorithm not available - Why: " + err, this.name);
             return mc.player.getUuidAsString().substring(0, mc.player.getUuidAsString().indexOf("-"));
         }
     }
@@ -656,7 +657,7 @@ public class SignatureSign extends Module {
 
                 return line <= lines.size() ? lines.get(line) : lines.get(lines.size()-1);
             } catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Failed to read from "+ file.getAbsolutePath() +"! - Why:\n"+err);
+                LogUtil.error("Failed to read from " + file.getAbsolutePath() + "! - Why: " + err, this.name);
             }
         } else {
             try {
@@ -672,7 +673,7 @@ public class SignatureSign extends Module {
                     }
                 }
             } catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Failed to create " + file.getAbsolutePath() + "! Why:\n" + err);
+                LogUtil.error("Failed to create " + file.getAbsolutePath() + "! Why:\n" + err, this.name);
             }
 
             switch (line) {
@@ -693,7 +694,7 @@ public class SignatureSign extends Module {
             try(Stream<String> lineStream = Files.lines(file.toPath())) {
                 storyText.addAll(Arrays.stream(lineStream.collect(Collectors.joining(" ")).split(" ")).toList());
             } catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Failed to read from "+ file.getAbsolutePath() +"! - Why:\n"+err);
+                LogUtil.error("Failed to read from "+ file.getAbsolutePath() +"! - Why:\n"+err, this.name);
             }
         }else {
             try {
@@ -709,7 +710,7 @@ public class SignatureSign extends Module {
                     }
                 }
             } catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Failed to create " + file.getAbsolutePath() + "! Why:\n" + err);
+                LogUtil.error("Failed to create " + file.getAbsolutePath() + "! Why:\n" + err, this.name);
                 storyText.add("File not found.");
                 storyText.add("Please create a");
                 storyText.add("storysign.txt in");

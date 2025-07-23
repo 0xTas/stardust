@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.UUID;
 import java.time.Instant;
 import java.util.Optional;
-import dev.stardust.Stardust;
 import net.minecraft.util.Hand;
 import net.minecraft.text.Text;
 import net.minecraft.text.Style;
@@ -293,7 +292,7 @@ public class StardustUtil {
                     return true;
                 }
             }catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Error creating"+file.getAbsolutePath()+"! - Why:\n"+err);
+                LogUtil.error("Error creating " + file.getAbsolutePath() + "! - Why:\n" + err, "StardustUtil#checkOrCreateFile");
             }
         } else return true;
 
@@ -312,7 +311,7 @@ public class StardustUtil {
                 runtime.exec(new String[]{"xdg-open", file.getAbsolutePath()});
             }
         } catch (Exception err) {
-            Stardust.LOG.error("Failed to open "+ file.getAbsolutePath() +"! - Why:\n"+err);
+            LogUtil.error("Failed to open " + file.getAbsolutePath() + "! - Why:\n" + err, "StardustUtil#openFile");
             if (mc.player != null) mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"✨§8> §4§oFailed to open "+file.getName()+"§7."), false);
         }
     }

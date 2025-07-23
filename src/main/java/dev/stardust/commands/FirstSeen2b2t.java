@@ -3,9 +3,9 @@ package dev.stardust.commands;
 import java.time.ZoneId;
 import java.util.Locale;
 import java.time.Instant;
-import dev.stardust.Stardust;
 import net.minecraft.text.Text;
 import java.time.ZonedDateTime;
+import dev.stardust.util.LogUtil;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonElement;
 import dev.stardust.util.StardustUtil;
@@ -72,7 +72,7 @@ public class FirstSeen2b2t extends Command {
                             }
                         } else {
                             ApiHandler.sendErrorResponse();
-                            Stardust.LOG.warn("[Stardust] received unexpected output from api.2b2t.vc: "+seenJson);
+                            LogUtil.warn("Received unexpected output from api.2b2t.vc: \"" + seenJson + "\"", this.getName());
                         }
                     }
                 });

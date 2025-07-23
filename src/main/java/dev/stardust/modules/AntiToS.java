@@ -7,6 +7,7 @@ import dev.stardust.Stardust;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import net.minecraft.text.Text;
+import dev.stardust.util.LogUtil;
 import net.minecraft.util.DyeColor;
 import dev.stardust.util.StardustUtil;
 import net.minecraft.block.entity.SignText;
@@ -122,7 +123,7 @@ public class AntiToS extends Module {
                 mc.player.sendMessage(Text.of("§8<"+StardustUtil.rCC()+"§o✨§r§8> §7You must toggle this setting or the module after updating the blacklist's contents."), false);
             }
         }catch (Exception err) {
-            Stardust.LOG.error("[Stardust] Failed to read from "+ blackListFile.getAbsolutePath() +"! - Why:\n"+err);
+            LogUtil.error("Failed to read from " + blackListFile.getAbsolutePath() +"! - Why:\n"+err, this.name);
         }
     }
 

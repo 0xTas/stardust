@@ -2,7 +2,6 @@ package dev.stardust.util;
 
 import java.util.List;
 import java.util.Optional;
-import dev.stardust.Stardust;
 import java.util.function.Predicate;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
@@ -27,14 +26,14 @@ public class MapUtil {
         static void addWaypoint(BlockPos pos, String name, String initials, Purpose purpose, WpColor color, boolean temp) {
             try {
                 if (getWaypointByCoordinate(pos.getX(), pos.getZ()) != null) {
-                    Stardust.LOG.warn("[Stardust] Cancelling duplicate waypoint with name: \"{}\"..!", name);
+                    LogUtil.warn("Cancelling duplicate waypoint with name: \"" + name + "\"..!", "MapUtil");
                     return;
                 }
 
                 xaero.hud.minimap.waypoint.set.WaypointSet set = getWaypointSet();
 
                 if (set == null) {
-                    Stardust.LOG.warn("[Stardust] Cancelling waypoint with name: \"{}\" because the waypoint set is null..!", name);
+                    LogUtil.warn("Cancelling waypoint with name \"" + name + "\" because the waypoint set is null..!", "MapUtil");
                     return;
                 }
 
@@ -47,7 +46,7 @@ public class MapUtil {
                 xaero.map.mods.SupportMods.xaeroMinimap.requestWaypointsRefresh();
                 saveWaypoints();
             } catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Error while trying to add waypoint to Xaero map! Why - {}", err.toString());
+                LogUtil.error("Error while trying to add waypoint to Xaero map! Why - " + err, "MapUtil");
             }
         }
 
@@ -99,7 +98,7 @@ public class MapUtil {
                 }
                 XaeroIntegration.saveWaypoints();
             } catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Error while trying to remove waypoints from Xaero map! Why - {}", err.toString());
+                LogUtil.error("Error while trying to remove waypoints from Xaero map! Why - " + err, "MapUtil");
             }
         }
 
@@ -109,7 +108,7 @@ public class MapUtil {
                 xaero.hud.minimap.world.MinimapWorld world = getWaypointWorld();
                 if (world != null) session.getWorldManagerIO().saveWorld(world);
             } catch (Exception err) {
-                Stardust.LOG.error("[Stardust] Failed saving minimap waypoints! Why:\n{}", err.toString());
+                LogUtil.error("Failed saving minimap waypoints! Why: " + err, "MapUtil");
             }
         }
 

@@ -2,7 +2,7 @@ package dev.stardust.mixin;
 
 import java.util.Arrays;
 import net.minecraft.text.*;
-import dev.stardust.Stardust;
+import dev.stardust.util.LogUtil;
 import dev.stardust.modules.AntiToS;
 import dev.stardust.modules.ChatSigns;
 import net.minecraft.util.math.BlockPos;
@@ -61,7 +61,7 @@ public abstract class ScreenMixin extends AbstractParentElement implements Drawa
                 long packedPos = Long.parseLong(posStr);
                 pos = BlockPos.fromLong(packedPos);
             } catch (Exception err) {
-                Stardust.LOG.error("Invalid custom ClickEvent syntax: "+Arrays.toString(args)+"\n"+err);
+                LogUtil.error("Invalid custom ClickEvent syntax: "+Arrays.toString(args)+"\n"+err, "ScreenMixin");
                 return;
             }
             cir.cancel();

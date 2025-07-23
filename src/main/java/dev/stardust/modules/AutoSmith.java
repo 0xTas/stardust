@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import net.minecraft.item.*;
 import dev.stardust.Stardust;
 import net.minecraft.text.Text;
+import dev.stardust.util.LogUtil;
 import dev.stardust.util.MsgUtil;
 import net.minecraft.sound.SoundEvents;
 import meteordevelopment.orbit.EventHandler;
@@ -686,7 +687,7 @@ public class AutoSmith extends Module {
                             resettingTemplates = true;
                             resettingMaterials = true;
                             InvUtils.shiftClick().slotId(SmithingScreenHandler.EQUIPMENT_ID);
-                            Stardust.LOG.error("[AutoSmith] Item in equipment slot was not armor!");
+                            LogUtil.error("Item in equipment slot was not armor!", this.name);
                             return;
                         }
                         EquipmentType armorType = getEquipmentType(armor);
@@ -754,7 +755,7 @@ public class AutoSmith extends Module {
                         }
 
                         if (neededMaterial == null) {
-                            Stardust.LOG.error("neededMaterial was somehow null!");
+                            LogUtil.error("neededMaterial was somehow null..!", this.name);
                             return;
                         }
                         for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
@@ -784,7 +785,7 @@ public class AutoSmith extends Module {
                             resettingTemplates = true;
                             resettingMaterials = true;
                             InvUtils.shiftClick().slotId(SmithingScreenHandler.EQUIPMENT_ID);
-                            Stardust.LOG.error("[AutoSmith] Item in equipment slot was not armor!");
+                            LogUtil.error("Item in equipment slot was not armor!", this.name);
                             return;
                         }
                         EquipmentType armorType = getEquipmentType(armor);
@@ -879,7 +880,7 @@ public class AutoSmith extends Module {
                             }
                         }
                         if (neededPattern == null) {
-                            Stardust.LOG.error("neededPattern was somehow null!");
+                            LogUtil.error("neededPattern was somehow null..!", this.name);
                             return;
                         }
                         for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {

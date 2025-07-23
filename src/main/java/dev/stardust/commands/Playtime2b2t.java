@@ -1,7 +1,7 @@
 package dev.stardust.commands;
 
-import dev.stardust.Stardust;
 import net.minecraft.text.Text;
+import dev.stardust.util.LogUtil;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonElement;
 import java.util.concurrent.TimeUnit;
@@ -75,7 +75,7 @@ public class Playtime2b2t extends Command {
                             if (player != null) player.sendMessage(Text.of(sb.toString()), false);
                         } else {
                             ApiHandler.sendErrorResponse();
-                            Stardust.LOG.warn("[Stardust] received unexpected output from api.2b2t.vc: "+ptJson);
+                            LogUtil.warn("Received unexpected output from api.2b2t.vc : \"" + ptJson + "\"", this.getName());
                         }
                     }
                 });
