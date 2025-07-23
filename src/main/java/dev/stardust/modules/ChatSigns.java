@@ -407,6 +407,9 @@ public class ChatSigns extends Module {
 
     @Nullable
     private LocalDate parseDate(String dateStr) {
+        String[] delimiters = {
+            ".", "-", "_", ",", "'", "+", "\\"
+        };
         String[] formats = {
             "M/d/yy", "M/dd/yy", "MM/d/yy", "MM/dd/yy",
             "M/d/yyyy", "M/dd/yyyy", "MM/d/yyyy", "MM/dd/yyyy",
@@ -414,15 +417,24 @@ public class ChatSigns extends Module {
             "d/MM/yyyy", "dd/M/yyyy", "dd/MM/yyyy", "yyyy/M/d", "yyyy/MM/d",
             "yyyy/M/dd", "yyyy/MM/dd", "yyyy/d/M", "yyyy/dd/M", "yyyy/d/MM", "yyyy/dd/MM",
         };
+
         for (String format : formats) {
-            LocalDate date;
+            LocalDate date = null;
             try {
                 date = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern(format));
-            } catch (Exception ignored) {
-                continue;
+            } catch (Exception ignored) {}
+
+            if (date != null) return date;
+            for (String delimiter : delimiters) {
+                String fmt = format.replace("/", delimiter);
+
+                try {
+                    date = LocalDate.parse(dateStr, DateTimeFormatter.ofPattern(fmt));
+                } catch (Exception ignored) {}
+                if (date != null) return date;
             }
-            return date;
         }
+
         return null;
     }
 
