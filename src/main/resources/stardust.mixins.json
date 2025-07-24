@@ -47,10 +47,13 @@
     "GoatHornItemMixin",
     "LivingEntityMixin",
     "FireworkRocketEntityMixin",
+    "accessor.GameProfileAccessor",
     "accessor.ClientConnectionAccessor",
     "accessor.AnvilScreenHandlerAccessor",
     "accessor.DisconnectS2CPacketAccessor",
     "accessor.PlayerMoveC2SPacketAccessor",
-    "accessor.GrindstoneScreenHandlerAccessor"
+    "accessor.PlayerListS2CPacketAccessor",
+    "accessor.GrindstoneScreenHandlerAccessor",
+    "accessor.EntityTrackerUpdateS2CPacketAccessor"
   ]
 }
