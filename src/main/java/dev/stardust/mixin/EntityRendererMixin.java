@@ -1,6 +1,7 @@
 package dev.stardust.mixin;
 
 import net.minecraft.text.Text;
+import dev.stardust.util.TextUtil;
 import net.minecraft.entity.Entity;
 import dev.stardust.modules.AntiToS;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,7 +30,7 @@ public abstract class EntityRendererMixin {
         if (!antiToS.isActive()) return name;
 
         if (!antiToS.containsBlacklistedText(name.getString())) return name;
-        return Text.literal(antiToS.censorText(name.getString())).setStyle(name.getStyle());
+        return TextUtil.modifyWithStyle(name.copy(), antiToS::censorText);
     }
 
     // See NoRenderMixin.java
