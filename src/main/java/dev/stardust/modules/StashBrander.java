@@ -112,9 +112,10 @@ public class StashBrander extends Module {
     private final Setting<Integer> tickRate = settings.getDefaultGroup().add(
         new IntSetting.Builder()
             .name("tick-rate")
+            .description("Increase this if the server is kicking you.")
             .min(0).max(1000)
             .sliderRange(0, 100)
-            .defaultValue(0)
+            .defaultValue(2)
             .build()
     );
 

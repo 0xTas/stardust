@@ -248,7 +248,7 @@ public class AutoSmith extends Module {
     private final Setting<Integer> tickRate = settings.getDefaultGroup().add(
         new IntSetting.Builder()
             .name("delay")
-            .description("You may need to increase this if your ping is high.")
+            .description("Increase this if the server is kicking you.")
             .range(2, 100)
             .sliderRange(2, 20)
             .defaultValue(4)
