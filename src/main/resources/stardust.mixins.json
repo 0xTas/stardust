@@ -8,6 +8,7 @@
     "InGameHudMixin",
     "BossBarHudMixin",
     "BookScreenMixin",
+    "AnvilScreenMixin",
     "DrawContextMixin",
     "SoundSystemMixin",
     "TitleScreenMixin",
