@@ -50,6 +50,27 @@ public class AutoMason extends Module {
             .defaultValue(Mode.Packet)
             .build()
     );
+    private final Setting<Integer> batchDelay = settings.getDefaultGroup().add(
+        new IntSetting.Builder()
+            .name("packet-delay")
+            .description("Increase this if the server is kicking you.")
+            .min(0).max(1000)
+            .sliderRange(0, 50)
+            .defaultValue(1)
+            .visible(() -> moduleMode.get().equals(Mode.Packet))
+            .build()
+    );
+    private final Setting<Integer> tickRate = settings.getDefaultGroup().add(
+        new IntSetting.Builder()
+            .name("tick-rate")
+            .description("Increase this if the server is kicking you.")
+            .min(0).max(1000)
+            .sliderRange(0, 100)
+            .defaultValue(4)
+            .visible(() -> moduleMode.get().equals(Mode.Interact))
+            .build()
+    );
+
     private final Setting<List<Item>> itemList = settings.getDefaultGroup().add(
         new ItemListSetting.Builder()
             .name("target-items")
@@ -94,16 +115,6 @@ public class AutoMason extends Module {
             .visible(pingOnDone::get)
             .build()
     );
-    private final Setting<Integer> tickRate = settings.getDefaultGroup().add(
-        new IntSetting.Builder()
-            .name("tick-rate")
-            .description("Increase this if the server is kicking you.")
-            .min(0).max(1000)
-            .sliderRange(0, 100)
-            .defaultValue(2)
-            .visible(() -> moduleMode.get().equals(Mode.Interact))
-            .build()
-    );
 
     private int timer = 0;
     private boolean notified = false;
@@ -111,6 +122,7 @@ public class AutoMason extends Module {
     private @Nullable ItemStack outputStack = null;
     private final IntArrayList projectedEmpty = new IntArrayList();
     private final IntArrayList processedSlots = new IntArrayList();
+    private final ArrayDeque<Packet<?>> packetQueue = new ArrayDeque<>();
 
     @Override
     public void onDeactivate() {
@@ -118,6 +130,7 @@ public class AutoMason extends Module {
         notified = false;
         targetStack = null;
         outputStack = null;
+        packetQueue.clear();
         processedSlots.clear();
         projectedEmpty.clear();
     }
@@ -143,6 +156,27 @@ public class AutoMason extends Module {
         if (mc.player == null || mc.world == null) return;
         if (!(mc.player.currentScreenHandler instanceof StonecutterScreenHandler cutter)) return;
 
+        if (!packetQueue.isEmpty()) {
+            if (batchDelay.get() <= 0) {
+                while (!packetQueue.isEmpty()) {
+                    ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).invokeSendImmediately(
+                        packetQueue.removeFirst(), null, true
+                    );
+                }
+            } else {
+                ++timer;
+                if (timer >= batchDelay.get()) {
+                    timer = 0;
+                    ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).invokeSendImmediately(
+                        packetQueue.removeFirst(), null, true
+                    );
+                }
+            }
+
+            if (packetQueue.isEmpty()) finished();
+            return;
+        }
+
         switch (moduleMode.get()) {
             case Packet -> {
                 if (notified) return;
@@ -152,7 +186,7 @@ public class AutoMason extends Module {
                     finished();
                     return;
                 }
-                ArrayDeque<Packet<?>> packetQueue = new ArrayDeque<>();
+
                 boolean exhausted = false;
                 while (!exhausted) {
                     Packet<?> packet = generatePacket(cutter);
@@ -161,13 +195,7 @@ public class AutoMason extends Module {
                         exhausted = true;
                     } else packetQueue.addLast(packet);
                 }
-
-                while (!packetQueue.isEmpty()) {
-                    ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).invokeSendImmediately(
-                        packetQueue.removeFirst(), null, true
-                    );
-                }
-                finished();
+                if (packetQueue.isEmpty()) finished();
             }
             case Interact -> {
                 if (timer >= tickRate.get()) {
