@@ -645,7 +645,9 @@ public class SignatureSign extends Module {
                 if (file.createNewFile()) {
                     if (mc.player != null) {
                         MsgUtil.sendModuleMsg("Created autosign.txt in your meteor-client folder§a..!", this.name);
-                        Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, meteorFolder.toFile().getAbsolutePath()));
+                        // Use the new ClickEvent.OpenFile implementation to allow opening
+                        // the folder from the chat message.
+                        Style style = Style.EMPTY.withClickEvent(new ClickEvent.OpenFile(meteorFolder.toFile().getAbsolutePath()));
 
                         MsgUtil.sendModuleMsg("Click §2§lhere §r§7to open the folder.", style, this.name);
                     }
@@ -679,7 +681,8 @@ public class SignatureSign extends Module {
                 if (file.createNewFile()) {
                     if (mc.player != null) {
                         MsgUtil.sendModuleMsg("Created storysign.txt in your meteor-client folder§a..!", this.name);
-                        Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, meteorFolder.toFile().getAbsolutePath()));
+                        // Adapt to the new ClickEvent API as above.
+                        Style style = Style.EMPTY.withClickEvent(new ClickEvent.OpenFile(meteorFolder.toFile().getAbsolutePath()));
 
                         MsgUtil.sendModuleMsg("Click §2§lhere §r§7to open the folder.", style, this.name);
                     }

@@ -50,8 +50,9 @@ public abstract class ScreenMixin extends AbstractParentElement implements Drawa
         ClickEvent event = style.getClickEvent();
         if (event == null || event.getAction() != ClickEvent.Action.RUN_COMMAND) return;
 
-        if (event.getValue().startsWith("clickESP~")) {
-            String[] args = event.getValue().split("~");
+        // ClickEvent now exposes its contents through the `value()` accessor.
+        if (event.value().startsWith("clickESP~")) {
+            String[] args = event.value().split("~");
 
             String mod;
             BlockPos pos;
@@ -75,15 +76,13 @@ public abstract class ScreenMixin extends AbstractParentElement implements Drawa
                     ChatSigns chatSigns = mods.get(ChatSigns.class);
                     if (chatSigns.toggleClickESP(pos, now)) {
                         ((StyleAccessor) style).setHoverEvent(
-                            new HoverEvent(
-                                HoverEvent.Action.SHOW_TEXT,
+                            new HoverEvent.ShowText(
                                 Text.literal("§4§oDisable §7§oESP for this sign.")
                             )
                         );
                     } else {
                         ((StyleAccessor) style).setHoverEvent(
-                            new HoverEvent(
-                                HoverEvent.Action.SHOW_TEXT,
+                            new HoverEvent.ShowText(
                                 Text.literal("§2§oEnable §7§oESP for this sign.")
                             )
                         );
