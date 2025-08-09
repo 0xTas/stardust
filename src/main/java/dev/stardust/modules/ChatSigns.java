@@ -641,9 +641,10 @@ public class ChatSigns extends Module {
             // Adapt to the new text event API where ClickEvent/HoverEvent are sealed
             // interfaces with concrete implementations for each action.
             Style clickESP = Style.EMPTY.withClickEvent(
-                new ClickEvent.RunCommand("clickESP~chatSigns~" + sign.getPos().asLong())
+                new ClickEvent(ClickEvent.Action.RUN_COMMAND, "clickESP~chatSigns~" + sign.getPos().asLong())
             ).withHoverEvent(
-                new HoverEvent.ShowText(
+                new HoverEvent(
+                    HoverEvent.Action.SHOW_TEXT,
                     Text.literal(signsToHighlight.containsKey(sign.getPos()) ?
                         "§4§oDisable §7§oESP for this sign." :
                         "§2§oEnable §7§oESP for this sign.")

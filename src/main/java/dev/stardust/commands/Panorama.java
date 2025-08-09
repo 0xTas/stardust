@@ -35,9 +35,7 @@ public class Panorama extends Command {
     private int timer = 10;
     private int screenshot = 0;
     private float preYaw = 69f;
-    private float prevYaw = 69f;
     private float prePitch = 69f;
-    private float prevPitch = 69f;
     private int preWidth = 42069;
     private int preHeight = 42069;
 
@@ -78,12 +76,7 @@ public class Panorama extends Command {
         instance = mc;
         screenshot = 0;
         preYaw = mc.player.getYaw();
-        // `prevYaw`/`prevPitch` were renamed in modern mappings to `lastYaw`/`lastPitch`.
-        // Store the previous frame's rotation values using the new field names so that
-        // we can restore the player's orientation once the panorama capture completes.
-        prevYaw = mc.player.lastYaw;
         prePitch = mc.player.getPitch();
-        prevPitch = mc.player.lastPitch;
         currentPanoramaDir = panoramaDir;
         preWidth = mc.getWindow().getFramebufferWidth();
         preHeight = mc.getWindow().getFramebufferHeight();
@@ -226,10 +219,6 @@ public class Panorama extends Command {
                     takingPanorama = false;
                     instance.player.setYaw(preYaw);
                     instance.player.setPitch(prePitch);
-                    // Restore the previously saved rotation values using the updated
-                    // field names introduced in recent versions of Minecraft.
-                    instance.player.lastYaw = prevYaw;
-                    instance.player.lastPitch = prevPitch;
                     instance.gameRenderer.setRenderingPanorama(false);
                     instance.gameRenderer.setBlockOutlineEnabled(true);
                     instance.getWindow().setFramebufferWidth(preWidth);

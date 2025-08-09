@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import java.nio.file.Files;
 import net.minecraft.item.*;
 import net.minecraft.text.*;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
 import dev.stardust.Stardust;
 import java.util.stream.Stream;
 import net.minecraft.util.Hand;
@@ -645,9 +647,9 @@ public class SignatureSign extends Module {
                 if (file.createNewFile()) {
                     if (mc.player != null) {
                         MsgUtil.sendModuleMsg("Created autosign.txt in your meteor-client folder§a..!", this.name);
-                        // Use the new ClickEvent.OpenFile implementation to allow opening
-                        // the folder from the chat message.
-                        Style style = Style.EMPTY.withClickEvent(new ClickEvent.OpenFile(meteorFolder.toFile().getAbsolutePath()));
+                        Style style = Style.EMPTY.withClickEvent(
+                            new ClickEvent(ClickEvent.Action.OPEN_FILE, meteorFolder.toFile().getAbsolutePath())
+                        );
 
                         MsgUtil.sendModuleMsg("Click §2§lhere §r§7to open the folder.", style, this.name);
                     }
@@ -681,8 +683,9 @@ public class SignatureSign extends Module {
                 if (file.createNewFile()) {
                     if (mc.player != null) {
                         MsgUtil.sendModuleMsg("Created storysign.txt in your meteor-client folder§a..!", this.name);
-                        // Adapt to the new ClickEvent API as above.
-                        Style style = Style.EMPTY.withClickEvent(new ClickEvent.OpenFile(meteorFolder.toFile().getAbsolutePath()));
+                        Style style = Style.EMPTY.withClickEvent(
+                            new ClickEvent(ClickEvent.Action.OPEN_FILE, meteorFolder.toFile().getAbsolutePath())
+                        );
 
                         MsgUtil.sendModuleMsg("Click §2§lhere §r§7to open the folder.", style, this.name);
                     }
