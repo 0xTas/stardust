@@ -1,4 +1,5 @@
 package dev.stardust.modules;
+import dev.stardust.mixin.accessor.PlayerInventoryAccessor;
 
 import java.util.*;
 import java.time.LocalDate;
@@ -252,7 +253,7 @@ public class PagePirate extends Module {
                         InvUtils.move().from(result.slot()).to(nonCriticalSlot.slot());
                         InvUtils.swap(nonCriticalSlot.slot(), true);
                     } else {
-                        InvUtils.move().from(result.slot()).to(mc.player.getInventory().selectedSlot);
+                        InvUtils.move().from(result.slot()).to(((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot());
                     }
                 }
             }
@@ -430,7 +431,7 @@ public class PagePirate extends Module {
             piratedPages.add(coverPage);
         }
 
-        int slot = mc.player.getInventory().selectedSlot;
+        int slot = ((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot();
         boolean shouldSign = finalizeCopy.get() && metadata != null;
         MsgUtil.sendModuleMsg("Successfully copied nearby book§a..!", this.name);
         piratedPages.addAll(filtered.stream().map(page -> page.replace("~pgprte~newline~", "\n")).toList());

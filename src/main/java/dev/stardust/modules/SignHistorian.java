@@ -1,4 +1,6 @@
 package dev.stardust.modules;
+import net.minecraft.entity.player.PlayerInventory;
+import dev.stardust.mixin.accessor.PlayerInventoryAccessor;
 
 import java.util.*;
 import java.io.File;
@@ -670,14 +672,14 @@ public class SignHistorian extends Module {
         Vec3d hitVec = Vec3d.ofCenter(pos);
         BlockHitResult hit = new BlockHitResult(hitVec, mc.player.getHorizontalFacing().getOpposite(), pos, false);
 
-        ItemStack current = mc.player.getInventory().getMainHandStack();
+        ItemStack current = mc.player.getMainHandStack();
         if (current.getItem() != dye) {
-            for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+            for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
                 ItemStack stack = mc.player.getInventory().getStack(n);
                 if (stack.getItem() == dye) {
                     if (current.getItem() instanceof SignItem && current.getCount() > 1) dyeSlot = n;
                     if (n < 9) InvUtils.swap(n, true);
-                    else InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
+                    else InvUtils.move().from(n).to(((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot());
 
                     timer = 3;
                     return;
@@ -844,7 +846,7 @@ public class SignHistorian extends Module {
 
         if (timer == -1 && dyeSlot != -1) {
             if (dyeSlot < 9) InvUtils.swapBack();
-            else InvUtils.move().from(mc.player.getInventory().selectedSlot).to(dyeSlot);
+            else InvUtils.move().from(((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot()).to(dyeSlot);
             dyeSlot = -1;
             timer = 3;
         }
@@ -894,7 +896,7 @@ public class SignHistorian extends Module {
                 if (!approachingGriefers.isEmpty()) {
                     if (pingTicks >= 60) {
                         pingTicks = 0;
-                        mc.player.playSound(SoundEvents.ENTITY_PHANTOM_HURT, alarmVolume.get().floatValue(), 1f);
+                        mc.player.playSound(SoundEvents.ENTITY_PHANTOM_HURT.value(), alarmVolume.get().floatValue(), 1f);
                         if (chatNotification.get()) {
                             MsgUtil.updateModuleMsg("§c§lNEARBY SIGNS IN DANGER OF MOB GRIEFING§8§L.", this.name, "MobGriefAlarm".hashCode());
                         }

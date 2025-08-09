@@ -133,7 +133,7 @@ public class Panorama extends Command {
 
         readyToAssemble = false;
         if (instance.player != null) {
-            instance.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, 1f, 1f);
+            instance.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME.value(), 1f, 1f);
             instance.player.sendMessage(Text.of("§8<" + StardustUtil.rCC() + "✨§8> §3§oYour resource pack is ready to be enabled§f§o!"), false);
         }
     }

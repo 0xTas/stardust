@@ -1,4 +1,5 @@
 package dev.stardust.modules;
+import net.minecraft.entity.player.PlayerInventory;
 
 import java.util.ArrayList;
 import java.util.ArrayDeque;
@@ -272,7 +273,7 @@ public class RoadTrip extends Module {
             double percentDurability = Math.floor((currentDurability / (double) maxDurability) * 100);
 
             if (percentDurability <= 5) {
-                mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK, pingVolume.get().floatValue(), 1f);
+                mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK.value(), pingVolume.get().floatValue(), 1f);
                 MsgUtil.updateModuleMsg("Elytra durability: §c" + percentDurability + "§7%", this.name, "roadTripElytraWarn".hashCode());
                 reset = true;
             }
@@ -281,7 +282,7 @@ public class RoadTrip extends Module {
         if (lagNotify.get() && ticksNotMoved >= 80) {
             reset = true;
             ticksNotMoved = 0;
-            mc.player.playSound(SoundEvents.ENTITY_PHANTOM_SWOOP, pingVolume.get().floatValue(), 1f);
+            mc.player.playSound(SoundEvents.ENTITY_PHANTOM_SWOOP.value(), pingVolume.get().floatValue(), 1f);
         }
 
         if (reset) ticksSinceWarned = 0;
@@ -290,7 +291,7 @@ public class RoadTrip extends Module {
     private boolean hasEnoughElytras() {
         if (mc.player == null) return false;
         ArrayList<Integer> goodSlotsLeft = new ArrayList<>();
-        for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
             ItemStack stack = mc.player.getInventory().getStack(n);
 
             if (stack.getItem() == Items.ELYTRA) {
@@ -309,7 +310,7 @@ public class RoadTrip extends Module {
     private boolean hasEnoughRockets() {
         if (mc.player == null) return false;
         int totalRocketsLeft = 0;
-        for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
             ItemStack stack = mc.player.getInventory().getStack(n);
             if (stack.getItem() == Items.FIREWORK_ROCKET) {
                 totalRocketsLeft += stack.getCount();

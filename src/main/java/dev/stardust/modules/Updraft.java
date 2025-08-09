@@ -1,4 +1,6 @@
 package dev.stardust.modules;
+import net.minecraft.entity.player.PlayerInventory;
+import dev.stardust.mixin.accessor.PlayerInventoryAccessor;
 
 import dev.stardust.Stardust;
 import net.minecraft.util.Hand;
@@ -123,14 +125,14 @@ public class Updraft extends Module {
             return;
         }
 
-        for (int n = 0; n < (hotBarSetting.get() ? 9 : mc.player.getInventory().main.size()); n++) {
+        for (int n = 0; n < (hotBarSetting.get() ? 9 : PlayerInventory.MAIN_SIZE); n++) {
             ItemStack stack = mc.player.getInventory().getStack(n);
             if (stack.getItem() == Items.WIND_CHARGE) {
                 if (n < 9) {
                     InvUtils.swap(n, true);
                 } else if (!hotBarSetting.get()) {
                     returnSlot = n;
-                    InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
+                    InvUtils.move().from(n).to(((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot());
                 }
                 break;
             }
@@ -145,7 +147,7 @@ public class Updraft extends Module {
 
     private void swapFromWindCharge() {
         if (returnSlot == -1) InvUtils.swapBack();
-        else InvUtils.move().from(mc.player.getInventory().selectedSlot).to(returnSlot);
+        else InvUtils.move().from(((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot()).to(returnSlot);
 
         returnSlot = -1;
         offhand = false;

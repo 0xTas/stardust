@@ -1,4 +1,5 @@
 package dev.stardust.modules;
+import net.minecraft.entity.player.PlayerInventory;
 
 import java.util.List;
 import java.util.ArrayDeque;
@@ -145,7 +146,7 @@ public class AutoMason extends Module {
     @EventHandler
     private void onSoundPlay(PlaySoundEvent event) {
         if (!muteCutter.get()) return;
-        if (event.sound.getId().equals(SoundEvents.UI_STONECUTTER_TAKE_RESULT.id())) {
+        if (event.sound.getId().equals(SoundEvents.UI_STONECUTTER_TAKE_RESULT.value().id())) {
             event.cancel();
         }
     }
@@ -210,7 +211,7 @@ public class AutoMason extends Module {
                         MsgUtil.sendModuleMsg("No target items selected§c..!", this.name);
                         if (pingOnDone.get()) {
                             mc.player.playSound(
-                                SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP,
+                                SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.value(),
                                 pingVolume.get().floatValue(),
                                 ThreadLocalRandom.current().nextFloat(0.69f, 1.337f)
                             );
@@ -227,7 +228,7 @@ public class AutoMason extends Module {
 
                 if (!hasValidItems(cutter)) finished();
                 else if (input.isEmpty() && output.isEmpty()) {
-                    for (int n = 2; n < mc.player.getInventory().main.size() + 2; n++) {
+                    for (int n = 2; n < PlayerInventory.MAIN_SIZE + 2; n++) {
                         ItemStack stack = cutter.getSlot(n).getStack();
 
                         if (!isValidItem(stack)) continue;
@@ -258,7 +259,7 @@ public class AutoMason extends Module {
                         if (!notified) {
                             notified = true;
                             MsgUtil.sendModuleMsg("Desired recipe not found§c..!", this.name);
-                            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), ThreadLocalRandom.current().nextFloat(0.69f, 1.337f));
+                            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.value(), pingVolume.get().floatValue(), ThreadLocalRandom.current().nextFloat(0.69f, 1.337f));
                         }
                         finished();
                     }
@@ -273,7 +274,7 @@ public class AutoMason extends Module {
         if (mc.player == null) return;
         if (!notified) {
             if (chatFeedback) MsgUtil.sendModuleMsg("No more items to craft§a..!", this.name);
-            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), ThreadLocalRandom.current().nextFloat(0.69f, 1.337f));
+            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.value(), pingVolume.get().floatValue(), ThreadLocalRandom.current().nextFloat(0.69f, 1.337f));
         }
         notified = true;
         processedSlots.clear();
@@ -322,7 +323,7 @@ public class AutoMason extends Module {
             }
         } else {
             // fill input slot
-            for (int n = 2; n < mc.player.getInventory().main.size() + 2; n++) {
+            for (int n = 2; n < PlayerInventory.MAIN_SIZE + 2; n++) {
                 if (processedSlots.contains(n)) continue;
                 ItemStack stack = handler.getSlot(n).getStack();
                 if (!isValidItem(stack)) continue;
@@ -346,7 +347,7 @@ public class AutoMason extends Module {
 
     private int predictEmptySlot(StonecutterScreenHandler handler) {
         if (mc.player == null) return -1;
-        for (int n = mc.player.getInventory().main.size() + 1; n >= 2; n--) {
+        for (int n = PlayerInventory.MAIN_SIZE + 1; n >= 2; n--) {
             if (processedSlots.contains(n) && !projectedEmpty.contains(n)) continue;
             if (projectedEmpty.contains(n)) {
                 projectedEmpty.rem(n);
@@ -361,7 +362,7 @@ public class AutoMason extends Module {
 
     private boolean hasValidItems(StonecutterScreenHandler handler) {
         if (mc.player == null) return false;
-        for (int n = 0; n < mc.player.getInventory().main.size() + 2; n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE + 2; n++) {
             if (n == 1) continue; // skip output slot
             if (isValidItem(handler.getSlot(n).getStack())) return true;
         }

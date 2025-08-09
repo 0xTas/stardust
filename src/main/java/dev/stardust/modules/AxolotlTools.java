@@ -1,4 +1,6 @@
 package dev.stardust.modules;
+import net.minecraft.entity.player.PlayerInventory;
+import dev.stardust.mixin.accessor.PlayerInventoryAccessor;
 
 import java.util.*;
 import dev.stardust.Stardust;
@@ -271,7 +273,7 @@ public class AxolotlTools extends Module {
 
     private boolean hasEmptySlots() {
         if (mc.player == null) return false;
-        for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
             if (mc.player.getInventory().getStack(n).isEmpty()) return true;
         }
         return false;
@@ -279,7 +281,7 @@ public class AxolotlTools extends Module {
 
     private boolean hasNoValidBucket(Item bucketType) {
         if (mc.player == null) return true;
-        for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
             if (mc.player.getInventory().getStack(n).getItem() == bucketType) return false;
         }
         return true;
@@ -287,11 +289,11 @@ public class AxolotlTools extends Module {
 
     private boolean trySwapValidBucket(Item bucketType) {
         if (mc.player == null) return false;
-        for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
             ItemStack stack = mc.player.getInventory().getStack(n);
             if (stack.getItem() == bucketType) {
                 if (n < 9) InvUtils.swap(n, false);
-                else InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
+                else InvUtils.move().from(n).to(((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot());
                 return true;
             }
         }
@@ -311,13 +313,13 @@ public class AxolotlTools extends Module {
         if (mc.interactionManager == null) return true;
         if (mc.player == null || mc.world == null) return true;
 
-        for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
             ItemStack stack = mc.player.getInventory().getStack(n);
             if (!(stack.getItem() == bucketType)) continue;
 
-            if (n != mc.player.getInventory().selectedSlot) {
+            if (n != ((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot()) {
                 if (n < 9) InvUtils.swap(n, false);
-                else InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
+                else InvUtils.move().from(n).to(((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot());
             }
             AtomicReference<ActionResult> result = new AtomicReference<>();
             Rotations.rotate(
@@ -341,12 +343,12 @@ public class AxolotlTools extends Module {
         ItemStack currentStack = mc.player.getMainHandStack();
         if (currentStack.getItem() != bucketType) {
             boolean foundBucket = false;
-            for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+            for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
                 ItemStack stack = mc.player.getInventory().getStack(n);
                 if (stack.getItem() == bucketType) {
                     foundBucket = true;
                     if (n < 9) InvUtils.swap(n, false);
-                    else InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
+                    else InvUtils.move().from(n).to(((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot());
                     break;
                 }
             }
@@ -396,7 +398,7 @@ public class AxolotlTools extends Module {
         if (mc.player == null || mc.world == null) return;
         if (axolotlMode.get() == AxolotlMode.None && !catchFish.get()) return;
 
-        ItemStack current = mc.player.getInventory().getMainHandStack();
+        ItemStack current = mc.player.getMainHandStack();
         if ((current.contains(DataComponentTypes.FOOD) || Utils.isThrowable(current.getItem())) && mc.player.getItemUseTime() > 0) {
             ++timer;
             return;
@@ -590,7 +592,7 @@ public class AxolotlTools extends Module {
                             }
 
                             if (!hasNoValidBucket(Items.TROPICAL_FISH_BUCKET)) {
-                                for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+                                for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
                                     if (mc.player.getInventory().getStack(n).getItem() == Items.TROPICAL_FISH_BUCKET) {
                                         InvUtils.drop().slot(n);
                                         ++timer;

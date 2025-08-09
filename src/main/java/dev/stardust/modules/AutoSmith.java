@@ -1,4 +1,5 @@
 package dev.stardust.modules;
+import net.minecraft.entity.player.PlayerInventory;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -576,7 +577,7 @@ public class AutoSmith extends Module {
         if (mc.player == null) return false;
         if (!(mc.player.currentScreenHandler instanceof SmithingScreenHandler ss)) return false;
 
-        for (int n = 0; n < mc.player.getInventory().main.size() + 4; n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE + 4; n++) {
             ItemStack stack = ss.getSlot(n).getStack();
             if (stack.getItem() == needed) return true;
         }
@@ -757,7 +758,7 @@ public class AutoSmith extends Module {
                                 resettingMaterials = false;
                             }
                         } else if (!foundEquip) {
-                            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+                            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                                 ItemStack stack = ss.getSlot(n).getStack();
                                 if (isValidEquipmentForTrimming(stack)) {
                                     foundEquip = true;
@@ -786,7 +787,7 @@ public class AutoSmith extends Module {
                                 LogUtil.error("neededMaterial was somehow null!");
                                 return;
                             }
-                            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+                            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                                 ItemStack stack = ss.getSlot(n).getStack();
                                 if (stack.isOf(neededMaterial)) {
                                     foundIngots = true;
@@ -819,7 +820,7 @@ public class AutoSmith extends Module {
                                 LogUtil.error("neededPattern was somehow null!", this.name);
                                 return;
                             }
-                            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+                            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                                 ItemStack stack = ss.getSlot(n).getStack();
                                 if (stack.getItem() == neededPattern) {
                                     foundTemplates = true;
@@ -851,7 +852,7 @@ public class AutoSmith extends Module {
                             if (ingotsRemaining == 0) foundIngots = false;
                             if (templatesRemaining == 0) foundTemplates = false;
                         } else if (!foundEquip) {
-                            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+                            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                                 ItemStack stack = ss.getSlot(n).getStack();
                                 if (isValidEquipmentForUpgrading(stack)) {
                                     foundEquip = true;
@@ -864,7 +865,7 @@ public class AutoSmith extends Module {
                                 finished();
                             }
                         }else if (!foundIngots) {
-                            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+                            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                                 ItemStack stack = ss.getSlot(n).getStack();
                                 if (stack.getItem() == Items.NETHERITE_INGOT) {
                                     foundIngots = true;
@@ -877,7 +878,7 @@ public class AutoSmith extends Module {
                                 finished();
                             }
                         } else if (!foundTemplates) {
-                            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+                            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                                 ItemStack stack = ss.getSlot(n).getStack();
                                 if (stack.getItem() == Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE) {
                                     foundTemplates = true;
@@ -1055,7 +1056,7 @@ public class AutoSmith extends Module {
                     MsgUtil.sendModuleMsg("Currently looking for equipment of type: §e" + currentlyLookingFor.name(), this.name);
                 }
             }
-            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                 if (processedSlots.contains(n)) continue;
                 ItemStack stack = handler.getSlot(n).getStack();
                 if ((operatingMode.get().equals(SmithingMode.Trim) && isValidEquipmentForTrimming(stack)) || (operatingMode.get().equals(SmithingMode.Upgrade) && isValidEquipmentForUpgrading(stack))) {
@@ -1130,7 +1131,7 @@ public class AutoSmith extends Module {
             } else {
                 needed = Items.NETHERITE_INGOT;
             }
-            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                 if (processedSlots.contains(n)) continue;
                 ItemStack stack = handler.getSlot(n).getStack();
                 if (stack.isOf(needed)) {
@@ -1176,7 +1177,7 @@ public class AutoSmith extends Module {
             } else {
                 needed = Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE;
             }
-            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                 if (processedSlots.contains(n)) continue;
                 ItemStack stack = handler.getSlot(n).getStack();
                 if (stack.isOf(needed)) {
@@ -1273,7 +1274,7 @@ public class AutoSmith extends Module {
 
     private int predictEmptySlot(SmithingScreenHandler handler) {
         if (mc.player == null) return -1;
-        for (int n = mc.player.getInventory().main.size() + 3; n >= 4; n--) {
+        for (int n = PlayerInventory.MAIN_SIZE + 3; n >= 4; n--) {
             if (processedSlots.contains(n) && !projectedEmpty.contains(n)) continue;
             if (projectedEmpty.contains(n)) {
                 projectedEmpty.rem(n);
