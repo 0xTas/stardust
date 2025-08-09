@@ -28,7 +28,6 @@
     "accessor.AnvilScreenAccessor",
     "accessor.GameOptionsAccessor",
     "accessor.MusicTrackerAccessor",
-    "BannerBlockEntityRendererMixin",
     "accessor.SourceManagerAccessor",
     "accessor.BookEditScreenAccessor",
     "accessor.BookScreenContentsAccessor",
