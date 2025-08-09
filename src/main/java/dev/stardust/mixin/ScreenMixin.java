@@ -9,6 +9,7 @@ import dev.stardust.modules.AntiToS;
 import dev.stardust.modules.ChatSigns;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.client.gui.Drawable;
+import net.minecraft.client.gui.DrawContext;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.jetbrains.annotations.Nullable;
@@ -36,7 +37,7 @@ public abstract class ScreenMixin extends AbstractParentElement implements Drawa
 
     // See AntiToS.java
     @Inject(method = "render", at = @At("HEAD"))
-    private void censorScreenTitles(CallbackInfo ci) {
+    private void censorScreenTitles(DrawContext ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         Modules mods = Modules.get();
         if (mods == null) return;
         AntiToS tos = mods.get(AntiToS.class);
