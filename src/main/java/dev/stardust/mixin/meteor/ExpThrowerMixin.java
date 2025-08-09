@@ -2,7 +2,6 @@ package dev.stardust.mixin.meteor;
 
 import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.MiningToolItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Unique;
@@ -78,7 +77,14 @@ public abstract class ExpThrowerMixin extends Module {
 
                     if (emptySlot.found()) InvUtils.move().from(result1.slot()).to(emptySlot.slot());
                     else {
-                        FindItemResult nonCriticalSlot = InvUtils.findInHotbar(stack -> !(stack.getItem() instanceof MiningToolItem) && !(stack.isIn(ItemTags.WEAPON_ENCHANTABLE)) && !(stack.contains(DataComponentTypes.FOOD)));
+                        FindItemResult nonCriticalSlot = InvUtils.findInHotbar(stack ->
+                            !stack.isIn(ItemTags.AXES)
+                                && !stack.isIn(ItemTags.PICKAXES)
+                                && !stack.isIn(ItemTags.SHOVELS)
+                                && !stack.isIn(ItemTags.HOES)
+                                && !stack.isIn(ItemTags.WEAPON_ENCHANTABLE)
+                                && !stack.contains(DataComponentTypes.FOOD)
+                        );
 
                         if (nonCriticalSlot.found()) InvUtils.move().from(result1.slot()).to(emptySlot.slot());
                         else {

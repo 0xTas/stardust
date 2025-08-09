@@ -352,7 +352,7 @@ public class AutoSmith extends Module {
         }
     }
 
-    private EquipmentType getEquipmentType(ArmorItem armor) {
+    private EquipmentType getEquipmentType(Item armor) {
         return switch (getItemSlotId(armor.getDefaultStack())) {
             case 0 -> EquipmentType.BOOTS;
             case 1 -> EquipmentType.LEGGINGS;
@@ -948,7 +948,7 @@ public class AutoSmith extends Module {
                 if (debug.get()) {
                     MsgUtil.sendModuleMsg(
                         "Wrong trim stack for armor of type "
-                            + getEquipmentType((ArmorItem) armorToTrim.getItem()).name() + "§e..!", this.name
+                            + getEquipmentType(armorToTrim.getItem()).name() + "§e..!", this.name
                     );
                 }
                 changedSlots.put(SmithingScreenHandler.TEMPLATE_ID, ItemStack.EMPTY);
@@ -974,7 +974,7 @@ public class AutoSmith extends Module {
                 if (debug.get()) {
                     MsgUtil.sendModuleMsg(
                         "Wrong material stack for armor of type "
-                            + getEquipmentType((ArmorItem) armorToTrim.getItem()).name() + "§e..!", this.name
+                            + getEquipmentType(armorToTrim.getItem()).name() + "§e..!", this.name
                     );
                 }
                 changedSlots.put(SmithingScreenHandler.MATERIAL_ID, ItemStack.EMPTY);
@@ -1289,7 +1289,7 @@ public class AutoSmith extends Module {
 
     private @Nullable Item getNeededPatternItem(ItemStack armorToTrim) {
         Item neededPattern = null;
-        switch (getEquipmentType((ArmorItem) armorToTrim.getItem())) {
+        switch (getEquipmentType(armorToTrim.getItem())) {
             case BOOTS -> {
                 switch (bootsTrim.get()) {
                     case Eye -> neededPattern = Items.EYE_ARMOR_TRIM_SMITHING_TEMPLATE;
@@ -1385,7 +1385,7 @@ public class AutoSmith extends Module {
 
     private @Nullable Item getNeededMaterialItem(ItemStack armorToTrim) {
         Item neededMaterial = null;
-        switch (getEquipmentType((ArmorItem) armorToTrim.getItem())) {
+        switch (getEquipmentType(armorToTrim.getItem())) {
             case BOOTS -> {
                 switch (bootsTrimMaterial.get()) {
                     case Gold -> neededMaterial = Items.GOLD_INGOT;
