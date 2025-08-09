@@ -306,7 +306,7 @@ public class AutoSmith extends Module {
     private final List<EquipmentType> exhaustedArmorTypes = new ArrayList<>();
 
     private ArmorMaterial getArmorMaterial(ItemStack armor) {
-        if (!(armor.getItem() instanceof ArmorItem)) return net.minecraft.item.equipment.ArmorMaterials.ARMADILLO_SCUTE;
+        if (armor.get(DataComponentTypes.EQUIPPABLE) == null) return net.minecraft.item.equipment.ArmorMaterials.ARMADILLO_SCUTE;
 
         switch (getItemSlotId(armor)) {
             case 0 -> {
@@ -373,9 +373,9 @@ public class AutoSmith extends Module {
     }
 
     private boolean isValidEquipmentForTrimming(ItemStack stack) {
-        if (stack.getItem() instanceof ArmorItem armor) {
+        if (stack.get(DataComponentTypes.EQUIPPABLE) != null) {
             boolean correctMaterial = false;
-            EquipmentType equipmentType = getEquipmentType(armor);
+            EquipmentType equipmentType = getEquipmentType(stack.getItem());
             ArmorMaterial armorMaterial = getArmorMaterial(stack);
             if (exhaustedArmorTypes.contains(equipmentType)) return false;
             if (currentlyLookingFor != null && !equipmentType.equals(currentlyLookingFor)) return false;
@@ -672,8 +672,8 @@ public class AutoSmith extends Module {
                         ItemStack output = ss.getSlot(SmithingScreenHandler.OUTPUT_ID).getStack();
 
                         if (!output.isEmpty()) {
-                            if (!(output.getItem() instanceof ArmorItem armor)) return;
-                            EquipmentType armorType = getEquipmentType(armor);
+                            if (output.get(DataComponentTypes.EQUIPPABLE) == null) return;
+                            EquipmentType armorType = getEquipmentType(output.getItem());
                             if (output.contains(DataComponentTypes.TRIM)) {
                                 ArmorTrim trimData = output.get(DataComponentTypes.TRIM);
                                 String pattern = trimData.pattern().getIdAsString();
@@ -772,7 +772,7 @@ public class AutoSmith extends Module {
                             }
                         } else if (!foundIngots) {
                             ItemStack armorToTrim = ss.getSlot(SmithingScreenHandler.EQUIPMENT_ID).getStack();
-                            if (!(armorToTrim.getItem() instanceof ArmorItem armor)) {
+                            if (armorToTrim.get(DataComponentTypes.EQUIPPABLE) == null) {
                                 foundEquip = false;
                                 resettingTemplates = true;
                                 resettingMaterials = true;
@@ -780,7 +780,7 @@ public class AutoSmith extends Module {
                                 LogUtil.error("Item in equipment slot was not armor..!", this.name);
                                 return;
                             }
-                            EquipmentType armorType = getEquipmentType(armor);
+                            EquipmentType armorType = getEquipmentType(armorToTrim.getItem());
                             Item neededMaterial = getNeededMaterialItem(armorToTrim);
 
                             if (neededMaterial == null) {
@@ -805,7 +805,7 @@ public class AutoSmith extends Module {
                             }
                         } else if (!foundTemplates) {
                             ItemStack armorToTrim = ss.getSlot(SmithingScreenHandler.EQUIPMENT_ID).getStack();
-                            if (!(armorToTrim.getItem() instanceof ArmorItem armor)) {
+                            if (armorToTrim.get(DataComponentTypes.EQUIPPABLE) == null) {
                                 foundEquip = false;
                                 resettingTemplates = true;
                                 resettingMaterials = true;
@@ -814,7 +814,7 @@ public class AutoSmith extends Module {
                                 return;
                             }
 
-                            EquipmentType armorType = getEquipmentType(armor);
+                            EquipmentType armorType = getEquipmentType(armorToTrim.getItem());
                             Item neededPattern = getNeededPatternItem(armorToTrim);
                             if (neededPattern == null) {
                                 LogUtil.error("neededPattern was somehow null!", this.name);
@@ -929,7 +929,7 @@ public class AutoSmith extends Module {
             // check if correct and take output
 
             ItemStack armorToTrim = equipmentStack;
-            if (operatingMode.get().equals(SmithingMode.Trim) && !(armorToTrim.getItem() instanceof ArmorItem)) {
+            if (operatingMode.get().equals(SmithingMode.Trim) && armorToTrim.get(DataComponentTypes.EQUIPPABLE) == null) {
                 LogUtil.error("Item in equipment slot was not armor§c..!", this.name);
                 return null;
             }
@@ -1121,7 +1121,7 @@ public class AutoSmith extends Module {
             }
         } else if (materialStack == null) {
             ItemStack armorToTrim = equipmentStack;
-            if (operatingMode.get().equals(SmithingMode.Trim) && !(armorToTrim.getItem() instanceof ArmorItem)) {
+            if (operatingMode.get().equals(SmithingMode.Trim) && armorToTrim.get(DataComponentTypes.EQUIPPABLE) == null) {
                 LogUtil.error("Item in equipment slot was not armor..!", this.name);
                 return null;
             }
@@ -1167,7 +1167,7 @@ public class AutoSmith extends Module {
             }
         } else {
             ItemStack armorToTrim = equipmentStack;
-            if (operatingMode.get().equals(SmithingMode.Trim) && !(armorToTrim.getItem() instanceof ArmorItem)) {
+            if (operatingMode.get().equals(SmithingMode.Trim) && armorToTrim.get(DataComponentTypes.EQUIPPABLE) == null) {
                 LogUtil.error("Item in equipment slot was not armor..!", this.name);
                 return null;
             }

@@ -248,7 +248,14 @@ public class PagePirate extends Module {
                     InvUtils.move().from(result.slot()).to(emptySlot.slot());
                     InvUtils.swap(emptySlot.slot(), true);
                 } else {
-                    FindItemResult nonCriticalSlot = InvUtils.find(stack -> !(stack.getItem() instanceof MiningToolItem) && !(stack.isIn(ItemTags.WEAPON_ENCHANTABLE)) && !stack.contains(DataComponentTypes.FOOD));
+                    FindItemResult nonCriticalSlot = InvUtils.find(stack ->
+                        !stack.isIn(ItemTags.AXES)
+                            && !stack.isIn(ItemTags.PICKAXES)
+                            && !stack.isIn(ItemTags.SHOVELS)
+                            && !stack.isIn(ItemTags.HOES)
+                            && !stack.isIn(ItemTags.WEAPON_ENCHANTABLE)
+                            && !stack.contains(DataComponentTypes.FOOD)
+                    );
                     if (nonCriticalSlot.found() && nonCriticalSlot.slot() < 9) {
                         InvUtils.move().from(result.slot()).to(nonCriticalSlot.slot());
                         InvUtils.swap(nonCriticalSlot.slot(), true);
