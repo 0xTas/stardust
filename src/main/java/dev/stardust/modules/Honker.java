@@ -11,6 +11,7 @@ import net.minecraft.item.Instrument;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.item.GoatHornItem;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.component.type.InstrumentComponent;
 import meteordevelopment.orbit.EventHandler;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.entity.player.PlayerEntity;
@@ -127,12 +128,11 @@ public class Honker extends Module {
                 ItemStack stack = mc.player.getInventory().getStack(n);
                 if (!(stack.getItem() instanceof GoatHornItem)) continue;
                 if (!stack.contains(DataComponentTypes.INSTRUMENT)) continue;
-                RegistryEntry<Instrument> instrument = stack.get(DataComponentTypes.INSTRUMENT);
-                String id = instrument.value().soundEvent().value().id().toUnderscoreSeparatedString();
-                if (id == null) continue;
+                InstrumentComponent component = stack.get(DataComponentTypes.INSTRUMENT);
+                if (component == null) continue;
 
                 hornIndex = n;
-                if (id.equals("minecraft:"+desiredCallId)) break;
+                break;
             }
 
             if (hornIndex != -1) {

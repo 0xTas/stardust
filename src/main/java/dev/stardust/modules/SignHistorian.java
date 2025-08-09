@@ -336,26 +336,8 @@ public class SignHistorian extends Module {
             List<String> entries = lineStream.toList();
             for (String sign : entries) {
                 try {
-                    String[] parts = sign.split(" -\\|- ");
-                    if (parts.length != 2) continue;
-                    NbtCompound reconstructed = StringNbtReader.parse(parts[0].trim());
-                    NbtCompound stateReconstructed = StringNbtReader.parse(parts[1].trim());
-                    BlockPos bPos = BlockEntity.posFromNbt(reconstructed);
-
-                    DataResult<BlockState> result = BlockState.CODEC.parse(NbtOps.INSTANCE, stateReconstructed);
-                    BlockState state = result.result().orElse(null);
-
-                    if (state == null) continue;
-                    BlockEntity be = BlockEntity.createFromNbt(bPos, state, reconstructed, mc.world.getRegistryManager());
-
-                    if (be instanceof SignBlockEntity sbeReconstructed) {
-                        if (!serverSigns.containsKey(bPos)) {
-                            if (state.getBlock() instanceof AbstractSignBlock signBlock) {
-                                woodTypeMap.put(sbeReconstructed, signBlock.getWoodType());
-                            }
-                            serverSigns.put(bPos, new Pair<>(sbeReconstructed, sbeReconstructed.getCachedState()));
-                        }
-                    }
+                    // TODO: Port sign NBT loading to 1.21.5
+                    continue;
                 } catch (Exception err) {
                     LogUtil.error("Failed to parse SignBlockEntity Nbt: "+err, this.name);
                 }

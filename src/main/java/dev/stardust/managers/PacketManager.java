@@ -54,9 +54,9 @@ public class PacketManager {
         if (mc.player == null) return;
         if (!StardustConfig.antiInventoryPacketKick.get()) return;
         if (!(event.packet instanceof ClickSlotC2SPacket packet)) return;
-        if (packet.getActionType() != SlotActionType.QUICK_MOVE) return;
+        if (packet.actionType() != SlotActionType.QUICK_MOVE) return;
 
-        int origin = packet.getSlot();
+        int origin = packet.slot();
         ScreenHandler handler = mc.player.currentScreenHandler;
         if (origin < 0 || origin >= handler.slots.size()) return;
         ItemStack toMove = handler.getSlot(origin).getStack();

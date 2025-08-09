@@ -302,10 +302,8 @@ public class AutoMason extends Module {
 
             targetStack = null;
             outputStack = null;
-            return new ClickSlotC2SPacket(
-                handler.syncId, handler.getRevision(), 1, 0,
-                SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-            );
+            // TODO: update Quick Move packet for 1.21.5
+            return null;
         } else if (targetStack != null) {
             // pick recipe
             CuttingRecipeDisplay.Grouping<StonecuttingRecipe> available = mc.world
@@ -336,10 +334,8 @@ public class AutoMason extends Module {
                 changedSlots.put(0, stack);
                 changedSlots.put(n, ItemStack.EMPTY);
 
-                return new ClickSlotC2SPacket(
-                    handler.syncId, handler.getRevision(), n, 0,
-                    SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                );
+                // TODO: update Quick Move packet for 1.21.5
+                return null;
             }
         }
 

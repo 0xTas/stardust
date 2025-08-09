@@ -965,10 +965,8 @@ public class AutoSmith extends Module {
                 if (debug.get()) {
                     MsgUtil.sendModuleMsg("Moving incorrect template item back to inventory§e..!", this.name);
                 }
-                return new ClickSlotC2SPacket(
-                    handler.syncId, handler.getRevision(), SmithingScreenHandler.TEMPLATE_ID, 0,
-                    SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                );
+                    // TODO: update Quick Move packet for 1.21.5
+                    return null;
             }
             if (operatingMode.get().equals(SmithingMode.Trim) && !materialStack.isOf(neededMaterial)) {
                 if (debug.get()) {
@@ -991,10 +989,8 @@ public class AutoSmith extends Module {
                 if (debug.get()) {
                     MsgUtil.sendModuleMsg("Moving incorrect material item back to inventory§e..!", this.name);
                 }
-                return new ClickSlotC2SPacket(
-                    handler.syncId, handler.getRevision(), SmithingScreenHandler.MATERIAL_ID, 0,
-                    SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                );
+                    // TODO: update Quick Move packet for 1.21.5
+                    return null;
             }
 
             // take output
@@ -1043,10 +1039,8 @@ public class AutoSmith extends Module {
 
             if (debug.get()) MsgUtil.sendModuleMsg("Generated output packet§a..!", this.name);
             equipmentStack = null;
-            return new ClickSlotC2SPacket(
-                handler.syncId, handler.getRevision(), 3, 0,
-                SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-            );
+            // TODO: update Quick Move packet for 1.21.5
+            return null;
         } else if (equipmentStack == null) {
             // look for valid equipment stack
 
@@ -1092,10 +1086,8 @@ public class AutoSmith extends Module {
                                 + currentlyLookingFor.getName() + "§a..!", this.name
                         );
                     }
-                    return new ClickSlotC2SPacket(
-                        handler.syncId, handler.getRevision(), n, 0,
-                        SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                    );
+                    // TODO: update Quick Move packet for 1.21.5
+                    return null;
                 }
             }
 
@@ -1159,10 +1151,8 @@ public class AutoSmith extends Module {
                         }
                     }
 
-                    return new ClickSlotC2SPacket(
-                        handler.syncId, handler.getRevision(), n, 0,
-                        SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                    );
+                    // TODO: update Quick Move packet for 1.21.5
+                    return null;
                 }
             }
         } else {
@@ -1202,10 +1192,8 @@ public class AutoSmith extends Module {
                         changedSlots.put(SmithingScreenHandler.OUTPUT_ID, output);
                     }
 
-                    return new ClickSlotC2SPacket(
-                        handler.syncId, handler.getRevision(), n, 0,
-                        SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                    );
+                    // TODO: update Quick Move packet for 1.21.5
+                    return null;
                 }
             }
         }

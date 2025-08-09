@@ -648,7 +648,7 @@ public class RocketMan extends Module {
                     if (durabilityCheckTicks < 100) return;
                     if (percentDurability <= durabilityThreshold.get()) {
                         float vol = warnVolume.get() / 100f;
-                        mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK, vol, 1f);
+                        mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK.value(), vol, 1f);
                         MsgUtil.updateModuleMsg("Elytra durability: §c" + percentDurability + "§7%", this.name, "elytraDurabilityWarning".hashCode());
                         durabilityCheckTicks = 0;
                     }
@@ -658,7 +658,7 @@ public class RocketMan extends Module {
             if (durabilityCheckTicks < 100) return;
             if (percentDurability <= durabilityThreshold.get()) {
                 float vol = warnVolume.get() / 100f;
-                mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK, vol, 1f);
+                mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK.value(), vol, 1f);
                 MsgUtil.updateModuleMsg("Elytra durability: §c" + percentDurability + "§7%", this.name, "elytraDurabilityWarning".hashCode());
                 durabilityCheckTicks = 0;
             }

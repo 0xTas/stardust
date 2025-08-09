@@ -206,10 +206,8 @@ public class Grinder extends Module {
 
             combinedItem = null;
             currentTarget = null;
-            return new ClickSlotC2SPacket(
-                handler.syncId, handler.getRevision(), 2, 0,
-                SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-            );
+            // TODO: update Quick Move packet for 1.21.5
+            return null;
         } else if (currentTarget != null) {
             // fill input slot 2
             for (int n = 3; n < PlayerInventory.MAIN_SIZE + 3; n++) {
@@ -227,10 +225,8 @@ public class Grinder extends Module {
                 changedSlots.put(n, ItemStack.EMPTY);
                 changedSlots.put(2, ((GrindstoneScreenHandlerAccessor) handler).invokeGrind(combinedItem));
 
-                return new ClickSlotC2SPacket(
-                    handler.syncId, handler.getRevision(), n, 0,
-                    SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                );
+                // TODO: update Quick Move packet for 1.21.5
+                return null;
             }
             combinedItem = ItemStack.EMPTY;
             return generatePacket(handler);
@@ -251,10 +247,8 @@ public class Grinder extends Module {
 
                 if (!combine.get()) combinedItem = ItemStack.EMPTY;
 
-                return new ClickSlotC2SPacket(
-                    handler.syncId, handler.getRevision(), n, 0,
-                    SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                );
+                // TODO: update Quick Move packet for 1.21.5
+                return null;
             }
         }
 
