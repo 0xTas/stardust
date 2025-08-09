@@ -141,7 +141,7 @@ public class StashBrander extends Module {
         if (mc.player == null) return;
         if (!notified) {
             MsgUtil.sendModuleMsg("Not enough experience§c..!", this.name);
-            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.value(), pingVolume.get().floatValue(), 1.0f);
+            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
         }
         notified = true;
         mc.player.closeHandledScreen();
@@ -153,7 +153,7 @@ public class StashBrander extends Module {
         if (mc.player == null) return;
         if (!notified) {
             MsgUtil.sendModuleMsg("No more items to rename§a..!", this.name);
-            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.value(), pingVolume.get().floatValue(), 1.0f);
+            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), 1.0f);
         }
         notified = true;
         mc.player.closeHandledScreen();

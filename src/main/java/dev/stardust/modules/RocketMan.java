@@ -648,7 +648,7 @@ public class RocketMan extends Module {
                     if (durabilityCheckTicks < 100) return;
                     if (percentDurability <= durabilityThreshold.get()) {
                         float vol = warnVolume.get() / 100f;
-                        mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK.value(), vol, 1f);
+                        mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK, vol, 1f);
                         MsgUtil.updateModuleMsg("Elytra durability: §c" + percentDurability + "§7%", this.name, "elytraDurabilityWarning".hashCode());
                         durabilityCheckTicks = 0;
                     }
@@ -658,7 +658,7 @@ public class RocketMan extends Module {
             if (durabilityCheckTicks < 100) return;
             if (percentDurability <= durabilityThreshold.get()) {
                 float vol = warnVolume.get() / 100f;
-                mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK.value(), vol, 1f);
+                mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK, vol, 1f);
                 MsgUtil.updateModuleMsg("Elytra durability: §c" + percentDurability + "§7%", this.name, "elytraDurabilityWarning".hashCode());
                 durabilityCheckTicks = 0;
             }
@@ -679,7 +679,7 @@ public class RocketMan extends Module {
 
         if (totalRockets < notifyAmount.get()) {
             float vol = notifyVolume.get() / 100f;
-            mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.value(), vol, 1f);
+            mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, vol, 1f);
             MsgUtil.updateModuleMsg("Rockets remaining: §c" + totalRockets + "§7.", this.name, "rocketsRemainingWarning".hashCode());
             rocketStockTicks = 0;
         }
@@ -1130,7 +1130,7 @@ public class RocketMan extends Module {
         }
 
         if (!(event.packet instanceof PlaySoundS2CPacket packet)) return;
-        if (packet.getSound().value() == SoundEvents.ENTITY_FIREWORK_ROCKET_LAUNCH.value()) {
+        if (packet.getSound().value() == SoundEvents.ENTITY_FIREWORK_ROCKET_LAUNCH) {
             if (muteRockets.get()) event.cancel();
         }
     }

@@ -9,6 +9,7 @@ import net.minecraft.item.Items;
 import dev.stardust.util.MsgUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.registry.Registries;
 import dev.stardust.util.StonecutterUtil;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.network.packet.Packet;
@@ -146,7 +147,7 @@ public class AutoMason extends Module {
     @EventHandler
     private void onSoundPlay(PlaySoundEvent event) {
         if (!muteCutter.get()) return;
-        if (event.sound.getId().equals(SoundEvents.UI_STONECUTTER_TAKE_RESULT.value().id())) {
+        if (event.sound.getId().equals(Registries.SOUND_EVENT.getId(SoundEvents.UI_STONECUTTER_TAKE_RESULT))) {
             event.cancel();
         }
     }
@@ -211,7 +212,7 @@ public class AutoMason extends Module {
                         MsgUtil.sendModuleMsg("No target items selected§c..!", this.name);
                         if (pingOnDone.get()) {
                             mc.player.playSound(
-                                SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.value(),
+                                SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP,
                                 pingVolume.get().floatValue(),
                                 ThreadLocalRandom.current().nextFloat(0.69f, 1.337f)
                             );
@@ -259,7 +260,7 @@ public class AutoMason extends Module {
                         if (!notified) {
                             notified = true;
                             MsgUtil.sendModuleMsg("Desired recipe not found§c..!", this.name);
-                            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.value(), pingVolume.get().floatValue(), ThreadLocalRandom.current().nextFloat(0.69f, 1.337f));
+                            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), ThreadLocalRandom.current().nextFloat(0.69f, 1.337f));
                         }
                         finished();
                     }
@@ -274,7 +275,7 @@ public class AutoMason extends Module {
         if (mc.player == null) return;
         if (!notified) {
             if (chatFeedback) MsgUtil.sendModuleMsg("No more items to craft§a..!", this.name);
-            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.value(), pingVolume.get().floatValue(), ThreadLocalRandom.current().nextFloat(0.69f, 1.337f));
+            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), ThreadLocalRandom.current().nextFloat(0.69f, 1.337f));
         }
         notified = true;
         processedSlots.clear();

@@ -77,13 +77,11 @@ public abstract class ScreenMixin extends AbstractParentElement implements Drawa
                     ChatSigns chatSigns = mods.get(ChatSigns.class);
                     if (chatSigns.toggleClickESP(pos, now)) {
                         ((StyleAccessor) style).setHoverEvent(
-                            new HoverEvent.ShowText(Text.literal("§4§oDisable §7§oESP for this sign.")
-                            )
+                            new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("§4§oDisable §7§oESP for this sign."))
                         );
                     } else {
                         ((StyleAccessor) style).setHoverEvent(
-                            new HoverEvent.ShowText(Text.literal("§2§oEnable §7§oESP for this sign.")
-                            )
+                            new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("§2§oEnable §7§oESP for this sign."))
                         );
                     }
                 }

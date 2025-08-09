@@ -174,7 +174,7 @@ public class Grinder extends Module {
         if (mc.player == null) return;
         if (!notified) {
             if (chatFeedback) MsgUtil.sendModuleMsg("No more enchantments to grind away§a..!", this.name);
-            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.value(), pingVolume.get().floatValue(), ThreadLocalRandom.current().nextFloat(0.69f, 1.337f));
+            if (pingOnDone.get()) mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pingVolume.get().floatValue(), ThreadLocalRandom.current().nextFloat(0.69f, 1.337f));
         }
         notified = true;
         processedSlots.clear();
@@ -372,6 +372,6 @@ public class Grinder extends Module {
     @EventHandler
     private void onPacketReceive(PacketEvent.Receive event) {
         if (!muteGrindstone.get() || !(event.packet instanceof PlaySoundS2CPacket packet)) return;
-        if (packet.getSound().value().equals(SoundEvents.BLOCK_GRINDSTONE_USE.value())) event.cancel();
+        if (packet.getSound().value().equals(SoundEvents.BLOCK_GRINDSTONE_USE)) event.cancel();
     }
 }

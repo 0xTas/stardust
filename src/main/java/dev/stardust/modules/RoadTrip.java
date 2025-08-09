@@ -273,7 +273,7 @@ public class RoadTrip extends Module {
             double percentDurability = Math.floor((currentDurability / (double) maxDurability) * 100);
 
             if (percentDurability <= 5) {
-                mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK.value(), pingVolume.get().floatValue(), 1f);
+                mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK, pingVolume.get().floatValue(), 1f);
                 MsgUtil.updateModuleMsg("Elytra durability: §c" + percentDurability + "§7%", this.name, "roadTripElytraWarn".hashCode());
                 reset = true;
             }
@@ -282,7 +282,7 @@ public class RoadTrip extends Module {
         if (lagNotify.get() && ticksNotMoved >= 80) {
             reset = true;
             ticksNotMoved = 0;
-            mc.player.playSound(SoundEvents.ENTITY_PHANTOM_SWOOP.value(), pingVolume.get().floatValue(), 1f);
+            mc.player.playSound(SoundEvents.ENTITY_PHANTOM_SWOOP, pingVolume.get().floatValue(), 1f);
         }
 
         if (reset) ticksSinceWarned = 0;

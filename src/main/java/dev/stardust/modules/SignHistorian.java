@@ -896,7 +896,7 @@ public class SignHistorian extends Module {
                 if (!approachingGriefers.isEmpty()) {
                     if (pingTicks >= 60) {
                         pingTicks = 0;
-                        mc.player.playSound(SoundEvents.ENTITY_PHANTOM_HURT.value(), alarmVolume.get().floatValue(), 1f);
+                        mc.player.playSound(SoundEvents.ENTITY_PHANTOM_HURT, alarmVolume.get().floatValue(), 1f);
                         if (chatNotification.get()) {
                             MsgUtil.updateModuleMsg("§c§lNEARBY SIGNS IN DANGER OF MOB GRIEFING§8§L.", this.name, "MobGriefAlarm".hashCode());
                         }

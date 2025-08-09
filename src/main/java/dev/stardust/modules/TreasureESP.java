@@ -160,7 +160,7 @@ public class TreasureESP extends Module {
                                     );
                                 }
                                 if (soundSetting.get()) {
-                                    mc.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE.value(), volumeSetting.get().floatValue(), 1f);
+                                    mc.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE, volumeSetting.get().floatValue(), 1f);
                                 }
                                 if (chatSetting.get()) {
                                     String notification;
@@ -201,7 +201,7 @@ public class TreasureESP extends Module {
                         );
                     }
                     if (soundSetting.get()) {
-                        mc.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE.value(), volumeSetting.get().floatValue(), 1f);
+                        mc.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE, volumeSetting.get().floatValue(), 1f);
                     }
                     if (chatSetting.get()) {
                         String notification;

@@ -650,7 +650,7 @@ public class SignatureSign extends Module {
                     if (mc.player != null) {
                         MsgUtil.sendModuleMsg("Created autosign.txt in your meteor-client folder§a..!", this.name);
                         Style style = Style.EMPTY.withClickEvent(
-                            new ClickEvent.OpenFile(meteorFolder.toFile().getAbsolutePath())
+                            new ClickEvent(ClickEvent.Action.OPEN_FILE, meteorFolder.toFile().getAbsolutePath())
                         );
 
                         MsgUtil.sendModuleMsg("Click §2§lhere §r§7to open the folder.", style, this.name);
@@ -686,7 +686,7 @@ public class SignatureSign extends Module {
                     if (mc.player != null) {
                         MsgUtil.sendModuleMsg("Created storysign.txt in your meteor-client folder§a..!", this.name);
                         Style style = Style.EMPTY.withClickEvent(
-                            new ClickEvent.OpenFile(meteorFolder.toFile().getAbsolutePath())
+                            new ClickEvent(ClickEvent.Action.OPEN_FILE, meteorFolder.toFile().getAbsolutePath())
                         );
 
                         MsgUtil.sendModuleMsg("Click §2§lhere §r§7to open the folder.", style, this.name);
@@ -756,7 +756,7 @@ public class SignatureSign extends Module {
             lastLines.addAll(storyLines);
             if (mc.player != null) {
                 MsgUtil.sendModuleMsg("§oSign story complete§a§o..!", this.name);
-                mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP.value(), 0.77f, 0.77f);
+                mc.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 0.77f, 0.77f);
             }
         }
 
