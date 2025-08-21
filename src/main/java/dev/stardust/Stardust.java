@@ -5,6 +5,7 @@ import dev.stardust.modules.*;
 import dev.stardust.commands.*;
 import dev.stardust.gui.themes.*;
 import dev.stardust.util.MsgUtil;
+import dev.stardust.hud.ConwayHud;
 import com.mojang.logging.LogUtils;
 import dev.stardust.util.StardustUtil;
 import dev.stardust.config.StardustConfig;
@@ -13,9 +14,11 @@ import net.fabricmc.loader.api.FabricLoader;
 import meteordevelopment.meteorclient.MeteorClient;
 import meteordevelopment.meteorclient.gui.GuiThemes;
 import net.fabricmc.loader.api.metadata.CustomValue;
+import meteordevelopment.meteorclient.systems.hud.Hud;
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.commands.Commands;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
+import meteordevelopment.meteorclient.systems.hud.HudGroup;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.Category;
 
@@ -24,12 +27,14 @@ import meteordevelopment.meteorclient.systems.modules.Category;
  **/
 public class Stardust extends MeteorAddon {
     public static final Logger LOG = LogUtils.getLogger();
+    public static final HudGroup HUD_GROUP = new HudGroup("Stardust");
     public static final Category CATEGORY = new Category("Stardust", StardustUtil.chooseMenuIcon());
 
     private PacketManager packetManager;
 
     @Override
     public void onInitialize() {
+        Commands.add(new Life());
         Commands.add(new Loadout());
         Commands.add(new Panorama());
         Commands.add(new Stats2b2t());
@@ -64,6 +69,8 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new SignHistorian());
         Modules.get().add(new AutoDyeShulkers());
         Modules.get().add(new AutoDrawDistance());
+
+        Hud.get().register(ConwayHud.INFO);
 
         GuiThemes.add(DarkTheme.INSTANCE);
         GuiThemes.add(SnowyTheme.INSTANCE);

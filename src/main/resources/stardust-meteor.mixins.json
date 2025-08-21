@@ -23,6 +23,7 @@
     "BetterTooltipsMixin",
     "MeteorGuiThemeMixin",
     "PacketCancellerMixin",
+    "accessor.SettingAccessor",
     "accessor.CategoryAccessor"
   ]
 }
