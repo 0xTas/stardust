@@ -73,7 +73,8 @@ public abstract class PeekScreenMixin extends ShulkerBoxScreen {
                         .dispensable(true)
                         .build();
                     if (equippableComponent == null) return;
-                    stack.set(DataComponentTypes.EQUIPPABLE, equippableComponent);
+                    if (!stack.contains(DataComponentTypes.EQUIPPABLE))
+                        stack.set(DataComponentTypes.EQUIPPABLE, equippableComponent);
 
                     mc.player.getInventory().setStack(empty.slot(), stack);
                     cir.setReturnValue(true);
