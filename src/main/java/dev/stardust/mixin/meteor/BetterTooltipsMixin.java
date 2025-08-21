@@ -35,6 +35,9 @@ public class BetterTooltipsMixin extends Module {
     private @Nullable Setting<Boolean> rawDamageTag = null;
     @Unique
     private @Nullable Setting<Boolean> trueDurability = null;
+    @Unique
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
+    private @Nullable Setting<Boolean> peekGhostItems = null;
 
     @Inject(method = "<init>", at = @At(value = "FIELD", target = "Lmeteordevelopment/meteorclient/systems/modules/render/BetterTooltips;beehive:Lmeteordevelopment/meteorclient/settings/Setting;"))
     private void addTrueDurabilitySetting(CallbackInfo ci) {
@@ -48,6 +51,14 @@ public class BetterTooltipsMixin extends Module {
             new BoolSetting.Builder()
                 .name("raw-damage-tag")
                 .description("Show the raw Damage tag of an item.")
+                .defaultValue(false)
+                .build()
+        );
+        // See PeekScreenMixin.java
+        peekGhostItems = sgOther.add(
+            new BoolSetting.Builder()
+                .name("peek-ghost-items")
+                .description("Left-click on an item in the Peek Screen to add a client-side-only variant to your hotbar.")
                 .defaultValue(false)
                 .build()
         );

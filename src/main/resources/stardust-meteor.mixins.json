@@ -3,6 +3,7 @@
   "package": "dev.stardust.mixin.meteor",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "PeekScreenMixin",
     "ModuleScreenMixin",
     "ModulesScreenMixin"
   ],
