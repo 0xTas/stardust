@@ -27,6 +27,10 @@ public class BetterTooltipsMixin extends Module {
     @Final
     private SettingGroup sgOther;
 
+    @Shadow
+    @Final
+    private Setting<Boolean> middleClickOpen;
+
     public BetterTooltipsMixin(Category category, String name, String description, String... aliases) {
         super(category, name, description, aliases);
     }
@@ -60,6 +64,9 @@ public class BetterTooltipsMixin extends Module {
                 .name("peek-ghost-items")
                 .description("Left-click on an item in the Peek Screen to add a client-side-only variant to your hotbar.")
                 .defaultValue(false)
+                .onChanged(it -> {
+                    if (it) this.middleClickOpen.set(true);
+                })
                 .build()
         );
     }

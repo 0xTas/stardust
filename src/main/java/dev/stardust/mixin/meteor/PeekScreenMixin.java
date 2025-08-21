@@ -6,12 +6,16 @@ import dev.stardust.util.MsgUtil;
 import dev.stardust.util.LogUtil;
 import javax.annotation.Nullable;
 import net.minecraft.item.ItemStack;
+import net.minecraft.entity.EntityType;
 import org.spongepowered.asm.mixin.Mixin;
+import net.minecraft.entity.EquipmentSlot;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.screen.ShulkerBoxScreenHandler;
 import org.spongepowered.asm.mixin.injection.Inject;
+import net.minecraft.component.type.EquippableComponent;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 import meteordevelopment.meteorclient.systems.modules.Modules;
@@ -59,6 +63,18 @@ public abstract class PeekScreenMixin extends ShulkerBoxScreen {
 
                 if (empty.found()) {
                     ItemStack stack = focusedSlot.getStack();
+
+                    // Skull-block items aren't swappable by default,
+                    // causing the ghost item to disappear without this.
+                    // I don't distinguish the item type here, allowing you to put any ghost-item on your head.
+                    EquippableComponent equippableComponent = EquippableComponent.builder(EquipmentSlot.HEAD)
+                        .swappable(true)
+                        .allowedEntities(EntityType.PLAYER)
+                        .dispensable(true)
+                        .build();
+                    if (equippableComponent == null) return;
+                    stack.set(DataComponentTypes.EQUIPPABLE, equippableComponent);
+
                     mc.player.getInventory().setStack(empty.slot(), stack);
                     cir.setReturnValue(true);
                 } else {
