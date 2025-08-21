@@ -7,11 +7,12 @@ It contains original modules to enhance your experience on Old Server, with a fo
 ### Feature Set
 #### Commands
 
-| Command                                                  | Description                                                                                                                                                                                                    |
-|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Stats2b2t, LastSeen2b2t, FirstSeen2b2t, Playtime2b2t** | *Self explanatory commands. Use your Meteor command prefix.* Credit to [rfresh](https://github.com/rfresh2) for the current best [2b2t stats api](https://api.2b2t.vc).                                        |
-| **Panorama**                                             | *Takes a panorama screenshot and automatically assembles it into a resource pack for the main menu screen.* Usage: `.panorama [name]`                                                                          |
-| **Loadout**                                              | *Save & load inventory configurations.* The current state of your inventory is saved when using `.loadout save name`, and your inventory will be sorted to match if you use `.loadout load name` at any point. |
+| Command                                                  | Description                                                                                                                                                                                                                                                                  |
+|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Stats2b2t, LastSeen2b2t, FirstSeen2b2t, Playtime2b2t** | *Self explanatory commands. Use your Meteor command prefix.* Credit to [rfresh](https://github.com/rfresh2) for the current best [2b2t stats api](https://api.2b2t.vc).                                                                                                      |
+| **Panorama**                                             | *Takes a panorama screenshot and automatically assembles it into a resource pack for the main menu screen.* Usage: `.panorama [name]`                                                                                                                                        |
+| **Loadout**                                              | *Save & load inventory configurations.* The current state of your inventory is saved when using `.loadout save name`, and your inventory will be sorted to match if you use `.loadout load name` at any point.                                                               |
+| **Life**                                                 | **PHOTOSENSITIVITY WARNING.** <br> *Companion command for the Game of Life HUD module.* Pause / resume, step, hide / show, get stats about, or reset the current simulation. (See the [Miscellaneous features](#Miscellaneous) section for info about the Game of Life HUD.) |
 
 <br>
 
