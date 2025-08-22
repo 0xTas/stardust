@@ -49,6 +49,7 @@ public class Stardust extends MeteorAddon {
         Modules.get().add(new Grinder());
         Modules.get().add(new RoadTrip());
         Modules.get().add(new Loadouts());
+        Modules.get().add(new AdBlocker());
         Modules.get().add(new AutoDoors());
         Modules.get().add(new AutoMason());
         Modules.get().add(new AutoSmith());
