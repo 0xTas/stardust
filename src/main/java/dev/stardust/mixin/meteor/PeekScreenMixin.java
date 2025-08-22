@@ -72,8 +72,7 @@ public abstract class PeekScreenMixin extends ShulkerBoxScreen {
                         .allowedEntities(EntityType.PLAYER)
                         .dispensable(true)
                         .build();
-                    if (equippableComponent == null) return;
-                    if (!stack.contains(DataComponentTypes.EQUIPPABLE))
+                    if (shouldSetComponent(stack))
                         stack.set(DataComponentTypes.EQUIPPABLE, equippableComponent);
 
                     mc.player.getInventory().setStack(empty.slot(), stack);
@@ -86,5 +85,11 @@ public abstract class PeekScreenMixin extends ShulkerBoxScreen {
         } catch (Exception err) {
             LogUtil.error(err.toString(), "PeekScreenMixin");
         }
+    }
+
+    @Unique
+    private boolean shouldSetComponent(ItemStack stack) {
+        return (!stack.contains(DataComponentTypes.EQUIPPABLE)
+            || !stack.get(DataComponentTypes.EQUIPPABLE).swappable());
     }
 }
