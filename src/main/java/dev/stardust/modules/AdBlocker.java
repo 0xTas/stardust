@@ -55,16 +55,16 @@ public class AdBlocker extends Module {
         if (packet.content() == null) return;
         String content = packet.content().getString();
         for (String pattern : patterns.get()) {
-            if (content.toLowerCase().contains(pattern)) {
+            if (content.toLowerCase().contains(pattern.toLowerCase())) {
                 event.cancel(); // fuck yo packets
                 if (!ignoreStyle.get().equals(IgnoreStyle.None)) {
                     String name = getNameFromMessage(content);
 
                     String cmd;
-                    if (ignoreStyle.get().equals(IgnoreStyle.HardIgnore)) {
-                        cmd = "ignorehard";
-                    } else {
+                    if (ignoreStyle.get().equals(IgnoreStyle.Ignore)) {
                         cmd = "ignore";
+                    } else {
+                        cmd = "ignorehard";
                     }
 
                     if (name.isBlank()) {
@@ -74,7 +74,7 @@ public class AdBlocker extends Module {
                         for (String culprit : responsible) {
                             if (chatFeedback) {
                                 MsgUtil.sendModuleMsg(
-                                    "Ignoring death-msg advertiser \"§c" + culprit + "§7\"§a..!",
+                                    "Ignoring death-message advertiser \"§c" + culprit + "§7\"§a..!",
                                     this.name
                                 );
                             }
