@@ -35,9 +35,7 @@ public class Panorama extends Command {
     private int timer = 10;
     private int screenshot = 0;
     private float preYaw = 69f;
-    private float prevYaw = 69f;
     private float prePitch = 69f;
-    private float prevPitch = 69f;
     private int preWidth = 42069;
     private int preHeight = 42069;
 
@@ -78,9 +76,7 @@ public class Panorama extends Command {
         instance = mc;
         screenshot = 0;
         preYaw = mc.player.getYaw();
-        prevYaw = mc.player.prevYaw;
         prePitch = mc.player.getPitch();
-        prevPitch = mc.player.prevPitch;
         currentPanoramaDir = panoramaDir;
         preWidth = mc.getWindow().getFramebufferWidth();
         preHeight = mc.getWindow().getFramebufferHeight();
@@ -223,8 +219,6 @@ public class Panorama extends Command {
                     takingPanorama = false;
                     instance.player.setYaw(preYaw);
                     instance.player.setPitch(prePitch);
-                    instance.player.prevYaw = prevYaw;
-                    instance.player.prevPitch = prevPitch;
                     instance.gameRenderer.setRenderingPanorama(false);
                     instance.gameRenderer.setBlockOutlineEnabled(true);
                     instance.getWindow().setFramebufferWidth(preWidth);

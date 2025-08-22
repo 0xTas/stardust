@@ -1,4 +1,5 @@
 package dev.stardust.modules;
+import net.minecraft.entity.player.PlayerInventory;
 
 import java.util.List;
 import java.util.ArrayDeque;
@@ -129,7 +130,7 @@ public class Grinder extends Module {
 
     private boolean hasValidItems(GrindstoneScreenHandler handler) {
         if (mc.player == null) return false;
-        for (int n = 0; n < mc.player.getInventory().main.size() + 3; n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE + 3; n++) {
             if (n == 2) continue; // skip output slot
             if (isValidItem(handler.getSlot(n).getStack())) return true;
         }
@@ -156,7 +157,7 @@ public class Grinder extends Module {
 
     private int predictEmptySlot(GrindstoneScreenHandler handler) {
         if (mc.player == null) return -1;
-        for (int n = mc.player.getInventory().main.size() + 2; n >= 3; n--) {
+        for (int n = PlayerInventory.MAIN_SIZE + 2; n >= 3; n--) {
             if (processedSlots.contains(n) && !projectedEmpty.contains(n)) continue;
             if (projectedEmpty.contains(n)) {
                 projectedEmpty.rem(n);
@@ -205,13 +206,11 @@ public class Grinder extends Module {
 
             combinedItem = null;
             currentTarget = null;
-            return new ClickSlotC2SPacket(
-                handler.syncId, handler.getRevision(), 2, 0,
-                SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-            );
+            // TODO: update Quick Move packet for 1.21.5
+            return null;
         } else if (currentTarget != null) {
             // fill input slot 2
-            for (int n = 3; n < mc.player.getInventory().main.size() + 3; n++) {
+            for (int n = 3; n < PlayerInventory.MAIN_SIZE + 3; n++) {
                 if (processedSlots.contains(n)) continue;
                 ItemStack stack = handler.getSlot(n).getStack();
                 if (!isValidItem(stack) || !stack.isOf(currentTarget.getItem())) continue;
@@ -226,16 +225,14 @@ public class Grinder extends Module {
                 changedSlots.put(n, ItemStack.EMPTY);
                 changedSlots.put(2, ((GrindstoneScreenHandlerAccessor) handler).invokeGrind(combinedItem));
 
-                return new ClickSlotC2SPacket(
-                    handler.syncId, handler.getRevision(), n, 0,
-                    SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                );
+                // TODO: update Quick Move packet for 1.21.5
+                return null;
             }
             combinedItem = ItemStack.EMPTY;
             return generatePacket(handler);
         } else {
             // fill input slot 1
-            for (int n = 3; n < mc.player.getInventory().main.size() + 3; n++) {
+            for (int n = 3; n < PlayerInventory.MAIN_SIZE + 3; n++) {
                 if (processedSlots.contains(n)) continue;
                 ItemStack stack = handler.getSlot(n).getStack();
                 if (!isValidItem(stack)) continue;
@@ -250,10 +247,8 @@ public class Grinder extends Module {
 
                 if (!combine.get()) combinedItem = ItemStack.EMPTY;
 
-                return new ClickSlotC2SPacket(
-                    handler.syncId, handler.getRevision(), n, 0,
-                    SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                );
+                // TODO: update Quick Move packet for 1.21.5
+                return null;
             }
         }
 
@@ -331,7 +326,7 @@ public class Grinder extends Module {
                 if (!hasValidItems(grindstone)) finished();
                 else if (input1.isEmpty() && input2.isEmpty()) {
                     Item turboItem = null;
-                    for (int n = 3; n < mc.player.getInventory().main.size() + 3; n++) {
+                    for (int n = 3; n < PlayerInventory.MAIN_SIZE + 3; n++) {
                         ItemStack stack = grindstone.getSlot(n).getStack();
                         if (!hasValidEnchantments(stack)) continue;
                         else if (!itemList.get().contains(stack.getItem())) continue;

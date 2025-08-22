@@ -1,4 +1,5 @@
 package dev.stardust.modules;
+import net.minecraft.entity.player.PlayerInventory;
 
 import java.util.List;
 import dev.stardust.Stardust;
@@ -120,7 +121,7 @@ public class StashBrander extends Module {
 
     private boolean hasValidItems(AnvilScreenHandler handler) {
         if (mc.player == null) return false;
-        for (int n = 0; n < mc.player.getInventory().main.size() + ANVIL_OFFSET; n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE + ANVIL_OFFSET; n++) {
             if (n == AnvilScreenHandler.OUTPUT_ID) continue;
             ItemStack stack = handler.getSlot(n).getStack();
             if ((blacklistMode.get() && !itemList.get().contains(stack.getItem()))
@@ -190,7 +191,7 @@ public class StashBrander extends Module {
         if (!hasValidItems(anvil)) finished();
         else if (input1.isEmpty() && input2.isEmpty()) {
             // fill input 1
-            for (int n = ANVIL_OFFSET; n < mc.player.getInventory().main.size() + ANVIL_OFFSET; n++) {
+            for (int n = ANVIL_OFFSET; n < PlayerInventory.MAIN_SIZE + ANVIL_OFFSET; n++) {
                 ItemStack stack = anvil.getSlot(n).getStack();
                 if ((blacklistMode.get() && !itemList.get().contains(stack.getItem()))
                     || (!blacklistMode.get() && itemList.get().contains(stack.getItem())))

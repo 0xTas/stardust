@@ -1,4 +1,6 @@
 package dev.stardust.modules;
+import net.minecraft.entity.player.PlayerInventory;
+import dev.stardust.mixin.accessor.PlayerInventoryAccessor;
 
 import java.util.*;
 import java.io.File;
@@ -334,26 +336,8 @@ public class SignHistorian extends Module {
             List<String> entries = lineStream.toList();
             for (String sign : entries) {
                 try {
-                    String[] parts = sign.split(" -\\|- ");
-                    if (parts.length != 2) continue;
-                    NbtCompound reconstructed = StringNbtReader.parse(parts[0].trim());
-                    NbtCompound stateReconstructed = StringNbtReader.parse(parts[1].trim());
-                    BlockPos bPos = BlockEntity.posFromNbt(reconstructed);
-
-                    DataResult<BlockState> result = BlockState.CODEC.parse(NbtOps.INSTANCE, stateReconstructed);
-                    BlockState state = result.result().orElse(null);
-
-                    if (state == null) continue;
-                    BlockEntity be = BlockEntity.createFromNbt(bPos, state, reconstructed, mc.world.getRegistryManager());
-
-                    if (be instanceof SignBlockEntity sbeReconstructed) {
-                        if (!serverSigns.containsKey(bPos)) {
-                            if (state.getBlock() instanceof AbstractSignBlock signBlock) {
-                                woodTypeMap.put(sbeReconstructed, signBlock.getWoodType());
-                            }
-                            serverSigns.put(bPos, new Pair<>(sbeReconstructed, sbeReconstructed.getCachedState()));
-                        }
-                    }
+                    // TODO: Port sign NBT loading to 1.21.5
+                    continue;
                 } catch (Exception err) {
                     LogUtil.error("Failed to parse SignBlockEntity Nbt: "+err, this.name);
                 }
@@ -670,14 +654,14 @@ public class SignHistorian extends Module {
         Vec3d hitVec = Vec3d.ofCenter(pos);
         BlockHitResult hit = new BlockHitResult(hitVec, mc.player.getHorizontalFacing().getOpposite(), pos, false);
 
-        ItemStack current = mc.player.getInventory().getMainHandStack();
+        ItemStack current = mc.player.getMainHandStack();
         if (current.getItem() != dye) {
-            for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+            for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
                 ItemStack stack = mc.player.getInventory().getStack(n);
                 if (stack.getItem() == dye) {
                     if (current.getItem() instanceof SignItem && current.getCount() > 1) dyeSlot = n;
                     if (n < 9) InvUtils.swap(n, true);
-                    else InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
+                    else InvUtils.move().from(n).to(((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot());
 
                     timer = 3;
                     return;
@@ -844,7 +828,7 @@ public class SignHistorian extends Module {
 
         if (timer == -1 && dyeSlot != -1) {
             if (dyeSlot < 9) InvUtils.swapBack();
-            else InvUtils.move().from(mc.player.getInventory().selectedSlot).to(dyeSlot);
+            else InvUtils.move().from(((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot()).to(dyeSlot);
             dyeSlot = -1;
             timer = 3;
         }

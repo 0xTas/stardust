@@ -1,4 +1,5 @@
 package dev.stardust.modules;
+import net.minecraft.entity.player.PlayerInventory;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -305,7 +306,7 @@ public class AutoSmith extends Module {
     private final List<EquipmentType> exhaustedArmorTypes = new ArrayList<>();
 
     private ArmorMaterial getArmorMaterial(ItemStack armor) {
-        if (!(armor.getItem() instanceof ArmorItem)) return net.minecraft.item.equipment.ArmorMaterials.ARMADILLO_SCUTE;
+        if (armor.get(DataComponentTypes.EQUIPPABLE) == null) return net.minecraft.item.equipment.ArmorMaterials.ARMADILLO_SCUTE;
 
         switch (getItemSlotId(armor)) {
             case 0 -> {
@@ -351,7 +352,7 @@ public class AutoSmith extends Module {
         }
     }
 
-    private EquipmentType getEquipmentType(ArmorItem armor) {
+    private EquipmentType getEquipmentType(Item armor) {
         return switch (getItemSlotId(armor.getDefaultStack())) {
             case 0 -> EquipmentType.BOOTS;
             case 1 -> EquipmentType.LEGGINGS;
@@ -372,9 +373,9 @@ public class AutoSmith extends Module {
     }
 
     private boolean isValidEquipmentForTrimming(ItemStack stack) {
-        if (stack.getItem() instanceof ArmorItem armor) {
+        if (stack.get(DataComponentTypes.EQUIPPABLE) != null) {
             boolean correctMaterial = false;
-            EquipmentType equipmentType = getEquipmentType(armor);
+            EquipmentType equipmentType = getEquipmentType(stack.getItem());
             ArmorMaterial armorMaterial = getArmorMaterial(stack);
             if (exhaustedArmorTypes.contains(equipmentType)) return false;
             if (currentlyLookingFor != null && !equipmentType.equals(currentlyLookingFor)) return false;
@@ -576,7 +577,7 @@ public class AutoSmith extends Module {
         if (mc.player == null) return false;
         if (!(mc.player.currentScreenHandler instanceof SmithingScreenHandler ss)) return false;
 
-        for (int n = 0; n < mc.player.getInventory().main.size() + 4; n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE + 4; n++) {
             ItemStack stack = ss.getSlot(n).getStack();
             if (stack.getItem() == needed) return true;
         }
@@ -671,8 +672,8 @@ public class AutoSmith extends Module {
                         ItemStack output = ss.getSlot(SmithingScreenHandler.OUTPUT_ID).getStack();
 
                         if (!output.isEmpty()) {
-                            if (!(output.getItem() instanceof ArmorItem armor)) return;
-                            EquipmentType armorType = getEquipmentType(armor);
+                            if (output.get(DataComponentTypes.EQUIPPABLE) == null) return;
+                            EquipmentType armorType = getEquipmentType(output.getItem());
                             if (output.contains(DataComponentTypes.TRIM)) {
                                 ArmorTrim trimData = output.get(DataComponentTypes.TRIM);
                                 String pattern = trimData.pattern().getIdAsString();
@@ -757,7 +758,7 @@ public class AutoSmith extends Module {
                                 resettingMaterials = false;
                             }
                         } else if (!foundEquip) {
-                            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+                            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                                 ItemStack stack = ss.getSlot(n).getStack();
                                 if (isValidEquipmentForTrimming(stack)) {
                                     foundEquip = true;
@@ -771,7 +772,7 @@ public class AutoSmith extends Module {
                             }
                         } else if (!foundIngots) {
                             ItemStack armorToTrim = ss.getSlot(SmithingScreenHandler.EQUIPMENT_ID).getStack();
-                            if (!(armorToTrim.getItem() instanceof ArmorItem armor)) {
+                            if (armorToTrim.get(DataComponentTypes.EQUIPPABLE) == null) {
                                 foundEquip = false;
                                 resettingTemplates = true;
                                 resettingMaterials = true;
@@ -779,14 +780,14 @@ public class AutoSmith extends Module {
                                 LogUtil.error("Item in equipment slot was not armor..!", this.name);
                                 return;
                             }
-                            EquipmentType armorType = getEquipmentType(armor);
+                            EquipmentType armorType = getEquipmentType(armorToTrim.getItem());
                             Item neededMaterial = getNeededMaterialItem(armorToTrim);
 
                             if (neededMaterial == null) {
                                 LogUtil.error("neededMaterial was somehow null!");
                                 return;
                             }
-                            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+                            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                                 ItemStack stack = ss.getSlot(n).getStack();
                                 if (stack.isOf(neededMaterial)) {
                                     foundIngots = true;
@@ -804,7 +805,7 @@ public class AutoSmith extends Module {
                             }
                         } else if (!foundTemplates) {
                             ItemStack armorToTrim = ss.getSlot(SmithingScreenHandler.EQUIPMENT_ID).getStack();
-                            if (!(armorToTrim.getItem() instanceof ArmorItem armor)) {
+                            if (armorToTrim.get(DataComponentTypes.EQUIPPABLE) == null) {
                                 foundEquip = false;
                                 resettingTemplates = true;
                                 resettingMaterials = true;
@@ -813,13 +814,13 @@ public class AutoSmith extends Module {
                                 return;
                             }
 
-                            EquipmentType armorType = getEquipmentType(armor);
+                            EquipmentType armorType = getEquipmentType(armorToTrim.getItem());
                             Item neededPattern = getNeededPatternItem(armorToTrim);
                             if (neededPattern == null) {
                                 LogUtil.error("neededPattern was somehow null!", this.name);
                                 return;
                             }
-                            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+                            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                                 ItemStack stack = ss.getSlot(n).getStack();
                                 if (stack.getItem() == neededPattern) {
                                     foundTemplates = true;
@@ -851,7 +852,7 @@ public class AutoSmith extends Module {
                             if (ingotsRemaining == 0) foundIngots = false;
                             if (templatesRemaining == 0) foundTemplates = false;
                         } else if (!foundEquip) {
-                            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+                            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                                 ItemStack stack = ss.getSlot(n).getStack();
                                 if (isValidEquipmentForUpgrading(stack)) {
                                     foundEquip = true;
@@ -864,7 +865,7 @@ public class AutoSmith extends Module {
                                 finished();
                             }
                         }else if (!foundIngots) {
-                            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+                            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                                 ItemStack stack = ss.getSlot(n).getStack();
                                 if (stack.getItem() == Items.NETHERITE_INGOT) {
                                     foundIngots = true;
@@ -877,7 +878,7 @@ public class AutoSmith extends Module {
                                 finished();
                             }
                         } else if (!foundTemplates) {
-                            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+                            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                                 ItemStack stack = ss.getSlot(n).getStack();
                                 if (stack.getItem() == Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE) {
                                     foundTemplates = true;
@@ -928,7 +929,7 @@ public class AutoSmith extends Module {
             // check if correct and take output
 
             ItemStack armorToTrim = equipmentStack;
-            if (operatingMode.get().equals(SmithingMode.Trim) && !(armorToTrim.getItem() instanceof ArmorItem)) {
+            if (operatingMode.get().equals(SmithingMode.Trim) && armorToTrim.get(DataComponentTypes.EQUIPPABLE) == null) {
                 LogUtil.error("Item in equipment slot was not armor§c..!", this.name);
                 return null;
             }
@@ -947,7 +948,7 @@ public class AutoSmith extends Module {
                 if (debug.get()) {
                     MsgUtil.sendModuleMsg(
                         "Wrong trim stack for armor of type "
-                            + getEquipmentType((ArmorItem) armorToTrim.getItem()).name() + "§e..!", this.name
+                            + getEquipmentType(armorToTrim.getItem()).name() + "§e..!", this.name
                     );
                 }
                 changedSlots.put(SmithingScreenHandler.TEMPLATE_ID, ItemStack.EMPTY);
@@ -964,16 +965,14 @@ public class AutoSmith extends Module {
                 if (debug.get()) {
                     MsgUtil.sendModuleMsg("Moving incorrect template item back to inventory§e..!", this.name);
                 }
-                return new ClickSlotC2SPacket(
-                    handler.syncId, handler.getRevision(), SmithingScreenHandler.TEMPLATE_ID, 0,
-                    SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                );
+                    // TODO: update Quick Move packet for 1.21.5
+                    return null;
             }
             if (operatingMode.get().equals(SmithingMode.Trim) && !materialStack.isOf(neededMaterial)) {
                 if (debug.get()) {
                     MsgUtil.sendModuleMsg(
                         "Wrong material stack for armor of type "
-                            + getEquipmentType((ArmorItem) armorToTrim.getItem()).name() + "§e..!", this.name
+                            + getEquipmentType(armorToTrim.getItem()).name() + "§e..!", this.name
                     );
                 }
                 changedSlots.put(SmithingScreenHandler.MATERIAL_ID, ItemStack.EMPTY);
@@ -990,10 +989,8 @@ public class AutoSmith extends Module {
                 if (debug.get()) {
                     MsgUtil.sendModuleMsg("Moving incorrect material item back to inventory§e..!", this.name);
                 }
-                return new ClickSlotC2SPacket(
-                    handler.syncId, handler.getRevision(), SmithingScreenHandler.MATERIAL_ID, 0,
-                    SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                );
+                    // TODO: update Quick Move packet for 1.21.5
+                    return null;
             }
 
             // take output
@@ -1042,10 +1039,8 @@ public class AutoSmith extends Module {
 
             if (debug.get()) MsgUtil.sendModuleMsg("Generated output packet§a..!", this.name);
             equipmentStack = null;
-            return new ClickSlotC2SPacket(
-                handler.syncId, handler.getRevision(), 3, 0,
-                SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-            );
+            // TODO: update Quick Move packet for 1.21.5
+            return null;
         } else if (equipmentStack == null) {
             // look for valid equipment stack
 
@@ -1055,7 +1050,7 @@ public class AutoSmith extends Module {
                     MsgUtil.sendModuleMsg("Currently looking for equipment of type: §e" + currentlyLookingFor.name(), this.name);
                 }
             }
-            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                 if (processedSlots.contains(n)) continue;
                 ItemStack stack = handler.getSlot(n).getStack();
                 if ((operatingMode.get().equals(SmithingMode.Trim) && isValidEquipmentForTrimming(stack)) || (operatingMode.get().equals(SmithingMode.Upgrade) && isValidEquipmentForUpgrading(stack))) {
@@ -1091,10 +1086,8 @@ public class AutoSmith extends Module {
                                 + currentlyLookingFor.getName() + "§a..!", this.name
                         );
                     }
-                    return new ClickSlotC2SPacket(
-                        handler.syncId, handler.getRevision(), n, 0,
-                        SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                    );
+                    // TODO: update Quick Move packet for 1.21.5
+                    return null;
                 }
             }
 
@@ -1120,7 +1113,7 @@ public class AutoSmith extends Module {
             }
         } else if (materialStack == null) {
             ItemStack armorToTrim = equipmentStack;
-            if (operatingMode.get().equals(SmithingMode.Trim) && !(armorToTrim.getItem() instanceof ArmorItem)) {
+            if (operatingMode.get().equals(SmithingMode.Trim) && armorToTrim.get(DataComponentTypes.EQUIPPABLE) == null) {
                 LogUtil.error("Item in equipment slot was not armor..!", this.name);
                 return null;
             }
@@ -1130,7 +1123,7 @@ public class AutoSmith extends Module {
             } else {
                 needed = Items.NETHERITE_INGOT;
             }
-            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                 if (processedSlots.contains(n)) continue;
                 ItemStack stack = handler.getSlot(n).getStack();
                 if (stack.isOf(needed)) {
@@ -1158,15 +1151,13 @@ public class AutoSmith extends Module {
                         }
                     }
 
-                    return new ClickSlotC2SPacket(
-                        handler.syncId, handler.getRevision(), n, 0,
-                        SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                    );
+                    // TODO: update Quick Move packet for 1.21.5
+                    return null;
                 }
             }
         } else {
             ItemStack armorToTrim = equipmentStack;
-            if (operatingMode.get().equals(SmithingMode.Trim) && !(armorToTrim.getItem() instanceof ArmorItem)) {
+            if (operatingMode.get().equals(SmithingMode.Trim) && armorToTrim.get(DataComponentTypes.EQUIPPABLE) == null) {
                 LogUtil.error("Item in equipment slot was not armor..!", this.name);
                 return null;
             }
@@ -1176,7 +1167,7 @@ public class AutoSmith extends Module {
             } else {
                 needed = Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE;
             }
-            for (int n = 4; n < mc.player.getInventory().main.size() + 4; n++) {
+            for (int n = 4; n < PlayerInventory.MAIN_SIZE + 4; n++) {
                 if (processedSlots.contains(n)) continue;
                 ItemStack stack = handler.getSlot(n).getStack();
                 if (stack.isOf(needed)) {
@@ -1201,10 +1192,8 @@ public class AutoSmith extends Module {
                         changedSlots.put(SmithingScreenHandler.OUTPUT_ID, output);
                     }
 
-                    return new ClickSlotC2SPacket(
-                        handler.syncId, handler.getRevision(), n, 0,
-                        SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                    );
+                    // TODO: update Quick Move packet for 1.21.5
+                    return null;
                 }
             }
         }
@@ -1273,7 +1262,7 @@ public class AutoSmith extends Module {
 
     private int predictEmptySlot(SmithingScreenHandler handler) {
         if (mc.player == null) return -1;
-        for (int n = mc.player.getInventory().main.size() + 3; n >= 4; n--) {
+        for (int n = PlayerInventory.MAIN_SIZE + 3; n >= 4; n--) {
             if (processedSlots.contains(n) && !projectedEmpty.contains(n)) continue;
             if (projectedEmpty.contains(n)) {
                 projectedEmpty.rem(n);
@@ -1288,7 +1277,7 @@ public class AutoSmith extends Module {
 
     private @Nullable Item getNeededPatternItem(ItemStack armorToTrim) {
         Item neededPattern = null;
-        switch (getEquipmentType((ArmorItem) armorToTrim.getItem())) {
+        switch (getEquipmentType(armorToTrim.getItem())) {
             case BOOTS -> {
                 switch (bootsTrim.get()) {
                     case Eye -> neededPattern = Items.EYE_ARMOR_TRIM_SMITHING_TEMPLATE;
@@ -1384,7 +1373,7 @@ public class AutoSmith extends Module {
 
     private @Nullable Item getNeededMaterialItem(ItemStack armorToTrim) {
         Item neededMaterial = null;
-        switch (getEquipmentType((ArmorItem) armorToTrim.getItem())) {
+        switch (getEquipmentType(armorToTrim.getItem())) {
             case BOOTS -> {
                 switch (bootsTrimMaterial.get()) {
                     case Gold -> neededMaterial = Items.GOLD_INGOT;

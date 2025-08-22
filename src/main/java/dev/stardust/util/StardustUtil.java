@@ -279,7 +279,9 @@ public class StardustUtil {
                 if (file.createNewFile()) {
                     if (mc.player != null) {
                         MsgUtil.sendMsg("Created " + file.getName() + " in your meteor-client folder.");
-                        Style style = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()));
+                        Style style = Style.EMPTY.withClickEvent(
+                            new ClickEvent.OpenFile(file.getAbsolutePath())
+                        );
 
                         MsgUtil.sendMsg("Click §2§lhere §r§7to open the file.", style);
                     }

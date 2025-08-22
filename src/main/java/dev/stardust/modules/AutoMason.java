@@ -1,4 +1,5 @@
 package dev.stardust.modules;
+import net.minecraft.entity.player.PlayerInventory;
 
 import java.util.List;
 import java.util.ArrayDeque;
@@ -8,6 +9,7 @@ import net.minecraft.item.Items;
 import dev.stardust.util.MsgUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.registry.Registries;
 import dev.stardust.util.StonecutterUtil;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.network.packet.Packet;
@@ -145,7 +147,7 @@ public class AutoMason extends Module {
     @EventHandler
     private void onSoundPlay(PlaySoundEvent event) {
         if (!muteCutter.get()) return;
-        if (event.sound.getId().equals(SoundEvents.UI_STONECUTTER_TAKE_RESULT.id())) {
+        if (event.sound.getId().equals(Registries.SOUND_EVENT.getId(SoundEvents.UI_STONECUTTER_TAKE_RESULT))) {
             event.cancel();
         }
     }
@@ -227,7 +229,7 @@ public class AutoMason extends Module {
 
                 if (!hasValidItems(cutter)) finished();
                 else if (input.isEmpty() && output.isEmpty()) {
-                    for (int n = 2; n < mc.player.getInventory().main.size() + 2; n++) {
+                    for (int n = 2; n < PlayerInventory.MAIN_SIZE + 2; n++) {
                         ItemStack stack = cutter.getSlot(n).getStack();
 
                         if (!isValidItem(stack)) continue;
@@ -300,10 +302,8 @@ public class AutoMason extends Module {
 
             targetStack = null;
             outputStack = null;
-            return new ClickSlotC2SPacket(
-                handler.syncId, handler.getRevision(), 1, 0,
-                SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-            );
+            // TODO: update Quick Move packet for 1.21.5
+            return null;
         } else if (targetStack != null) {
             // pick recipe
             CuttingRecipeDisplay.Grouping<StonecuttingRecipe> available = mc.world
@@ -322,7 +322,7 @@ public class AutoMason extends Module {
             }
         } else {
             // fill input slot
-            for (int n = 2; n < mc.player.getInventory().main.size() + 2; n++) {
+            for (int n = 2; n < PlayerInventory.MAIN_SIZE + 2; n++) {
                 if (processedSlots.contains(n)) continue;
                 ItemStack stack = handler.getSlot(n).getStack();
                 if (!isValidItem(stack)) continue;
@@ -334,10 +334,8 @@ public class AutoMason extends Module {
                 changedSlots.put(0, stack);
                 changedSlots.put(n, ItemStack.EMPTY);
 
-                return new ClickSlotC2SPacket(
-                    handler.syncId, handler.getRevision(), n, 0,
-                    SlotActionType.QUICK_MOVE, ItemStack.EMPTY, changedSlots
-                );
+                // TODO: update Quick Move packet for 1.21.5
+                return null;
             }
         }
 
@@ -346,7 +344,7 @@ public class AutoMason extends Module {
 
     private int predictEmptySlot(StonecutterScreenHandler handler) {
         if (mc.player == null) return -1;
-        for (int n = mc.player.getInventory().main.size() + 1; n >= 2; n--) {
+        for (int n = PlayerInventory.MAIN_SIZE + 1; n >= 2; n--) {
             if (processedSlots.contains(n) && !projectedEmpty.contains(n)) continue;
             if (projectedEmpty.contains(n)) {
                 projectedEmpty.rem(n);
@@ -361,7 +359,7 @@ public class AutoMason extends Module {
 
     private boolean hasValidItems(StonecutterScreenHandler handler) {
         if (mc.player == null) return false;
-        for (int n = 0; n < mc.player.getInventory().main.size() + 2; n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE + 2; n++) {
             if (n == 1) continue; // skip output slot
             if (isValidItem(handler.getSlot(n).getStack())) return true;
         }

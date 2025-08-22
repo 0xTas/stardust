@@ -1,4 +1,6 @@
 package dev.stardust.modules;
+import net.minecraft.entity.player.PlayerInventory;
+import dev.stardust.mixin.accessor.PlayerInventoryAccessor;
 
 import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
@@ -553,11 +555,11 @@ public class RocketMan extends Module {
             InvUtils.swapBack();
         }else {
             int movedSlot = -1;
-            for (int n = 9; n < mc.player.getInventory().main.size(); n++) {
+            for (int n = 9; n < PlayerInventory.MAIN_SIZE; n++) {
                 Item item = mc.player.getInventory().getStack(n).getItem();
 
                 if (item == Items.FIREWORK_ROCKET) {
-                    InvUtils.move().from(n).to(mc.player.getInventory().selectedSlot);
+                    InvUtils.move().from(n).to(((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot());
                     movedSlot = n;
                     foundRocket = true;
                     break;
@@ -570,7 +572,7 @@ public class RocketMan extends Module {
                 mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND);
                 //noinspection ConstantConditions
                 if (movedSlot != -1) {
-                    InvUtils.move().from(mc.player.getInventory().selectedSlot).to(movedSlot);
+                    InvUtils.move().from(((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot()).to(movedSlot);
                 }
             }
         }
@@ -614,7 +616,7 @@ public class RocketMan extends Module {
 
     private boolean replaceElytra() {
         if (mc.player == null) return false;
-        for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
             ItemStack item = mc.player.getInventory().getStack(n);
             if (item.getItem() == Items.ELYTRA) {
                 int max = item.getMaxDamage();
@@ -646,7 +648,7 @@ public class RocketMan extends Module {
                     if (durabilityCheckTicks < 100) return;
                     if (percentDurability <= durabilityThreshold.get()) {
                         float vol = warnVolume.get() / 100f;
-                        mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK, vol, 1f);
+                        mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK.value(), vol, 1f);
                         MsgUtil.updateModuleMsg("Elytra durability: §c" + percentDurability + "§7%", this.name, "elytraDurabilityWarning".hashCode());
                         durabilityCheckTicks = 0;
                     }
@@ -656,7 +658,7 @@ public class RocketMan extends Module {
             if (durabilityCheckTicks < 100) return;
             if (percentDurability <= durabilityThreshold.get()) {
                 float vol = warnVolume.get() / 100f;
-                mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK, vol, 1f);
+                mc.player.playSound(SoundEvents.ENTITY_ITEM_BREAK.value(), vol, 1f);
                 MsgUtil.updateModuleMsg("Elytra durability: §c" + percentDurability + "§7%", this.name, "elytraDurabilityWarning".hashCode());
                 durabilityCheckTicks = 0;
             }
@@ -668,7 +670,7 @@ public class RocketMan extends Module {
         if (!notifyOnLow.get() || rocketStockTicks < 100) return;
 
         int totalRockets = 0;
-        for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+        for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
             ItemStack stack = mc.player.getInventory().getStack(n);
             if (stack.getItem() == Items.FIREWORK_ROCKET) {
                 totalRockets += stack.getCount();
@@ -839,8 +841,8 @@ public class RocketMan extends Module {
         if (!isWearingElytra) {
             if (autoEquip.get()) {
                 boolean foundElytra = false;
-                for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
-                    ItemStack stack = mc.player.getInventory().main.get(n);
+                for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
+                    ItemStack stack = mc.player.getInventory().getStack(n);
 
                     if (stack.getItem() == Items.ELYTRA) {
                         if (autoReplace.get()) {

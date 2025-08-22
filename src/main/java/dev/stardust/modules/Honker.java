@@ -1,4 +1,6 @@
 package dev.stardust.modules;
+import net.minecraft.entity.player.PlayerInventory;
+import dev.stardust.mixin.accessor.PlayerInventoryAccessor;
 
 import java.util.Collection;
 import dev.stardust.Stardust;
@@ -9,6 +11,7 @@ import net.minecraft.item.Instrument;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.item.GoatHornItem;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.component.type.InstrumentComponent;
 import meteordevelopment.orbit.EventHandler;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.entity.player.PlayerEntity;
@@ -106,35 +109,34 @@ public class Honker extends Module {
         if (mc.player == null) return;
         if ("Random".equals(desiredCall.get())) {
             IntArrayList hornSlots = new IntArrayList();
-            for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+            for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
                 ItemStack stack = mc.player.getInventory().getStack(n);
                 if (stack.getItem() instanceof GoatHornItem) hornSlots.add(n);
             }
             if (hornSlots.isEmpty()) return;
             if (hornSlots.size() == 1) {
-                honkHorn(hornSlots.getInt(0), mc.player.getInventory().selectedSlot);
+                honkHorn(hornSlots.getInt(0), ((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot());
             } else {
                 int luckyIndex = (int) (Math.random() * hornSlots.size());
-                honkHorn(hornSlots.getInt(luckyIndex), mc.player.getInventory().selectedSlot);
+                honkHorn(hornSlots.getInt(luckyIndex), ((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot());
             }
         } else {
             String desiredCallId = desiredCall.get().toLowerCase() + "_goat_horn";
 
             int hornIndex = -1;
-            for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+            for (int n = 0; n < PlayerInventory.MAIN_SIZE; n++) {
                 ItemStack stack = mc.player.getInventory().getStack(n);
                 if (!(stack.getItem() instanceof GoatHornItem)) continue;
                 if (!stack.contains(DataComponentTypes.INSTRUMENT)) continue;
-                RegistryEntry<Instrument> instrument = stack.get(DataComponentTypes.INSTRUMENT);
-                String id = instrument.value().soundEvent().value().id().toUnderscoreSeparatedString();
-                if (id == null) continue;
+                InstrumentComponent component = stack.get(DataComponentTypes.INSTRUMENT);
+                if (component == null) continue;
 
                 hornIndex = n;
-                if (id.equals("minecraft:"+desiredCallId)) break;
+                break;
             }
 
             if (hornIndex != -1) {
-                honkHorn(hornIndex, mc.player.getInventory().selectedSlot);
+                honkHorn(hornIndex, ((PlayerInventoryAccessor) mc.player.getInventory()).getSelectedSlot());
             }
         }
     }
