@@ -77,6 +77,14 @@ OldSigns functionality can be accessed in the ChatSigns module settings.
 
 <br>
 
+#### Minigames
+
+| Feature         | Description                                                                                                                                                                                                                                      |
+|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Minesweeper** | *Play classic Minesweeper from the comfort of your Meteor Client.*                                                                                                                                                                               |
+| **Meteorites**  | *Meteorites is an Asteroids-like arcade shooter minigame that you can play in your client while travelling or waiting for other in-game things to happen.* To see the game in action, [click here](https://www.youtube.com/watch?v=xu2lorSXFKg). |
+
+
 ### Installation
 
 1. Ensure that [Fabric](https://fabricmc.net) for Minecraft version 1.21.4 is installed.
