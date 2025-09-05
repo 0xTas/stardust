@@ -99,7 +99,7 @@ public class Minesweeper extends Module {
     public final Setting<Boolean> shouldSave = sgGeneral.add(
         new BoolSetting.Builder()
             .name("save-games")
-            .description("Saves your game state when closing the Minesweeper screen. Does not persist across game restarts.")
+            .description("Saves your game state when closing the Minesweeper screen.")
             .defaultValue(true)
             .build()
     );
