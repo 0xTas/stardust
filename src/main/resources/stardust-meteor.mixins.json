@@ -13,6 +13,8 @@
   "mixins": [
     "AutoLogMixin",
     "FreecamMixin",
+    "WHeaderMixin",
+    "WWindowMixin",
     "GuiThemeMixin",
     "NametagsMixin",
     "AutoMendMixin",
