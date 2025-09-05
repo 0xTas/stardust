@@ -1,8 +1,10 @@
 package dev.stardust.modules;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
 import dev.stardust.Stardust;
+import net.minecraft.item.Item;
 import net.minecraft.text.Text;
 import net.minecraft.item.Items;
 import dev.stardust.util.MsgUtil;
@@ -18,6 +20,7 @@ import net.minecraft.entity.EquipmentSlot;
 import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.orbit.EventPriority;
 import meteordevelopment.meteorclient.settings.*;
+import net.minecraft.component.DataComponentTypes;
 import meteordevelopment.meteorclient.utils.Utils;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.events.world.TickEvent;
@@ -178,6 +181,28 @@ public class RoadTrip extends Module {
             .range(0, 1024).sliderRange(0, 128).defaultValue(32)
             .build()
     );
+    private final Setting<Boolean> lowFoodAutoLog = sgAutoLog.add(
+        new BoolSetting.Builder()
+            .name("foodStock-autoLog")
+            .description("Logs you out if your stock of chosen food is running low.")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<List<Item>> chosenFood = sgAutoLog.add(
+        new ItemListSetting.Builder()
+            .name("valid-food")
+            .description("Which food to look for when deciding whether to disconnect you.")
+            .filter(stack -> stack.getComponents().contains(DataComponentTypes.FOOD))
+            .defaultValue(List.of(Items.GOLDEN_CARROT, Items.COOKED_BEEF, Items.ENCHANTED_GOLDEN_APPLE))
+            .build()
+    );
+    private final Setting<Integer> foodStock = sgAutoLog.add(
+        new IntSetting.Builder()
+            .name("foodStock-autoLog-threshold")
+            .description("Logs you out if your stock of chosen food is running low.")
+            .range(0, 1024).sliderRange(0, 128).defaultValue(0)
+            .build()
+    );
 
     private final Setting<Boolean> yLevelAutoLog = sgAutoLog.add(
         new BoolSetting.Builder()
@@ -318,6 +343,18 @@ public class RoadTrip extends Module {
         return totalRocketsLeft > rocketStock.get();
     }
 
+    private boolean hasEnoughFood() {
+        if (mc.player == null) return false;
+        int totalFoodLeft = 0;
+        for (int n = 0; n < mc.player.getInventory().main.size(); n++) {
+            ItemStack stack = mc.player.getInventory().getStack(n);
+            if (chosenFood.get().contains(stack.getItem())) {
+                totalFoodLeft += stack.getCount();
+            }
+        }
+        return totalFoodLeft > foodStock.get();
+    }
+
     private void doForceKick(Text disconnectReason) {
         this.disconnectReason = disconnectReason;
         StardustUtil.illegalDisconnect(true, StardustConfig.illegalDisconnectMethodSetting.get());
@@ -384,6 +421,15 @@ public class RoadTrip extends Module {
 
         if (lowRocketsAutoLog.get() && !hasEnoughRockets()) {
             Text reason = Text.literal("§8[§2RoadTrip§8] §fDisconnected you because you are running low on firework rockets§c!");
+            if (forceKick.get()) {
+                doForceKick(reason);
+            } else {
+                disconnect(reason);
+            }
+        }
+
+        if (lowFoodAutoLog.get() && !hasEnoughFood()) {
+            Text reason = Text.literal("§8[§2RoadTrip§8] §fDisconnected you because you are running low on food§c!");
             if (forceKick.get()) {
                 doForceKick(reason);
             } else {
