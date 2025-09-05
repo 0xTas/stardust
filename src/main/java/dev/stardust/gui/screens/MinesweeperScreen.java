@@ -14,7 +14,6 @@ import meteordevelopment.meteorclient.gui.widgets.WWidget;
 public class MinesweeperScreen extends WindowScreen {
     private final GuiTheme theme;
     private final Minesweeper module;
-    private @Nullable Minesweeper.SaveState save = null;
     private @Nullable Cell<? extends WWidget> widget = null;
 
     public MinesweeperScreen(Minesweeper module, GuiTheme theme, String title) {
@@ -23,20 +22,9 @@ public class MinesweeperScreen extends WindowScreen {
         this.module = module;
     }
 
-    public MinesweeperScreen(Minesweeper module, GuiTheme theme, String title, @Nullable Minesweeper.SaveState save) {
-        super(theme, title);
-        this.save = save;
-        this.theme = theme;
-        this.module = module;
-    }
-
     @Override
     public void initWidgets() {
-        if (save == null) {
-            widget = add(new WMinesweeper(module, theme));
-        } else {
-            widget = add(new WMinesweeper(module, theme, save));
-        }
+        widget = add(new WMinesweeper(module, theme));
     }
 
     @Override

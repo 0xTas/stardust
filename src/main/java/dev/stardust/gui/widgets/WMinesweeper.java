@@ -18,126 +18,8 @@ import meteordevelopment.meteorclient.gui.themes.meteor.MeteorGuiTheme;
  * @author Tas [0xTas] <root@0xTas.dev>
  **/
 public class WMinesweeper extends WWidget {
-    public enum Difficulty {
-        Easy(new int[]{12, 12, 10}),
-        Normal(new int[]{16, 16, 40}),
-        Hard(new int[]{30, 16, 99}),
-        Insane(new int[]{30, 24, 137}),
-        Custom(new int[]{37, 37, 169});
-
-        public final int[] values;
-
-        Difficulty(int[] values) {
-            this.values = values;
-        }
-
-        public int getMines() {
-            return values[2];
-        }
-        public int getRows() {
-            return values[1];
-        }
-        public int getColumns() {
-            return values[0];
-        }
-    }
-
-    public enum ColorSchemes {
-        Classic, Themed, Custom
-    }
-
-    public static class ColorScheme {
-        public Color wonTextColor;
-        public Color lostTextColor;
-        public Color cellBorderColor;
-        public Color mineTextColor;
-        public Color mineCellColor;
-        public Color runtimeColor;
-        public Color resetTextColor;
-        public Color statusBarColor;
-        public Color backgroundColor;
-        public Color mineCountColor;
-        public Color hiddenCellColor;
-        public Color flaggedCellColor;
-        public Color flaggedCellTextColor;
-        public Color resetButtonColor;
-        public Color resetHoveredColor;
-        public Color revealedCellColor;
-        public Color textShadowColor;
-
-        public ColorScheme(Minesweeper module, GuiTheme theme) {
-            ColorSchemes scheme = module.colorScheme.get();
-
-            boolean assignDefaults = false;
-            switch (scheme) {
-                case Themed -> {
-                    if (theme instanceof MeteorGuiTheme guiTheme) {
-                        this.wonTextColor = guiTheme.plusColor.get();
-                        this.lostTextColor = guiTheme.minusColor.get();
-                        this.cellBorderColor = guiTheme.outlineColor.get();
-                        this.mineTextColor = guiTheme.minusColor.get();
-                        this.mineCellColor = guiTheme.backgroundColor.get();
-                        this.runtimeColor = guiTheme.titleTextColor.get();
-                        this.resetTextColor = guiTheme.textSecondaryColor.get();
-                        this.statusBarColor = guiTheme.accentColor.get();
-                        this.backgroundColor = guiTheme.backgroundColor.get();
-                        this.mineCountColor = guiTheme.titleTextColor.get();
-                        this.hiddenCellColor = guiTheme.moduleBackground.get();
-                        this.flaggedCellColor = guiTheme.accentColor.get();
-                        this.flaggedCellTextColor = guiTheme.textColor.get();
-                        this.resetButtonColor = guiTheme.backgroundColor.get();
-                        this.resetHoveredColor = guiTheme.backgroundColor.get(false, true, false);
-                        this.revealedCellColor = guiTheme.backgroundColor.get();
-                        this.textShadowColor = guiTheme.backgroundColor.get(false, true, false);
-                    } else {
-                        assignDefaults = true;
-                    }
-                }
-                case Custom -> {
-                    this.wonTextColor = module.wonColor.get();
-                    this.lostTextColor = module.lostColor.get();
-                    this.cellBorderColor = module.cellBorderColor.get();
-                    this.mineTextColor = module.mineTextColor.get();
-                    this.mineCellColor = module.mineCellColor.get();
-                    this.runtimeColor = module.timerColor.get();
-                    this.resetTextColor = module.resetTextColor.get();
-                    this.statusBarColor = module.statusBarColor.get();
-                    this.backgroundColor = module.backgroundColor.get();
-                    this.mineCountColor = module.mineCountColor.get();
-                    this.hiddenCellColor = module.hiddenCellColor.get();
-                    this.flaggedCellColor = module.flaggedCellColor.get();
-                    this.flaggedCellTextColor = module.flaggedCellTextColor.get();
-                    this.resetButtonColor = module.resetButtonColor.get();
-                    this.resetHoveredColor = module.resetHoveredColor.get();
-                    this.revealedCellColor = module.revealedCellColor.get();
-                    this.textShadowColor = module.textShadowColor.get();
-                }
-                default -> assignDefaults = true;
-            }
-
-            if (assignDefaults) {
-                this.wonTextColor = new Color(0, 255, 0);
-                this.lostTextColor = new Color(255, 0, 0);
-                this.cellBorderColor = new Color(0, 0, 0);
-                this.mineTextColor = new Color(255, 0, 0);
-                this.textShadowColor = new Color(0, 0, 0);
-                this.mineCellColor = new Color(13, 13, 13);
-                this.runtimeColor = new Color(255, 255, 0);
-                this.resetTextColor = new Color(20, 20, 20);
-                this.statusBarColor = new Color(42, 42, 42);
-                this.backgroundColor = new Color(51, 51, 51);
-                this.mineCountColor = new Color(255, 255, 255);
-                this.hiddenCellColor = new Color(176, 176, 176);
-                this.flaggedCellColor = new Color(255, 204, 102);
-                this.flaggedCellTextColor = new Color(169, 0, 0);
-                this.resetButtonColor = new Color(200, 200, 200);
-                this.resetHoveredColor = new Color(230, 230, 230);
-                this.revealedCellColor = new Color(248, 248, 248);
-            }
-        }
-    }
-
     private static final int TEXT_Y_OFFSET = 1;
+    private static final int BREAKING_VERSION = 1;
 
     private int rows;
     private int cols;
@@ -165,9 +47,10 @@ public class WMinesweeper extends WWidget {
     public boolean shouldSaveGame() {
         return !gameOver && !firstClick;
     }
-    public Minesweeper.SaveState saveGame() {
-        return new Minesweeper.SaveState(
-            difficulty, rows, cols, mines, grid, state, System.currentTimeMillis() - gameStart
+    public SaveState saveGame() {
+        return new SaveState(
+            BREAKING_VERSION, difficulty,
+            rows, cols, mines, grid, state, accumulated + (System.currentTimeMillis() - gameStart)
         );
     }
 
@@ -177,32 +60,26 @@ public class WMinesweeper extends WWidget {
         this.difficulty = module.difficulty.get();
         this.colorScheme = new ColorScheme(module, theme);
 
-        initEmpty();
-    }
-
-    public WMinesweeper(Minesweeper module, GuiTheme theme, Minesweeper.SaveState save) {
-        this.module = module;
-        this.cellSize = module.cellSize.get();
-        this.difficulty = module.difficulty.get();
-        this.colorScheme = new ColorScheme(module, theme);
-
-        // If core settings were changed, start fresh
-        if (difficulty != save.difficulty()) {
-            initEmpty();
-        } else if (difficulty.equals(Difficulty.Custom)) {
-            if (module.rows.get() != save.rows()
-                || module.columns.get() != save.columns()
-                || module.mines.get() != save.mines()) {
+        if (module.shouldSave.get() && module.saveData != null) {
+            SaveState save = module.saveData;
+            // If core settings or save data structure were changed, start fresh
+            if (difficulty != save.difficulty() || save.version != BREAKING_VERSION) {
                 initEmpty();
+            } else if (difficulty.equals(Difficulty.Custom)) {
+                if (module.rows.get() != save.rows()
+                    || module.columns.get() != save.columns()
+                    || module.mines.get() != save.mines()) {
+                    initEmpty();
+                } else loadSave(save);
             } else loadSave(save);
-        } else loadSave(save);
+        } else initEmpty();
     }
 
-    private void loadSave(Minesweeper.SaveState save) {
+    private void loadSave(SaveState save) {
         this.rows = save.rows();
         this.cols = save.columns();
         this.mines = Math.min(save.mines(), rows * cols - 1);
-        accumulated = save.accumulatedMillis();
+        accumulated += save.accumulatedMillis();
         gameStart = System.currentTimeMillis();
         grid = save.grid();
         state = save.state();
@@ -222,6 +99,7 @@ public class WMinesweeper extends WWidget {
             this.mines = Math.min(difficulty.getMines(), rows * cols - 1);
         }
         gameStart = 0;
+        accumulated = 0L;
         grid = new int[rows][cols];
         state = new byte[rows][cols];
         firstClick = true;
@@ -272,12 +150,22 @@ public class WMinesweeper extends WWidget {
         if (grid[r][c] == -1) {
             if (!gameOver) {
                 module.clearSave();
-                if (module.gameSounds.get()) mc.getSoundManager().play(
-                    PositionedSoundInstance.master(
-                        SoundEvents.ENTITY_VILLAGER_NO,
-                        ThreadLocalRandom.current().nextFloat(0.77f, 1.1337f)
-                    )
-                );
+                if (module.gameSounds.get()) {
+                    mc.getSoundManager().play(
+                        PositionedSoundInstance.master(
+                            SoundEvents.ENTITY_VILLAGER_NO,
+                            ThreadLocalRandom.current().nextFloat(0.77f, 1.1337f),
+                            module.soundVolume.get().floatValue()
+                        )
+                    );
+                    mc.getSoundManager().play(
+                        PositionedSoundInstance.master(
+                            SoundEvents.ENTITY_GENERIC_EXPLODE.value(),
+                            ThreadLocalRandom.current().nextFloat(0.77f, 1.1337f),
+                            module.soundVolume.get().floatValue()
+                        )
+                    );
+                }
             }
 
             revealAllMines();
@@ -292,19 +180,36 @@ public class WMinesweeper extends WWidget {
         if (checkWin()) {
             if (!gameOver) {
                 module.clearSave();
-                if (module.gameSounds.get()) mc.getSoundManager().play(
-                    PositionedSoundInstance.master(
-                        SoundEvents.ENTITY_VILLAGER_YES,
-                        ThreadLocalRandom.current().nextFloat(0.77f, 1.1337f)
-                    )
-                );
+                if (module.gameSounds.get()) {
+                    mc.getSoundManager().play(
+                        PositionedSoundInstance.master(
+                            SoundEvents.ENTITY_VILLAGER_YES,
+                            ThreadLocalRandom.current().nextFloat(0.77f, 1.1337f),
+                            module.soundVolume.get().floatValue()
+                        )
+                    );
+                    mc.getSoundManager().play(
+                        PositionedSoundInstance.master(
+                            SoundEvents.ENTITY_PLAYER_LEVELUP,
+                            ThreadLocalRandom.current().nextFloat(0.77f, 1.1337f),
+                            module.soundVolume.get().floatValue()
+                        )
+                    );
+                }
             }
 
             gameOver = true;
             gameWon = true;
             gameEnd = System.currentTimeMillis();
+        } else if (module.gameSounds.get()) {
+            mc.getSoundManager().play(
+                PositionedSoundInstance.master(
+                    SoundEvents.BLOCK_AMETHYST_BLOCK_STEP,
+                    ThreadLocalRandom.current().nextFloat(0.666f, 1.420f),
+                    module.soundVolume.get().floatValue()
+                )
+            );
         }
-
     }
 
     private void revealAllMines() {
@@ -341,7 +246,28 @@ public class WMinesweeper extends WWidget {
 
     public void toggleFlag(int r, int c) {
         if (!inBounds(r, c) || state[r][c] == 1 || gameOver) return;
-        state[r][c] = (state[r][c] == 2) ? (byte)0 : (byte)2;
+
+        if (state[r][c] == 2) {
+            state[r][c] = (byte) 0;
+            if (module.gameSounds.get()) {
+                mc.getSoundManager().play(
+                    PositionedSoundInstance.master(
+                        SoundEvents.ENTITY_ITEM_FRAME_REMOVE_ITEM,
+                        ThreadLocalRandom.current().nextFloat(0.666f, 1.333f), module.soundVolume.get().floatValue()
+                    )
+                );
+            }
+        } else {
+            state[r][c] = (byte) 2;
+            if (module.gameSounds.get()) {
+                mc.getSoundManager().play(
+                    PositionedSoundInstance.master(
+                        SoundEvents.ENTITY_ITEM_FRAME_ADD_ITEM,
+                        ThreadLocalRandom.current().nextFloat(0.666f, 1.333f), module.soundVolume.get().floatValue()
+                    )
+                );
+            }
+        }
     }
 
     public void reset() {
@@ -544,5 +470,129 @@ public class WMinesweeper extends WWidget {
         for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) if (state[r][c] == 2) flags++;
         return flags;
     }
+
+    public enum Difficulty {
+        Easy(new int[]{12, 12, 10}),
+        Normal(new int[]{16, 16, 40}),
+        Hard(new int[]{30, 16, 99}),
+        Insane(new int[]{30, 24, 137}),
+        Custom(new int[]{37, 37, 169});
+
+        public final int[] values;
+
+        Difficulty(int[] values) {
+            this.values = values;
+        }
+
+        public int getMines() {
+            return values[2];
+        }
+        public int getRows() {
+            return values[1];
+        }
+        public int getColumns() {
+            return values[0];
+        }
+    }
+
+    public enum ColorSchemes {
+        Classic, Themed, Custom
+    }
+
+    public static class ColorScheme {
+        public Color wonTextColor;
+        public Color lostTextColor;
+        public Color cellBorderColor;
+        public Color mineTextColor;
+        public Color mineCellColor;
+        public Color runtimeColor;
+        public Color resetTextColor;
+        public Color statusBarColor;
+        public Color backgroundColor;
+        public Color mineCountColor;
+        public Color hiddenCellColor;
+        public Color flaggedCellColor;
+        public Color flaggedCellTextColor;
+        public Color resetButtonColor;
+        public Color resetHoveredColor;
+        public Color revealedCellColor;
+        public Color textShadowColor;
+
+        public ColorScheme(Minesweeper module, GuiTheme theme) {
+            ColorSchemes scheme = module.colorScheme.get();
+
+            boolean assignDefaults = false;
+            switch (scheme) {
+                case Themed -> {
+                    if (theme instanceof MeteorGuiTheme guiTheme) {
+                        this.wonTextColor = guiTheme.plusColor.get();
+                        this.lostTextColor = guiTheme.minusColor.get();
+                        this.cellBorderColor = guiTheme.outlineColor.get();
+                        this.mineTextColor = guiTheme.minusColor.get();
+                        this.mineCellColor = guiTheme.backgroundColor.get();
+                        this.runtimeColor = guiTheme.titleTextColor.get();
+                        this.resetTextColor = guiTheme.textSecondaryColor.get();
+                        this.statusBarColor = guiTheme.accentColor.get();
+                        this.backgroundColor = guiTheme.backgroundColor.get();
+                        this.mineCountColor = guiTheme.titleTextColor.get();
+                        this.hiddenCellColor = guiTheme.moduleBackground.get();
+                        this.flaggedCellColor = guiTheme.accentColor.get();
+                        this.flaggedCellTextColor = guiTheme.textColor.get();
+                        this.resetButtonColor = guiTheme.backgroundColor.get();
+                        this.resetHoveredColor = guiTheme.backgroundColor.get(false, true, false);
+                        this.revealedCellColor = guiTheme.backgroundColor.get();
+                        this.textShadowColor = guiTheme.backgroundColor.get(false, true, false);
+                    } else {
+                        assignDefaults = true;
+                    }
+                }
+                case Custom -> {
+                    this.wonTextColor = module.wonColor.get();
+                    this.lostTextColor = module.lostColor.get();
+                    this.cellBorderColor = module.cellBorderColor.get();
+                    this.mineTextColor = module.mineTextColor.get();
+                    this.mineCellColor = module.mineCellColor.get();
+                    this.runtimeColor = module.timerColor.get();
+                    this.resetTextColor = module.resetTextColor.get();
+                    this.statusBarColor = module.statusBarColor.get();
+                    this.backgroundColor = module.backgroundColor.get();
+                    this.mineCountColor = module.mineCountColor.get();
+                    this.hiddenCellColor = module.hiddenCellColor.get();
+                    this.flaggedCellColor = module.flaggedCellColor.get();
+                    this.flaggedCellTextColor = module.flaggedCellTextColor.get();
+                    this.resetButtonColor = module.resetButtonColor.get();
+                    this.resetHoveredColor = module.resetHoveredColor.get();
+                    this.revealedCellColor = module.revealedCellColor.get();
+                    this.textShadowColor = module.textShadowColor.get();
+                }
+                default -> assignDefaults = true;
+            }
+
+            if (assignDefaults) {
+                this.wonTextColor = new Color(0, 255, 0);
+                this.lostTextColor = new Color(255, 0, 0);
+                this.cellBorderColor = new Color(0, 0, 0);
+                this.mineTextColor = new Color(255, 0, 0);
+                this.textShadowColor = new Color(0, 0, 0);
+                this.mineCellColor = new Color(13, 13, 13);
+                this.runtimeColor = new Color(255, 255, 0);
+                this.resetTextColor = new Color(20, 20, 20);
+                this.statusBarColor = new Color(42, 42, 42);
+                this.backgroundColor = new Color(51, 51, 51);
+                this.mineCountColor = new Color(255, 255, 255);
+                this.hiddenCellColor = new Color(176, 176, 176);
+                this.flaggedCellColor = new Color(255, 204, 102);
+                this.flaggedCellTextColor = new Color(169, 0, 0);
+                this.resetButtonColor = new Color(200, 200, 200);
+                this.resetHoveredColor = new Color(230, 230, 230);
+                this.revealedCellColor = new Color(248, 248, 248);
+            }
+        }
+    }
+
+    public record SaveState(
+        int version, WMinesweeper.Difficulty difficulty,
+        int rows, int columns, int mines, int[][] grid, byte[][] state, long accumulatedMillis
+    ) {}
 }
 

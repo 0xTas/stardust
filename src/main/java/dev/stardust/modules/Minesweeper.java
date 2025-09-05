@@ -1,28 +1,59 @@
 package dev.stardust.modules;
 
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import com.google.gson.Gson;
 import dev.stardust.Stardust;
+import dev.stardust.util.LogUtil;
+import dev.stardust.util.MsgUtil;
+import com.google.gson.GsonBuilder;
+import dev.stardust.util.StardustUtil;
+import java.nio.file.StandardOpenOption;
 import org.jetbrains.annotations.Nullable;
+import net.fabricmc.loader.api.FabricLoader;
 import dev.stardust.gui.widgets.WMinesweeper;
 import meteordevelopment.meteorclient.settings.*;
 import dev.stardust.gui.screens.MinesweeperScreen;
 import meteordevelopment.meteorclient.gui.GuiThemes;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
+import meteordevelopment.meteorclient.utils.render.color.RainbowColors;
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
+ *     See also: MinesweeperScreen.java && WMinesweeper.java
  **/
 public class Minesweeper extends Module {
     public Minesweeper() {
-        super(Stardust.CATEGORY, "Minesweeper", "Minesweeper inside of Minecraft.");
+        super(Stardust.CATEGORY, "Minesweeper", "Play Minesweeper from the comfort of your Meteor Client.");
         runInMainMenu = true;
-        // todo: maybe allow rainbow colors in custom ColorScheme
+        if (wonColor.get().rainbow) RainbowColors.add(wonColor.get());
+        if (lostColor.get().rainbow) RainbowColors.add(lostColor.get());
+        if (timerColor.get().rainbow) RainbowColors.add(timerColor.get());
+        if (mineTextColor.get().rainbow) RainbowColors.add(mineTextColor.get());
+        if (mineCellColor.get().rainbow) RainbowColors.add(mineCellColor.get());
+        if (mineCountColor.get().rainbow) RainbowColors.add(mineCountColor.get());
+        if (resetTextColor.get().rainbow) RainbowColors.add(resetTextColor.get());
+        if (statusBarColor.get().rainbow) RainbowColors.add(statusBarColor.get());
+        if (textShadowColor.get().rainbow) RainbowColors.add(textShadowColor.get());
+        if (cellBorderColor.get().rainbow) RainbowColors.add(cellBorderColor.get());
+        if (backgroundColor.get().rainbow) RainbowColors.add(backgroundColor.get());
+        if (hiddenCellColor.get().rainbow) RainbowColors.add(hiddenCellColor.get());
+        if (resetButtonColor.get().rainbow) RainbowColors.add(resetButtonColor.get());
+        if (flaggedCellColor.get().rainbow) RainbowColors.add(flaggedCellColor.get());
+        if (resetHoveredColor.get().rainbow) RainbowColors.add(resetHoveredColor.get());
+        if (revealedCellColor.get().rainbow) RainbowColors.add(revealedCellColor.get());
+        if (flaggedCellTextColor.get().rainbow) RainbowColors.add(flaggedCellTextColor.get());
     }
+
+    private static final String GAME_FOLDER = "meteor-client/minigames/minesweeper";
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public final SettingGroup sgGeneral = settings.createGroup("General");
     public final SettingGroup sgSchemes = settings.createGroup("Color Scheme");
 
-    // See WMinesweeper.java
     public final Setting<WMinesweeper.Difficulty> difficulty = sgGeneral.add(
         new EnumSetting.Builder<WMinesweeper.Difficulty>()
             .name("difficulty")
@@ -72,11 +103,26 @@ public class Minesweeper extends Module {
             .defaultValue(true)
             .build()
     );
+    public final Setting<Boolean> renderMap = sgGeneral.add(
+        new BoolSetting.Builder()
+            .name("force-render-minimap")
+            .description("Continues rendering the Xaeros minimap while the Minesweeper screen is open.")
+            .defaultValue(true)
+            .build()
+    );
     public final Setting<Boolean> gameSounds = sgGeneral.add(
         new BoolSetting.Builder()
-            .name("game-over-sounds")
+            .name("game-sounds")
             .description("Plays a sound when you win or lose the game.")
             .defaultValue(true)
+            .build()
+    );
+    public final Setting<Double> soundVolume = sgGeneral.add(
+        new DoubleSetting.Builder()
+            .name("sounds-volume")
+            .min(0.1).max(4.0)
+            .defaultValue(1.0)
+            .visible(gameSounds::get)
             .build()
     );
 
@@ -206,30 +252,70 @@ public class Minesweeper extends Module {
             .build()
     );
 
-    private @Nullable SaveState saveData = null;
-    public void saveGame(SaveState data) {
+    public @Nullable WMinesweeper.SaveState saveData = null;
+
+    public void saveGame(WMinesweeper.SaveState data) {
         saveData = data;
+        Path saveFolder = FabricLoader.getInstance().getGameDir().resolve(GAME_FOLDER);
+
+        //noinspection ResultOfMethodCallIgnored
+        saveFolder.toFile().mkdirs();
+        Path save = saveFolder.resolve("save.json");
+        if (!Files.exists(save)) {
+            if (!StardustUtil.checkOrCreateFile(mc, GAME_FOLDER + "/save.json")) {
+                MsgUtil.sendModuleMsg("Failed to create save file§c..!", this.name);
+            }
+        }
+        try (Writer writer = Files.newBufferedWriter(save, StandardOpenOption.TRUNCATE_EXISTING)) {
+            GSON.toJson(data, writer);
+        } catch (Exception err) {
+            LogUtil.error(err.toString(), this.name);
+        }
     }
+
     public void clearSave() {
-        saveData = null;
+        saveGame(null);
     }
 
     @Override
     public void onActivate() {
-        if (saveData == null) {
+        Path saveFolder = FabricLoader.getInstance().getGameDir().resolve(GAME_FOLDER);
+
+        //noinspection ResultOfMethodCallIgnored
+        saveFolder.toFile().mkdirs();
+        Path save = saveFolder.resolve("save.json");
+        if (!Files.exists(save)) {
+            if (!StardustUtil.checkOrCreateFile(mc, GAME_FOLDER + "/save.json")) {
+                MsgUtil.sendModuleMsg("Failed to create save file§c..!", this.name);
+            }
+        }
+
+        WMinesweeper.SaveState data = null;
+        try (Reader reader = Files.newBufferedReader(save)) {
+            data = GSON.fromJson(reader, WMinesweeper.SaveState.class);
+        } catch (Exception err) {
+            LogUtil.error(err.toString(), this.name);
+        }
+
+        if (data != null) saveData = data;
+
+        try {
             mc.setScreen(new MinesweeperScreen(this, GuiThemes.get(), "Minesweeper"));
-        } else {
-            mc.setScreen(new MinesweeperScreen(this, GuiThemes.get(), "Minesweeper", saveData));
+        } catch (Exception err) {
+            LogUtil.error("Failed to open Minesweeper screen: " + err, this.name);
+            toggle();
         }
     }
 
     @Override
     public void onDeactivate() {
-        if (mc.currentScreen instanceof MinesweeperScreen) mc.setScreen(null);
+        if (mc.currentScreen instanceof MinesweeperScreen) {
+            try {
+                mc.setScreen(null);
+            } catch (Exception err) {
+                LogUtil.error("Failed to close Minesweeper screen: " + err, this.name);
+                toggle();
+            }
+        }
     }
-
-    public record SaveState(
-        WMinesweeper.Difficulty difficulty, int rows, int columns,
-        int mines, int[][] grid, byte[][] state, long accumulatedMillis
-    ) {}
 }
