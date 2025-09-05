@@ -41,7 +41,8 @@ public class AdBlocker extends Module {
             .defaultValue(
                 List.of(
                     "thishttp", "discord.com", "discord.gg", "gg/", "com/", "/invite/", "% off",
-                    ".store", "cheapest price", "cheapest kit", "cheap price", "cheap kit", "use code", "at checkout", "join now"
+                    ".store", "cheapest price", "cheapest kit", "cheap price", "cheap kit", "use code", "at checkout",
+                    "join now", "rusherhack.org", "nox2b", ".shop"
                 )
             )
             .build()
