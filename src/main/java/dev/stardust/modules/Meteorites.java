@@ -11,7 +11,6 @@ import dev.stardust.util.MsgUtil;
 import com.google.gson.GsonBuilder;
 import dev.stardust.util.StardustUtil;
 import java.nio.file.StandardOpenOption;
-import dev.stardust.config.StardustConfig;
 import org.jetbrains.annotations.Nullable;
 import net.fabricmc.loader.api.FabricLoader;
 import meteordevelopment.meteorclient.settings.*;

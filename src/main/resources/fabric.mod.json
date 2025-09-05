@@ -19,6 +19,7 @@
   },
   "mixins": [
     "stardust.mixins.json",
+    "stardust-xaero.mixins.json",
     "stardust-meteor.mixins.json"
   ],
   "custom": {

@@ -1,0 +1,12 @@
+{
+  "required": false,
+  "package": "dev.stardust.mixin.xaero",
+  "compatibilityLevel": "JAVA_21",
+  "client": [],
+  "injectors": {
+    "defaultRequire": 0
+  },
+  "mixins": [
+    "MinimapRendererMixin"
+  ]
+}
