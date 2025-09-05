@@ -22,6 +22,7 @@ import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import meteordevelopment.orbit.EventPriority;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import dev.stardust.gui.screens.MeteoritesScreen;
 import meteordevelopment.meteorclient.settings.*;
 import net.minecraft.component.DataComponentTypes;
 import meteordevelopment.meteorclient.utils.Utils;
@@ -1059,7 +1060,7 @@ public class RocketMan extends Module {
                 if (!hasActiveRocket() && !justUsed) useFireworkRocket("dynamic usage");
             }
             case OnKey -> {
-                if (usageKey.get().isPressed() && !justUsed) {
+                if (usageKey.get().isPressed() && !justUsed && !(mc.currentScreen instanceof MeteoritesScreen)) {
                     useFireworkRocket("forward key usage");
                 }
             }
