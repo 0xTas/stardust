@@ -18,9 +18,11 @@ import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.utils.player.InvUtils;
 import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import meteordevelopment.meteorclient.systems.modules.player.AutoMend;
+import meteordevelopment.meteorclient.systems.modules.player.EXPThrower;
 
 /**
  * @author Tas [0xTas] <root@0xTas.dev>
@@ -50,6 +52,9 @@ public abstract class AutoMendMixin extends Module {
     private boolean didWearMending = false;
     @Unique
     @Nullable
+    private Setting<Boolean> auto = null;
+    @Unique
+    @Nullable
     private Setting<Boolean> wearMendElytras = null;
     @Unique
     @Nullable
@@ -57,6 +62,9 @@ public abstract class AutoMendMixin extends Module {
     @Unique
     @Nullable
     private Setting<Boolean> ignoreOffhand = null;
+
+    @Unique
+    private int timer = 0;
 
     @Unique
     private void replaceElytra() {
@@ -119,6 +127,13 @@ public abstract class AutoMendMixin extends Module {
                 .defaultValue(false)
                 .build()
         );
+        auto = sgGeneral.add(
+            new BoolSetting.Builder()
+                .name("auto-use-xp")
+                .description("Uses ExpThrower to automatically throw bottles for you.")
+                .defaultValue(false)
+                .build()
+        );
         ignoreOffhand = sgGeneral.add(
             new BoolSetting.Builder()
                 .name("ignore-offhand")
@@ -135,7 +150,17 @@ public abstract class AutoMendMixin extends Module {
         if (wearMendElytras == null || !wearMendElytras.get()) return;
         ItemStack chest = mc.player.getEquippedStack(EquipmentSlot.CHEST);
         if (chest.isEmpty() || chest.getItem() != Items.ELYTRA || !Utils.hasEnchantment(chest, Enchantments.MENDING) || chest.getDamage() <= 0) {
+            // momentarily pause EXPThrower to prevent inventory thrashing
+            if (auto != null && auto.get() && Modules.get().isActive(EXPThrower.class)) Modules.get().get(EXPThrower.class).toggle();
             replaceElytra();
+        }
+
+        if (auto != null && auto.get() && !Modules.get().isActive(EXPThrower.class)) {
+            ++timer;
+            if (timer >= 20) {
+                timer = 0;
+                Modules.get().get(EXPThrower.class).toggle();
+            }
         }
 
         if (ignoreOffhand != null && ignoreOffhand.get()) {
