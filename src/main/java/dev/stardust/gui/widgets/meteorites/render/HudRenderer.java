@@ -255,41 +255,49 @@ public class HudRenderer {
         String livesText = "Lives: " + player.lives;
         String scoreText = "Points: " + String.format("%,d", player.score);
         String powerText = "Powerup: ";
+
         if (player.hasEntropy()) {
             powerText += "Entropy(" + player.getPowerup().asString() + ")";
         } else {
             powerText += player.getPowerup().asString();
         }
-        if (player.getPowerup().equals(Powerups.HIGH_TECH_HULL)
-            || player.getPowerup().equals(Powerups.REINFORCED_HULL)) {
-            powerText += " [" + (player.isHullFull() ? "FULL" : (int) Math.ceil(player.hull)) + "]";
-        } else if (player.getPowerup().equals(Powerups.PHASE_SHIFT)) {
-            if (player.phaseActive) {
-                powerText += " [" + "ACTIVE: " + displayFormat.format(Math.max(player.phaseDuration - player.phaseTimer, 0)) + "]";
-            } else if (player.phaseCooldownTimer <= 0) {
-                powerText += " [READY]";
-            } else {
-                powerText += " [COOLING]";
+
+        switch (player.getPowerup()) {
+            case MIDAS_TOUCH -> powerText += " [$$$]";
+
+            case CALIBRATED_FSD -> {
+                long now = System.currentTimeMillis();
+                if (now - player.lastHyperJump >= Ship.CALIBRATED_WARP_COOLDOWN * 1000) {
+                    powerText += " [READY]";
+                } else {
+                    double cd = Ship.CALIBRATED_WARP_COOLDOWN * 1000.0 - (now - player.lastHyperJump);
+                    powerText += " [COOLING: " + displayFormat.format(Math.max(0, cd / 1000.0)) + "]";
+                }
             }
-        } else if (player.getPowerup().equals(Powerups.STARDUST)) {
-            String gun = player.isShotgun ? "SHOTGUN" : player.isSniper ? "SNIPER" : "HELL";
-            powerText += " [" + gun + "]";
-        } else if (player.getPowerup().equals(Powerups.GRAVITY_WELL)) {
-            if (player.gravityWellDeployed) {
-                powerText += " [DEPLOYED: " + displayFormat.format(Math.max(player.gravityWellTimer, 0)) + "]";
-            } else if (player.gravityWellCdTimer <= 0) {
-                powerText += " [READY]";
-            } else {
-                powerText += " [COOLING: " + displayFormat.format(Math.max(player.gravityWellCdTimer, 0)) + "]";
+
+            case GRAVITY_WELL -> {
+                if (player.gravityWellDeployed) {
+                    powerText += " [DEPLOYED: " + displayFormat.format(Math.max(player.gravityWellTimer, 0)) + "]";
+                } else if (player.gravityWellCdTimer <= 0) {
+                    powerText += " [READY]";
+                } else {
+                    powerText += " [COOLING: " + displayFormat.format(Math.max(player.gravityWellCdTimer, 0)) + "]";
+                }
             }
-        } else if (player.getPowerup().equals(Powerups.CALIBRATED_FSD)) {
-            long now = System.currentTimeMillis();
-            if (now - player.lastHyperJump >= Ship.CALIBRATED_WARP_COOLDOWN * 1000) {
-                powerText += " [READY]";
-            } else {
-                double cd = Ship.CALIBRATED_WARP_COOLDOWN * 1000.0 - (now - player.lastHyperJump);
-                powerText += " [COOLING: " + displayFormat.format(Math.max(0, cd / 1000.0)) + "]";
+
+            case PHASE_SHIFT -> {
+                if (player.phaseActive) {
+                    powerText += " [" + "ACTIVE: " + displayFormat.format(Math.max(player.phaseDuration - player.phaseTimer, 0)) + "]";
+                } else if (player.phaseCooldownTimer <= 0) {
+                    powerText += " [READY]";
+                } else {
+                    powerText += " [COOLING]";
+                }
             }
+
+            case STARDUST -> powerText += " [" + (player.isShotgun ? "SHOTGUN" : player.isSniper ? "SNIPER" : "HELL") + "]";
+
+            case HIGH_TECH_HULL, REINFORCED_HULL -> powerText += " [" + (player.isHullFull() ? "FULL" : (int) Math.ceil(player.hull)) + "]";
         }
 
         hudText.add(waveText);

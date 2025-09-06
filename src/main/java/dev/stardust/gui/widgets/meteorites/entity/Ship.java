@@ -43,9 +43,13 @@ public class Ship extends Entity {
     public static final double SHOTGUN_JITTER_RAD = Math.toRadians(6.0);
     public static final double SHOTGUN_SPREAD_RAD = Math.toRadians(SHOTGUN_SPREAD_DEGREES);
 
+    public static final int MIDAS_TOUCH_BULLET_COST = 50;
+    public static final int MIDAS_TOUCH_REWARD_MULTIPLIER = 4;
+
     Powerups powerUp;
     public long lastHyperJump;
     private boolean jumpCooling;
+    public long lastMidasRejectSound;
     public double shootCooldownTimer;
     public int pointsWithCurrentPower;
     public double angle = -Math.PI / 2; // facing upwards
@@ -304,7 +308,9 @@ public class Ship extends Entity {
             if (!widget.CHEAT_MODE) {
                 this.setEntropy(false);
                 if (this.getPowerup().equals(Powerups.STARDUST)) {
-                    widget.restoreColorSettings();
+                    widget.deInitStardustColor();
+                } else if (this.getPowerup().equals(Powerups.MIDAS_TOUCH)) {
+                    widget.deInitMidasColor();
                 }
                 this.creditPowerup();
                 this.resetPowerup();
@@ -355,6 +361,20 @@ public class Ship extends Entity {
     }
 
     public void tryToShoot(WMeteorites widget) {
+        if (this.getPowerup().equals(Powerups.MIDAS_TOUCH)) {
+            if (this.score < MIDAS_TOUCH_BULLET_COST) {
+                long now = System.currentTimeMillis();
+                if (now - this.lastMidasRejectSound >= 1337) {
+                    this.lastMidasRejectSound = now;
+                    widget.playSound(
+                        SoundEvents.ENTITY_VILLAGER_NO,
+                        widget.rng.nextFloat(0.969f, 1.1337f)
+                    );
+                }
+                return;
+            }
+        }
+
         boolean sniper = this.getPowerup().equals(Powerups.SNIPER)
             || (this.getPowerup().equals(Powerups.STARDUST) && this.isSniper);
         boolean shotgun = this.getPowerup().equals(Powerups.SHOTGUN)
@@ -404,6 +424,10 @@ public class Ship extends Entity {
                 widget.rng.nextFloat(3.3333f, 4.2f),
                 widget.module.soundVolume.get().floatValue() * (sniper ? 0.69f : 0.333f)
             );
+
+            if (this.getPowerup().equals(Powerups.MIDAS_TOUCH)) {
+                this.score -= MIDAS_TOUCH_BULLET_COST;
+            }
             return;
         }
 
@@ -535,7 +559,9 @@ public class Ship extends Entity {
         if (this.hasEntropy()) {
             this.setEntropy(false);
         } else if (this.getPowerup().equals(Powerups.STARDUST)) {
-            widget.restoreColorSettings();
+            widget.deInitStardustColor();
+        } else if (this.getPowerup().equals(Powerups.MIDAS_TOUCH)) {
+            widget.deInitMidasColor();
         }
 
         int foundIdx = -1;
@@ -550,18 +576,6 @@ public class Ship extends Entity {
         }
 
         Powerups nextPower = vals[foundIdx];
-        if (nextPower == Powerups.STARDUST) {
-            widget.storeColorSettings();
-            this.setPowerup(Powerups.STARDUST);
-            if (widget.rng.nextBoolean()) {
-                this.isSniper = widget.rng.nextInt(69) > 42;
-            } else {
-                this.isShotgun = widget.rng.nextInt(69) > 42;
-            }
-
-            return;
-        }
-
         if (nextPower == Powerups.ENTROPY) {
             List<Powerups> valid = new ArrayList<>();
             for (Powerups p : vals) {
@@ -580,6 +594,19 @@ public class Ship extends Entity {
             return;
         }
 
+        if (nextPower == Powerups.MIDAS_TOUCH) {
+            widget.initMidasColor();
+        }
+
+        if (nextPower == Powerups.STARDUST) {
+            widget.initStardustColor();
+            if (widget.rng.nextBoolean()) {
+                this.isSniper = widget.rng.nextInt(69) > 42;
+            } else {
+                this.isShotgun = widget.rng.nextInt(69) > 42;
+            }
+        }
+
         this.setPowerup(nextPower);
     }
 
@@ -592,7 +619,9 @@ public class Ship extends Entity {
             this.creditPowerup();
         }
         if (this.getPowerup().equals(Powerups.STARDUST)) {
-            widget.restoreColorSettings();
+            widget.deInitStardustColor();
+        } else if (this.getPowerup().equals(Powerups.MIDAS_TOUCH)) {
+            widget.deInitMidasColor();
         }
 
         if (!this.hasEntropy()) {
@@ -600,7 +629,7 @@ public class Ship extends Entity {
                 ? widget.rng.nextInt(widget.CHEAT_MODE ? 7 : 69) <= widget.wave % 3
                 : widget.rng.nextInt(widget.CHEAT_MODE ? 10 : 100) <= widget.wave % 3;
             if (hyperLucky && (excludeLast != Powerups.STARDUST || !this.getPowerup().equals(Powerups.STARDUST))) {
-                widget.storeColorSettings();
+                widget.initStardustColor();
                 this.setPowerup(Powerups.STARDUST);
 
                 if (widget.rng.nextBoolean()) {

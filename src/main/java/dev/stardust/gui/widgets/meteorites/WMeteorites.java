@@ -116,12 +116,9 @@ public class WMeteorites extends WWidget {
                 pausedAt = System.currentTimeMillis();
                 player.lastHyperJump += millisSincePaused;
                 if (player.getPowerup().equals(Powerups.STARDUST)) {
-                    prevShipColor = module.shipColor.get();
-                    prevFlameColor = module.flameColor.get();
-                    prevBulletColor = module.bulletColor.get();
-                    if (prevShipColor != null) module.shipColor.set(new SettingColor(prevShipColor.r, prevShipColor.g, prevShipColor.b, prevShipColor.a, true));
-                    if (prevFlameColor != null) module.flameColor.set(new SettingColor(prevFlameColor.r, prevFlameColor.g, prevFlameColor.b, prevFlameColor.a, true));
-                    if (prevBulletColor != null) module.bulletColor.set(new SettingColor(prevBulletColor.r, prevBulletColor.g, prevBulletColor.b, prevBulletColor.a, true));
+                    initStardustColor();
+                } else if (player.getPowerup().equals(Powerups.MIDAS_TOUCH)) {
+                    initMidasColor();
                 }
 
                 return;
@@ -154,8 +151,9 @@ public class WMeteorites extends WWidget {
     public @Nullable SettingColor prevBulletColor = null;
 
     public boolean shouldRestoreColorSettings() {
-        return player.getPowerup().equals(Powerups.STARDUST)
-            && prevShipColor != null && prevFlameColor != null && prevBulletColor != null;
+        return (player.getPowerup().equals(Powerups.STARDUST)
+            && prevShipColor != null && prevFlameColor != null && prevBulletColor != null)
+            || (player.getPowerup().equals(Powerups.MIDAS_TOUCH) && prevBulletColor != null);
     }
 
     public boolean shouldSaveGame() {
@@ -515,7 +513,9 @@ public class WMeteorites extends WWidget {
 
     public void resetGame() {
         if (player.getPowerup().equals(Powerups.STARDUST)) {
-            restoreColorSettings();
+            deInitStardustColor();
+        } else if (player.getPowerup().equals(Powerups.MIDAS_TOUCH)) {
+            deInitMidasColor();
         }
 
         for (Meteorite m : meteorites) m.isBoss = false;
@@ -780,7 +780,18 @@ public class WMeteorites extends WWidget {
         }
     }
 
-    public void restoreColorSettings() {
+    public void deInitMidasColor() {
+        if (prevBulletColor != null) module.bulletColor.set(prevBulletColor);
+
+        prevBulletColor = null;
+    }
+
+    public void initMidasColor() {
+        prevBulletColor = module.bulletColor.get();
+        if (prevBulletColor != null) module.bulletColor.set(new SettingColor(213, 213, 13));
+    }
+
+    public void deInitStardustColor() {
         if (prevShipColor != null) module.shipColor.set(prevShipColor);
         if (prevFlameColor != null) module.flameColor.set(prevFlameColor);
         if (prevBulletColor != null) module.bulletColor.set(prevBulletColor);
@@ -790,7 +801,7 @@ public class WMeteorites extends WWidget {
         prevBulletColor = null;
     }
 
-    public void storeColorSettings() {
+    public void initStardustColor() {
         prevShipColor = module.shipColor.get();
         prevFlameColor = module.flameColor.get();
         prevBulletColor = module.bulletColor.get();
@@ -877,4 +888,3 @@ public class WMeteorites extends WWidget {
         if (module.gameTips.get()) cycleNewGameTip();
     }
 }
-

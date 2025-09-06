@@ -5,7 +5,7 @@ import net.minecraft.util.StringIdentifiable;
 public enum Powerups implements StringIdentifiable {
     NONE, PRECISION_AIM, BULLET_HELL, REINFORCED_HULL, PIERCING_SHOTS,
     THRUSTER_UPGRADES, RAPID_FIRE, SUPERCHARGED_FSD, CALIBRATED_FSD, DOUBLE_POINTS,
-    SHOTGUN, SNIPER, HIGH_TECH_HULL, ENTROPY, GRAVITY_WELL, HOMING_SHOTS, PHASE_SHIFT, STARDUST;
+    SHOTGUN, SNIPER, HIGH_TECH_HULL, ENTROPY, GRAVITY_WELL, HOMING_SHOTS, PHASE_SHIFT, MIDAS_TOUCH, STARDUST;
 
     @Override
     public String asString() {
@@ -18,6 +18,7 @@ public enum Powerups implements StringIdentifiable {
             case RAPID_FIRE -> "Rapid Fire"; // fire rate doubled
             case BULLET_HELL -> "Bullet Hell"; // bullets naturally live longer
             case PHASE_SHIFT -> "Phase Shift"; // replaces right-click warp ability, briefly phase through meteorites
+            case MIDAS_TOUCH -> "Midas Touch"; // lol: shooting a bullet now costs 10 points, but is refunded with interest if it kills a meteorite
             case GRAVITY_WELL -> "Gravity Well"; // only granted if mouse aim enabled, deploys at cursor to draw in nearby meteorites
             case HOMING_SHOTS -> "Homing Rounds"; // bullets track towards nearby meteorites
             case DOUBLE_POINTS -> "Double Points"; // kills award double points

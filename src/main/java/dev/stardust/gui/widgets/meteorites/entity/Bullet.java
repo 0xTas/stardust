@@ -71,8 +71,10 @@ public class Bullet extends Entity {
     }
 
     // returns false if a bullet is to be removed
-    public boolean updatePhysics(double dt, double width, double height,
-                                 Ship player, Meteorite[] meteorites, int meteoriteCount, WMeteorites widget) {
+    public boolean updatePhysics(
+        double dt, double width, double height,
+        Ship player, Meteorite[] meteorites, int meteoriteCount, WMeteorites widget
+    ) {
         this.life -= dt;
         if (this.life <= 0) {
             return false;
@@ -171,14 +173,22 @@ public class Bullet extends Entity {
 
             double collisionRadius = meteorite.radius + bulletThickness;
             if (d2 <= collisionRadius * collisionRadius) {
+                if (player.getPowerup().equals(Powerups.MIDAS_TOUCH)) {
+                    player.score += Ship.MIDAS_TOUCH_BULLET_COST;
+                }// refund
+
                 if (meteorite.isBoss) {
                     int dmg = this.type.equals(BulletTypes.SNIPER)
                         ? widget.rng.nextInt(10, 40)
                         : widget.rng.nextInt(1, 4);
                     boolean dead = meteorite.damageByBullet(dmg, widget);
+
                     if (dead) {
                         boolean dbl = player.getPowerup().equals(Powerups.DOUBLE_POINTS);
-                        player.score += (dbl ? 200 : 100) * meteorite.size + meteorite.maxHp;
+                        int reward = (dbl ? 200 : 100) * meteorite.size + meteorite.maxHp;
+                        if (player.getPowerup().equals(Powerups.MIDAS_TOUCH)) reward *= Ship.MIDAS_TOUCH_REWARD_MULTIPLIER;
+
+                        player.score += reward;
                         player.pointsWithCurrentPower += 100 * meteorite.size + meteorite.maxHp;
 
                         widget.splitMeteorite(midx);
@@ -194,9 +204,11 @@ public class Bullet extends Entity {
                 } else {
                     boolean dbl = player.getPowerup().equals(Powerups.DOUBLE_POINTS);
 
-                    int baseScore = dbl ? 20 : 10;
-                    player.score += baseScore * meteorite.size;
-                    player.pointsWithCurrentPower += 10 * meteorite.size; // remove natural bias from double points power
+                    int reward = (dbl ? 20 : 10) * meteorite.size;
+                    if (player.getPowerup().equals(Powerups.MIDAS_TOUCH)) reward *= Ship.MIDAS_TOUCH_REWARD_MULTIPLIER;
+
+                    player.score += reward ;
+                    player.pointsWithCurrentPower += 10 * meteorite.size; // remove natural bias from economy powerups
 
                     widget.splitMeteorite(midx);
                     boolean bulletRemoves = !(widget.rng.nextInt(4) <= 2

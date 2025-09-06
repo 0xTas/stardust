@@ -34,9 +34,9 @@ public class MeteoritesScreen extends WindowScreen {
         if (module.isActive()) module.toggle();
         if (widget != null && widget.widget() instanceof WMeteorites meteorites) {
             if (meteorites.shouldRestoreColorSettings()) {
-                module.shipColor.set(meteorites.prevShipColor);
-                module.flameColor.set(meteorites.prevFlameColor);
-                module.bulletColor.set(meteorites.prevBulletColor);
+                if (meteorites.prevShipColor != null) module.shipColor.set(meteorites.prevShipColor);
+                if (meteorites.prevFlameColor != null) module.flameColor.set(meteorites.prevFlameColor);
+                if (meteorites.prevBulletColor != null) module.bulletColor.set(meteorites.prevBulletColor);
             }
             if (meteorites.shouldSaveGame()) {
                 module.saveGame(meteorites.saveGame());
