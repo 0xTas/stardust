@@ -2,7 +2,9 @@ package dev.stardust.gui.widgets.meteorites.input;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import dev.stardust.util.MsgUtil;
 import static org.lwjgl.glfw.GLFW.*;
+import dev.stardust.util.StardustUtil;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import dev.stardust.gui.widgets.meteorites.WMeteorites;
 import static meteordevelopment.meteorclient.MeteorClient.mc;
@@ -37,6 +39,12 @@ public class InputTracker {
                 widget.module.enteredCheatCode = true;
                 widget.CHEAT_MODE = !widget.CHEAT_MODE;
                 widget.module.debug.set(!widget.module.debug.get());
+
+                if (widget.module.debug.get()) {
+                    MsgUtil.sendModuleMsg(
+                        StardustUtil.rCC() + "§oCheater cheater pumpkin eater..!", widget.module.name
+                    );
+                }
 
                 widget.resetGame();
                 widget.pauseGame();
