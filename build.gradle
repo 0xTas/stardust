@@ -1,10 +1,7 @@
 plugins {
-    id "fabric-loom" version "1.8-SNAPSHOT"
+    id "fabric-loom" version "1.17-SNAPSHOT"
 }
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_21
-
-archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
@@ -31,7 +28,7 @@ dependencies {
 
     // Meteor
     modImplementation("meteordevelopment:meteor-client:${project.meteor_version}") {
-        changing = true
+        changing = false
     }
 
     // XaeroMinimap
@@ -70,5 +67,9 @@ tasks.register("sortImports", Exec) {
 
     commandLine(pythonCmd, "${projectDir}/scripts/import-organizer.py")
 
-    setIgnoreExitValue(false)
+    setIgnoreExitValue(true)
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/stardust.accesswidener")
 }
