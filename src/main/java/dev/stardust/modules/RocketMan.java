@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import dev.stardust.gui.screens.SolitaireScreen;
 import dev.stardust.gui.screens.MeteoritesScreen;
 import meteordevelopment.meteorclient.settings.*;
+import dev.stardust.gui.screens.MinesweeperScreen;
 import net.minecraft.component.DataComponentTypes;
 import meteordevelopment.meteorclient.utils.Utils;
 import meteordevelopment.meteorclient.utils.misc.Keybind;
@@ -503,6 +504,7 @@ public class RocketMan extends Module {
     );
 
     private int timer = 0;
+    private int jumpTimer = -1;
     private int ticksBusy = 0;
     private int hoverTimer = 0;
     private int ticksFlying = 0;
@@ -521,6 +523,7 @@ public class RocketMan extends Module {
     private boolean assisted = false;
     private boolean needReset = false;
     private boolean takingOff = false;
+    private boolean releasedJump = false;
     public boolean isHovering = false;
     public boolean wasHovering = false;
     private boolean firstRocket = false;
@@ -631,11 +634,6 @@ public class RocketMan extends Module {
         return false;
     }
 
-    private boolean isNotPlayingMinigames() {
-        return !(mc.currentScreen instanceof MeteoritesScreen)
-            && !(mc.currentScreen instanceof SolitaireScreen);
-    }
-
     private void handleDurabilityChecks() {
         if (mc.player == null) return;
         if (!warnOnLow.get() && !autoReplace.get()) return;
@@ -712,21 +710,33 @@ public class RocketMan extends Module {
             case None -> assisted = true;
             case Full -> {
                 if (mc.player.isOnGround()) {
-                    mc.player.jump();
+                    mc.options.jumpKey.setPressed(true);
                 } else if (!mc.player.isGliding() && mc.player.getEquippedStack(EquipmentSlot.CHEST).isOf(Items.ELYTRA)) {
-                    mc.player.startGliding();
-                    mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                    ++jumpTimer;
+                    if (jumpTimer == 0) {
+                        mc.options.jumpKey.setPressed(false);
+                    } else if (jumpTimer > 0) {
+                        jumpTimer = -1;
+                        mc.player.startGliding();
+                        mc.options.jumpKey.setPressed(true);
+                        mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                    }
                 } else if (!justUsed) {
                     assisted = true;
                     justUsed = true;
                     takingOff = true;
+                    mc.options.jumpKey.setPressed(false);
                     useFireworkRocket("full takeoff assist");
                 }
             }
             case Jump -> {
                 if (mc.player.isGliding()) assisted = true;
-                else if (mc.player.isOnGround()) {
-                    mc.player.jump();
+                else if (!mc.options.jumpKey.isPressed() && mc.player.isOnGround()) {
+                    releasedJump = false;
+                    mc.options.jumpKey.setPressed(true);
+                } else if (mc.options.jumpKey.isPressed() && !releasedJump) {
+                    releasedJump = true;
+                    mc.options.jumpKey.setPressed(false);
                 }
             }
             case Partial -> {
@@ -734,10 +744,18 @@ public class RocketMan extends Module {
                     assisted = true;
                     justUsed = true;
                     takingOff = true;
+                    mc.options.jumpKey.setPressed(false);
                     useFireworkRocket("partial takeoff assist");
                 } else if (!mc.player.isOnGround() && !mc.player.isGliding() && mc.player.getEquippedStack(EquipmentSlot.CHEST).isOf(Items.ELYTRA)) {
-                    mc.player.startGliding();
-                    mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                    ++jumpTimer;
+                    if (jumpTimer == 0) {
+                        mc.options.jumpKey.setPressed(false);
+                    } else if (jumpTimer > 0) {
+                        jumpTimer = -1;
+                        mc.player.startGliding();
+                        mc.options.jumpKey.setPressed(true);
+                        mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                    }
                 }
             }
             case UseRocket -> {
@@ -748,11 +766,20 @@ public class RocketMan extends Module {
                 }
             }
             case DeployElytra -> {
-                if (!mc.player.isOnGround() && !mc.player.isGliding() && mc.player.getEquippedStack(EquipmentSlot.CHEST).isOf(Items.ELYTRA)) {
+                if (mc.player.isGliding()) {
                     assisted = true;
-                    takingOff = true;
-                    mc.player.startGliding();
-                    mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                    mc.options.jumpKey.setPressed(false);
+                } else if (!mc.player.isOnGround() && !mc.player.isGliding() && mc.player.getEquippedStack(EquipmentSlot.CHEST).isOf(Items.ELYTRA)) {
+                    ++jumpTimer;
+                    if (jumpTimer == 0) {
+                        mc.options.jumpKey.setPressed(false);
+                    } else if (jumpTimer > 0) {
+                        jumpTimer = -1;
+                        takingOff = true;
+                        mc.player.startGliding();
+                        mc.options.jumpKey.setPressed(true);
+                        mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                    }
                 }
             }
         }
@@ -840,7 +867,7 @@ public class RocketMan extends Module {
     @Override
     public void onActivate() {
         if (mc.player == null) return;
-        if (mc.getNetworkHandler() == null || mc.getNetworkHandler().getPlayerList().size() <= 1) return; // Ignore queue
+        if (mc.getNetworkHandler() == null || StardustUtil.isIn2b2tQueue()) return;
         boolean isWearingElytra = mc.player.getEquippedStack(EquipmentSlot.CHEST).getItem() == Items.ELYTRA;
 
         if (!isWearingElytra) {
@@ -874,6 +901,7 @@ public class RocketMan extends Module {
     @Override
     public void onDeactivate() {
         timer = 0;
+        jumpTimer = -1;
         synced = false;
         hoverTimer = 0;
         boosted = false;
@@ -885,8 +913,10 @@ public class RocketMan extends Module {
         firstRocket = true;
         setbackCounter = 0;
         wasHovering = false;
+        releasedJump = false;
         rocketBoostSpeed = 1.5;
         assistTimer = assistCooldown.get();
+        mc.options.jumpKey.setPressed(false);
         discardCurrentRocket("on deactivate");
         rcc = StardustUtil.rCC();
     }
@@ -1078,6 +1108,12 @@ public class RocketMan extends Module {
                 ticksSinceUsed = 0;
             }
         }
+    }
+
+    private boolean isNotPlayingMinigames() {
+        return !(mc.currentScreen instanceof MeteoritesScreen)
+            && !(mc.currentScreen instanceof SolitaireScreen)
+            && !(mc.currentScreen instanceof MinesweeperScreen);
     }
 
     @EventHandler
