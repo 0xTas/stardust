@@ -328,6 +328,11 @@ public class WMeteorites extends WWidget {
             return;
         }
 
+        if (!CHEAT_MODE && player.invulnerable) {
+            player.invulnerable = false;
+            player.iFrames = Ship.IFRAMES_ON_EXIT_PHASE;
+        }
+
         player.updatePhysics(DELTA_TIME, width, height, aimMouseLocalX, aimMouseLocalY, this);
 
         for (int n = 0; n < bulletCount; ) {
