@@ -1,4 +1,4 @@
-package dev.stardust.mixin.interfaces;
+package dev.stardust.mixininterface;
 
 import org.joml.Quaternionf;
 
