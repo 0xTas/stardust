@@ -7,8 +7,8 @@ import net.minecraft.item.Items;
 import dev.stardust.util.MsgUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.entity.EquipmentSlot;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.registry.tag.ItemTags;
 import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.meteorclient.utils.Utils;
@@ -39,11 +39,12 @@ public class RocketJump extends Module {
         new IntSetting.Builder()
             .name("swap-delay-ticks")
             .min(0).sliderRange(0, 20)
-            .defaultValue(3)
+            .defaultValue(7)
             .build()
     );
 
     private int timer = -1;
+    private int jumpTimer = -1;
     private int swapSlot = -1;
     private boolean jumped = false;
     private boolean jumping = false;
@@ -52,6 +53,7 @@ public class RocketJump extends Module {
     private void starFlying() {
         if (mc.player == null || mc.getNetworkHandler() == null) return;
         mc.player.startGliding();
+        mc.options.jumpKey.setPressed(true);
         mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
     }
 
@@ -117,6 +119,7 @@ public class RocketJump extends Module {
     public void onDeactivate() {
         timer = -1;
         swapSlot = -1;
+        jumpTimer = -1;
         jumped = false;
         jumping = false;
     }
@@ -134,15 +137,23 @@ public class RocketJump extends Module {
                 if (mc.player.isGliding()) {
                     jumped = true;
                     swapSlot = -69;
+                    mc.options.jumpKey.setPressed(false);
                     if (!hasActiveRocket()) useRocket();
                     if (timer == -1) {
                         timer = swapBackTicks.get();
                     }
                 } else if (mc.player.isOnGround()) {
-                    mc.player.jump();
+                    mc.options.jumpKey.setPressed(true);
                     return;
                 } else {
-                    starFlying();
+                    ++jumpTimer;
+                    if (jumpTimer == 0) {
+                        mc.options.jumpKey.setPressed(false);
+                    }else if (jumpTimer > 0) {
+                        jumpTimer = -1;
+                        starFlying();
+                    }
+
                     return;
                 }
             } else {
