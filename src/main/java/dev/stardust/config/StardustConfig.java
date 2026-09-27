@@ -14,6 +14,7 @@ public class StardustConfig {
     public static Setting<Boolean> antiInventoryPacketKick = new BoolSetting.Builder().build();
     public static Setting<Boolean> ignoreOverlayMessages = new BoolSetting.Builder().build();
     public static Setting<List<String>> overlayMessageFilter = new StringListSetting.Builder().build();
+    public static Setting<Boolean> serverListWorldTimeClockSetting = new BoolSetting.Builder().build();
     public static Setting<StardustUtil.IllegalDisconnectMethod> illegalDisconnectMethodSetting = new EnumSetting.Builder<StardustUtil.IllegalDisconnectMethod>().defaultValue(StardustUtil.IllegalDisconnectMethod.Slot).build();
 
     public static void initialize() {
@@ -87,6 +88,14 @@ public class StardustConfig {
                 .description("Overlay messages will be ignored if they match any of the provided filters.")
                 .defaultValue(List.of("2b2t.org"))
                 .visible(ignoreOverlayMessages::get)
+                .build()
+        );
+        // See EntryListWidgetMixin.java && ServerEntryMixin.java && NeedleAngleStateMixin.java && stardust.accesswidener && TimeUtil.java
+        serverListWorldTimeClockSetting = sgStardust.add(
+            new BoolSetting.Builder()
+                .name("server-list-clock")
+                .description("Renders a clock displaying 2b2t's current world time on the multiplayer server list screen.")
+                .defaultValue(false)
                 .build()
         );
     }

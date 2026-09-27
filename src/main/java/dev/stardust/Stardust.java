@@ -5,9 +5,11 @@ import dev.stardust.modules.*;
 import dev.stardust.commands.*;
 import dev.stardust.gui.themes.*;
 import dev.stardust.util.MsgUtil;
+import dev.stardust.util.TimeUtil;
 import dev.stardust.hud.ConwayHud;
 import com.mojang.logging.LogUtils;
 import dev.stardust.util.StardustUtil;
+import org.jetbrains.annotations.Nullable;
 import dev.stardust.config.StardustConfig;
 import dev.stardust.managers.PacketManager;
 import net.fabricmc.loader.api.FabricLoader;
@@ -31,6 +33,7 @@ public class Stardust extends MeteorAddon {
     public static final Category CATEGORY = new Category("Stardust", StardustUtil.chooseMenuIcon());
 
     private PacketManager packetManager;
+    public static @Nullable TimeUtil TIME;
 
     @Override
     public void onInitialize() {
@@ -85,6 +88,7 @@ public class Stardust extends MeteorAddon {
         GuiThemes.add(PhosphorTheme.INSTANCE);
         GuiThemes.add(MonochromeTheme.INSTANCE);
 
+        TIME = new TimeUtil();
         packetManager = new PacketManager();
 
         StardustConfig.initialize();

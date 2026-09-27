@@ -1,9 +1,10 @@
 accessWidener v2 named
 
-accessible field net/minecraft/client/gui/screen/multiplayer/MultiplayerScreen serverListWidget Lnet/minecraft/client/gui/screen/multiplayer/MultiplayerServerListWidget;
-accessible field net/minecraft/client/gui/screen/multiplayer/MultiplayerServerListWidget JOIN_HIGHLIGHTED_TEXTURE Lnet/minecraft/util/Identifier;
+accessible class net/minecraft/client/gui/widget/EntryListWidget$Entry
 accessible field net/minecraft/client/gui/screen/multiplayer/MultiplayerServerListWidget JOIN_TEXTURE Lnet/minecraft/util/Identifier;
-accessible field net/minecraft/client/gui/screen/multiplayer/MultiplayerServerListWidget MOVE_UP_HIGHLIGHTED_TEXTURE Lnet/minecraft/util/Identifier;
 accessible field net/minecraft/client/gui/screen/multiplayer/MultiplayerServerListWidget MOVE_UP_TEXTURE Lnet/minecraft/util/Identifier;
-accessible field net/minecraft/client/gui/screen/multiplayer/MultiplayerServerListWidget MOVE_DOWN_HIGHLIGHTED_TEXTURE Lnet/minecraft/util/Identifier;
 accessible field net/minecraft/client/gui/screen/multiplayer/MultiplayerServerListWidget MOVE_DOWN_TEXTURE Lnet/minecraft/util/Identifier;
+accessible field net/minecraft/client/gui/screen/multiplayer/MultiplayerServerListWidget JOIN_HIGHLIGHTED_TEXTURE Lnet/minecraft/util/Identifier;
+accessible field net/minecraft/client/gui/screen/multiplayer/MultiplayerServerListWidget MOVE_UP_HIGHLIGHTED_TEXTURE Lnet/minecraft/util/Identifier;
+accessible field net/minecraft/client/gui/screen/multiplayer/MultiplayerServerListWidget MOVE_DOWN_HIGHLIGHTED_TEXTURE Lnet/minecraft/util/Identifier;
+accessible field net/minecraft/client/gui/screen/multiplayer/MultiplayerScreen serverListWidget Lnet/minecraft/client/gui/screen/multiplayer/MultiplayerServerListWidget;
