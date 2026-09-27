@@ -125,7 +125,7 @@ public class RoadTrip extends Module {
     private final Setting<Integer> etaAutoLogThreshold = sgAutoLog.add(
         new IntSetting.Builder()
             .name("ETA-autoLog-threshold")
-            .description("Logs you out if you come within <threshold> blocks of your ETA.")
+            .description("Logs you out if you come within <threshold> blocks of your destination.")
             .range(0, 25000).noSlider().defaultValue(150)
             .build()
     );
@@ -390,7 +390,7 @@ public class RoadTrip extends Module {
         handleDurabilityChecks();
         if (timeoutAutoLog.get() && logOutTimer != -69L) {
             long now = System.currentTimeMillis();
-            if (now - timerTimestamp >= timeoutAutoLogTimer.get() * 1000) {
+            if (now - timerTimestamp >= timeoutAutoLogTimer.get() * 1000L) {
                 timerTimestamp = now;
                 Text reason = Text.literal("§8[§5RoadTrip§8] §7Disconnected you because your §3" + timeoutAutoLogTimer.get() + "§7-second timer has elapsed§a..!");
                 if (forceKick.get()) {
