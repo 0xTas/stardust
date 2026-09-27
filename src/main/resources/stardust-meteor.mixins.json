@@ -15,6 +15,7 @@
     "FreecamMixin",
     "WHeaderMixin",
     "WWindowMixin",
+    "AirPlaceMixin",
     "GuiThemeMixin",
     "NametagsMixin",
     "AutoMendMixin",
