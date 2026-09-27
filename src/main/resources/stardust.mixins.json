@@ -47,6 +47,7 @@
     "EntityMixin",
     "ItemStackMixin",
     "DoorBlockMixin",
+    "ItemEntityMixin",
     "PlayerEntityMixin",
     "GoatHornItemMixin",
     "LivingEntityMixin",

@@ -22,6 +22,7 @@
     "NoRenderMixin",
     "NotifierMixin",
     "ExpThrowerMixin",
+    "ItemPhysicsMixin",
     "OnlinePlayersMixin",
     "BetterTooltipsMixin",
     "MeteorGuiThemeMixin",
