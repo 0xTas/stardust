@@ -8,12 +8,11 @@ import dev.stardust.util.MsgUtil;
 import net.minecraft.text.HoverEvent;
 import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.orbit.EventPriority;
-import meteordevelopment.meteorclient.settings.Setting;
-import meteordevelopment.meteorclient.settings.EnumSetting;
+import meteordevelopment.meteorclient.settings.*;
 import dev.stardust.mixin.accessor.ClientConnectionAccessor;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.systems.friends.Friends;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
-import meteordevelopment.meteorclient.settings.StringListSetting;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
 
@@ -27,14 +26,17 @@ public class AdBlocker extends Module {
         None, Ignore, HardIgnore
     }
 
-    private final Setting<IgnoreStyle> ignoreStyle = settings.getDefaultGroup().add(
+    private final SettingGroup sgAdBlocker = settings.createGroup("AdBlocker");
+    private final SettingGroup sgWhitelist = settings.createGroup("Whitelist");
+
+    private final Setting<IgnoreStyle> ignoreStyle = sgAdBlocker.add(
         new EnumSetting.Builder<IgnoreStyle>()
             .name("ignore-advertisers")
             .description("Whether to ignore accounts which trigger the blocked patterns filter.")
             .defaultValue(IgnoreStyle.Ignore)
             .build()
     );
-    private final Setting<List<String>> patterns = settings.getDefaultGroup().add(
+    private final Setting<List<String>> patterns = sgAdBlocker.add(
         new StringListSetting.Builder()
             .name("blocked-patterns")
             .description("Chat messages matching any of these patterns will be blocked, and ignore preferences applied to the culprit.")
@@ -42,9 +44,25 @@ public class AdBlocker extends Module {
                 List.of(
                     "thishttp", "discord.com", "discord.gg", "gg/", "com/", "/invite/", "% off",
                     ".store", "cheapest price", "cheapest kit", "cheap price", "cheap kit", "use code", "at checkout",
-                    "join now", "rusherhack.org", "nox2b", ".shop"
+                    "join now", "rusherhack.org", "nox2b", ".shop", "/./gg"
                 )
             )
+            .build()
+    );
+
+    private final Setting<Boolean> shouldWhitelist = sgWhitelist.add(
+        new BoolSetting.Builder()
+            .name("whitelist-enabled")
+            .description("Whether to whitelist certain players to exempt them from the AdBlocker.")
+            .defaultValue(false)
+            .build()
+    );
+    private final Setting<List<String>> whitelist = sgWhitelist.add(
+        new StringListSetting.Builder()
+            .name("player-whitelist")
+            .description("Player names in this list will not have their messages blocked by the filter.")
+            .defaultValue(this.getFriendsList())
+            .visible(shouldWhitelist::get)
             .build()
     );
 
@@ -55,13 +73,14 @@ public class AdBlocker extends Module {
 
         if (packet.content() == null) return;
         String content = packet.content().getString();
+        String senderName = getNameFromMessage(content);
+        if (shouldWhitelist.get() && whitelist.get().contains(senderName)) return;
+
+        boolean cancel = false;
         for (String pattern : patterns.get()) {
             if (pattern.isBlank()) continue;
-            if (content.toLowerCase().contains(pattern.toLowerCase())) {
-                event.cancel(); // fuck yo packets
+            if (content.toLowerCase().contains(pattern)) {
                 if (!ignoreStyle.get().equals(IgnoreStyle.None)) {
-                    String name = getNameFromMessage(content);
-
                     String cmd;
                     if (ignoreStyle.get().equals(IgnoreStyle.Ignore)) {
                         cmd = "ignore";
@@ -69,30 +88,47 @@ public class AdBlocker extends Module {
                         cmd = "ignorehard";
                     }
 
-                    if (name.isBlank()) {
+                    if (senderName.isBlank()) {
                         cmd = "ignoredeathmsgs";
                         List<String> responsible = new ArrayList<>();
                         extractNamesFromDeathMessage(packet.content(), responsible);
+
                         for (String culprit : responsible) {
+                            if (shouldWhitelist.get() && whitelist.get().contains(culprit)) return;
+
                             if (chatFeedback) {
                                 MsgUtil.sendModuleMsg(
                                     "Ignoring death-message advertiser \"§c" + culprit + "§7\"§a..!",
                                     this.name
                                 );
                             }
+
+                            cancel = true;
                             ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).invokeSendImmediately(
                                 new CommandExecutionC2SPacket(cmd + " " + culprit), null, true
                             );
                         }
                     } else {
+                        cancel = true;
                         ((ClientConnectionAccessor) mc.getNetworkHandler().getConnection()).invokeSendImmediately(
-                            new CommandExecutionC2SPacket(cmd + " " + name), null, true
+                            new CommandExecutionC2SPacket(cmd + " " + senderName), null, true
                         );
                     }
                 }
+
+                if (cancel || !shouldWhitelist.get() || !whitelist.get().contains(senderName))
+                    event.cancel();
+
                 break;
             }
         }
+    }
+
+    private List<String> getFriendsList() {
+        List<String> friends = new ArrayList<>();
+        Friends.get().forEach(friend -> friends.add(friend.getName()));
+
+        return friends;
     }
 
     private String getNameFromMessage(String message) {
