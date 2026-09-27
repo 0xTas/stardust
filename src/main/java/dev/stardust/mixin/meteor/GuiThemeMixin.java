@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import meteordevelopment.meteorclient.utils.misc.ISerializable;
 
 /**
- * Credit to crosby for this mixin from <a href="https://github.com/RacoonDog/Tokyo-Client">Tokyo-Client</a>
+ * Credit to crosby for this mixin from <a href="https://github.com/crosby-moe/Tokyo-Client">Tokyo-Client</a>
  * Allows custom themes implementing RecolorGuiTheme to display their custom names.
  **/
 @Mixin(value = GuiTheme.class, remap = false)

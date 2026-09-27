@@ -13,7 +13,7 @@ import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.meteorclient.gui.themes.meteor.MeteorGuiTheme;
 
 /**
- * Credit to crosby for this mixin from <a href="https://github.com/RacoonDog/Tokyo-Client">Tokyo-Client</a>
+ * Credit to crosby for this mixin from <a href="https://github.com/crosby-moe/Tokyo-Client">Tokyo-Client</a>
  * Replaces default values with the overrides from the RecolorGuiTheme interface.
  **/
 @Mixin(value = MeteorGuiTheme.class, remap = false)

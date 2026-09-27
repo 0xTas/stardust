@@ -5,7 +5,7 @@ import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 /**
  * Allows easily making themes that are recolored versions of the default Meteor Client theme.<br>
  * Credit to crosby for this code, originally from:
- * <a href="https://raw.githubusercontent.com/RacoonDog/Tokyo-Client/refs/heads/main/src/main/java/io/github/racoondog/tokyo/utils/RecolorGuiTheme.java">Tokyo-Client</a>
+ * <a href="https://raw.githubusercontent.com/crosby-moe/Tokyo-Client/refs/heads/main/src/main/java/io/github/racoondog/tokyo/utils/RecolorGuiTheme.java">Tokyo-Client</a>
  *
  * <pre>{@code
  * public class ExampleTheme extends MeteorGuiTheme implements RecolorGuiTheme {
